@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    build: .
+    image: custom_postgresql
+    container_name: my-postgres
+    environment:
+      POSTGRES_USER: devuser 
+      POSTGRES_PASSWORD: 1234 
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"
+    volumes:
+ #     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  pgdata:
+    driver: local
+
+  # if the docker compose doesn't works : sudo docker-compose up -d --build
+  # if allready exist img modify the docker-compose.yml
+  # if(error) follow the next steps :
+    # 1. docker build -t custom_postgresql:latest .
+    # 2. free related port if postgresql is installed locally 
+    # 3. docker run -d --name custom_postgresql_container -p 5432:5432 -v pgdata:/var/lib/postgresql/data custom_postgresql_image
