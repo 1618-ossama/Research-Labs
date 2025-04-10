@@ -1,6 +1,8 @@
 import "@styles/globals.css"
 import type React from "react"
 import type { Metadata } from "next"
+import Navbar from "@components/Navbar"
+import Footer from "@components/Footer"
 
 export const metadata: Metadata = {
   title: "PFE",
@@ -15,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en" >
       <body >
+        <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   )
