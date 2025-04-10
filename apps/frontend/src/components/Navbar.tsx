@@ -1,5 +1,4 @@
 import { BookOpen } from "lucide-react"
-import { MobileNav } from "./mobile-nav"
 import Link from "next/link"
 import { Button } from "@components/ui/button"
 
@@ -14,7 +13,7 @@ export default function Navbar() {
         </div>
 
         <div className="md:hidden">
-          <MobileNav />
+          {/* <MobileNav /> */}
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
