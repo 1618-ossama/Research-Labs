@@ -18,11 +18,9 @@ A comprehensive web application designed for managing research labs at universit
 - **Research Management**
   - **Upload Research**: Upload research papers, conference submissions, and presentations.
   - **Version Control**: Track changes to uploaded research.
-  - **Metadata**: Add metadata (title, authors, abstract) to research documents.
 
 - **Activity Tracking**
   - **Activity Log**: Track all user activities and system events.
-  - **Audit Logs**: Admins can access logs of critical system actions.
 
 - **Notifications & Alerts**
   - **User Notifications**: Professors are notified of new Doctorants in their department. Users receive updates about follows, uploads, and messages.
@@ -160,7 +158,6 @@ sequenceDiagram
         Auth_Service-->>Client: 401 Unauthorized
     end
 ```
-//
 ```mermaid
 classDiagram
     class Users {
@@ -318,5 +315,4 @@ classDiagram
     Users "1" --> "*" ActivityLog : "generates"
 
     Users "1" --> "*" Users : "supervises"
-```
 ```
