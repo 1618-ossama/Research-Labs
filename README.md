@@ -29,7 +29,6 @@ A comprehensive web application designed for managing research labs at universit
 
 - **Security**
   - **Multi-Factor Authentication (MFA)**: Secure login with support for JWT and biometric login.
-  - **Role-Based Access Control (RBAC)**: Fine-grained permissions to control data access.
 
 ## Technologies Used
 
@@ -160,11 +159,8 @@ sequenceDiagram
     else Invalid
         Auth_Service-->>Client: 401 Unauthorized
     end
-
 ```
-```
-
-```
+//
 ```mermaid
 classDiagram
     class Users {
@@ -184,6 +180,7 @@ classDiagram
     class Roles {
         +UUID id PK
         +VARCHAR name
+        <<Possible values: Admin, Professor, Doctorant, External Professor>>
     }
 
     class Permissions {
@@ -208,6 +205,7 @@ classDiagram
         +UUID submitter_id FK
         +TIMESTAMP submitted_at
         +TEXT[] keywords
+        +TEXT content
     }
 
     class PublicationFiles {
@@ -215,6 +213,11 @@ classDiagram
         +UUID publication_id FK
         +VARCHAR storage_path
         +VARCHAR file_type
+    }
+
+    class PublicationAuthors {
+        +UUID publication_id PK, FK
+        +UUID user_id PK, FK
     }
 
     class Chats {
@@ -225,13 +228,37 @@ classDiagram
         +TIMESTAMP last_message_at
     }
 
+    class GroupChats {
+        +UUID id PK
+        +VARCHAR name
+        +TIMESTAMP created_at
+    }
+
+    class GroupChatMembers {
+        +UUID group_chat_id PK, FK
+        +UUID user_id PK, FK
+        +TIMESTAMP joined_at
+    }
+
     class Messages {
         +UUID id PK
-        +UUID chat_id FK
+        +UUID chat_id FK  
         +UUID sender_id FK
         +TEXT content
         +BOOLEAN is_read
         +TIMESTAMP sent_at
+    }
+
+    class ResearchTopics {
+        +UUID id PK
+        +VARCHAR name
+        +TEXT description
+    }
+
+    class UserResearchTopics {
+        +UUID user_id PK, FK
+        +UUID research_topic_id PK, FK
+        +TIMESTAMP followed_at
     }
 
     class Notifications {
@@ -254,6 +281,13 @@ classDiagram
         +BOOLEAN is_edited
     }
 
+    class ActivityLog {
+        +UUID id PK
+        +UUID user_id FK
+        +VARCHAR action
+        +TIMESTAMP created_at
+    }
+
     Users "1" --> "*" UserRoles : "assigned"
     Roles "1" --> "*" UserRoles : "grants"
     Roles "1" --> "*" RolePermissions : "grants"
@@ -261,10 +295,16 @@ classDiagram
 
     Users "1" --> "*" Publications : "submits"
     Publications "1" --> "*" PublicationFiles : "has"
+    Publications "1" --> "*" PublicationAuthors : "written by"
+    Users "1" --> "*" PublicationAuthors : "co-author of"
 
     Users "1" --> "*" Chats : "initiates"
     Chats "1" --> "*" Messages : "contains"
     Users "1" --> "*" Messages : "sends"
+
+    GroupChats "1" --> "*" GroupChatMembers : "has"
+    Users "1" --> "*" GroupChatMembers : "member"
+    GroupChats "1" --> "*" Messages : "contains"  %% Group messages
 
     Users "1" --> "*" Notifications : "receives"
 
@@ -272,10 +312,11 @@ classDiagram
     Users "1" --> "*" Comments : "writes"
     Comments "0..1" --> "*" Comments : "replies to"
 
-    Users "1" --> "*" Users : "supervises"  
+    Users "1" --> "*" UserResearchTopics : "follows"
+    ResearchTopics "1" --> "*" UserResearchTopics : "followed by"
 
+    Users "1" --> "*" ActivityLog : "generates"
+
+    Users "1" --> "*" Users : "supervises"
 ```
 ```
-
-
-
