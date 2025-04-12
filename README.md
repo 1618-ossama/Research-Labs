@@ -106,8 +106,6 @@ sequenceDiagram
     User_Service->>Notification_Service: Send Welcome Email
     Notification_Service->>User: Account Activated Notification
 ```
-```
-```
 
 
 Authentication Diagram 
@@ -120,7 +118,6 @@ sequenceDiagram
     participant Redis
     participant DB
 
-    %% Login Flow
     Client->>Auth_Service: POST /login (credentials)
     Auth_Service->>User_Service: Verify credentials
     User_Service-->>Auth_Service: User data + roles
@@ -128,7 +125,6 @@ sequenceDiagram
     Auth_Service->>Redis: Store refresh token with metadata
     Auth_Service-->>Client: Return JWT + refresh token
 
-    %% Token Usage Loop
     loop Token Usage
         Client->>API_Gateway: Request with Authorization: Bearer <JWT>
         API_Gateway->>Auth_Service: Introspect token
@@ -147,7 +143,6 @@ sequenceDiagram
         end
     end
 
-    %% Refresh Flow
     Client->>Auth_Service: POST /token/refresh (refresh token)
     Auth_Service->>Redis: Validate refresh token
     alt Valid
@@ -158,6 +153,7 @@ sequenceDiagram
         Auth_Service-->>Client: 401 Unauthorized
     end
 ```
+Class Diagram :
 ```mermaid
 classDiagram
     class Users {
