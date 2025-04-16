@@ -1,5 +1,100 @@
 import Image from "next/image";
 
+type fillerType = {
+  title: string;
+  description: string;
+  icon?: string;
+}
+
+
+const filler1: fillerType[] = [
+  {
+    title: "Bridge Between Labs and Researchers",
+    description:
+      "Our platform connects independent researchers and academic labs, enabling collaboration and knowledge sharing across institutions.",
+  },
+  {
+    title: "Lab Profiles and Research Streams",
+    description:
+      "Each lab can showcase their ongoing projects, team members, and publications, making it easier to attract collaborators and visibility.",
+  },
+  {
+    title: "Centralized Research Management",
+    description:
+      "Labs can oversee member activity, supervise document submissions, and manage research output from one unified dashboard.",
+  },
+];
+
+const filler2: fillerType[] = [
+  {
+    title: "User Activity Logs",
+    description:
+      "Track user interactions, research history, and behavior patterns to personalize the experience and enhance insights.",
+    icon: "🧾",
+  },
+  {
+    title: "Interactive Discussion",
+    description:
+      "Real-time messaging and topic-based conversations to collaborate, share insights, and engage with the research community.",
+    icon: "💬",
+  },
+  {
+    title: "Tag & Topic Following",
+    description:
+      "Stay updated by following specific subjects, research areas, or keywords to receive curated content and alerts.",
+    icon: "🏷️",
+  },
+  {
+    title: "Research Publishing & Access",
+    description:
+      "Upload your own studies or browse and download peer-reviewed documents shared by the research network.",
+    icon: "📄",
+  },
+  {
+    title: "Mentorship & Supervision",
+    description:
+      "Connect with academic supervisors for guidance, feedback, and structured oversight throughout your research journey.",
+    icon: "🎓",
+  },
+  {
+    title: "Liked Subjects",
+    description:
+      "Keep track of your favorite topics and revisit relevant research with ease through your personalized dashboard.",
+    icon: "❤️",
+  },
+];
+
+const mapper = (filler: fillerType[], variant: "style1" | "style2") => {
+  return filler.map((content, index) => {
+    if (variant === "style1") {
+      return (
+        <div
+          key={index}
+          className="space-y-2 border-l-4 border-[#7b3f00] pl-4"
+        >
+          <h3 className="font-serif text-2xl font-bold text-[#3a2a1d]">
+            {content.title}
+          </h3>
+          <p className="text-[#5c4033]">{content.description}</p>
+        </div>
+      );
+    } else if (variant === "style2") {
+      return (
+        <div
+          key={index}
+          className="flex flex-col space-y-3 rounded-lg border border-[#d3c5a9] bg-white p-6 shadow-sm"
+        >
+          <div className="text-4xl">{content.icon}</div>
+          <h3 className="font-serif text-xl font-bold text-[#3a2a1d]">
+            {content.title}
+          </h3>
+          <p className="text-[#5c4033]">{content.description}</p>
+        </div>
+      );
+    }
+  });
+};
+
 export default function HomeAdd() {
   return (
     <>
@@ -8,12 +103,14 @@ export default function HomeAdd() {
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
               <h2 className="font-serif text-3xl font-bold tracking-tighter text-[#3a2a1d] sm:text-4xl md:text-5xl">
-                Research Focus
+                App Focus
               </h2>
               <div className="mx-auto h-1 w-24 bg-[#7b3f00]"></div>
               <p className="max-w-[900px] text-[#5c4033] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed pt-4">
-                Our research program spans multiple disciplines, with a particular emphasis on addressing complex
-                societal challenges through interdisciplinary approaches.
+                Transform how your lab shares knowledge with our app –
+                a dynamic social platform designed exclusively for publishing, discussing,
+                and advancing research. Connect with peers, share breakthroughs,
+                and crowdsource insights across disciplines in real time.
               </p>
             </div>
           </div>
@@ -27,26 +124,7 @@ export default function HomeAdd() {
               />
             </div>
             <div className="flex flex-col justify-center space-y-6">
-              <div className="space-y-2 border-l-4 border-[#7b3f00] pl-4">
-                <h3 className="font-serif text-2xl font-bold text-[#3a2a1d]">Historical Analysis</h3>
-                <p className="text-[#5c4033]">
-                  Examining primary sources and archival materials to understand historical contexts and their
-                  implications for contemporary issues.
-                </p>
-              </div>
-              <div className="space-y-2 border-l-4 border-[#7b3f00] pl-4">
-                <h3 className="font-serif text-2xl font-bold text-[#3a2a1d]">Quantitative Methods</h3>
-                <p className="text-[#5c4033]">
-                  Utilizing statistical analysis and data modeling to identify patterns and relationships within
-                  complex datasets.
-                </p>
-              </div>
-              <div className="space-y-2 border-l-4 border-[#7b3f00] pl-4">
-                <h3 className="font-serif text-2xl font-bold text-[#3a2a1d]">Theoretical Frameworks</h3>
-                <p className="text-[#5c4033]">
-                  Developing and refining conceptual models that provide explanatory power across diverse phenomena.
-                </p>
-              </div>
+              {mapper(filler1, "style1")}
             </div>
           </div>
         </div>
@@ -57,67 +135,23 @@ export default function HomeAdd() {
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
               <h2 className="font-serif text-3xl font-bold tracking-tighter text-[#3a2a1d] sm:text-4xl md:text-5xl">
-                Research Methodology
+                App Services
               </h2>
               <div className="mx-auto h-1 w-24 bg-[#7b3f00]"></div>
               <p className="max-w-[900px] text-[#5c4033] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed pt-4">
-                Our approach to research is characterized by methodological rigor, ethical considerations, and a
-                commitment to transparency.
+                Our approach to research is characterized by methodological rigor,
+                ethical considerations, and a commitment to transparency.
               </p>
             </div>
           </div>
+
           <div className="mx-auto grid max-w-5xl gap-6 py-12 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "Literature Review",
-                description:
-                  "Comprehensive analysis of existing scholarship to identify gaps and opportunities for contribution.",
-                icon: "📚",
-              },
-              {
-                title: "Data Collection",
-                description:
-                  "Systematic gathering of primary and secondary sources through archival research, surveys, and interviews.",
-                icon: "📊",
-              },
-              {
-                title: "Critical Analysis",
-                description:
-                  "Rigorous examination of evidence using established theoretical frameworks and innovative approaches.",
-                icon: "🔍",
-              },
-              {
-                title: "Peer Review",
-                description:
-                  "Engagement with scholarly community to validate findings and refine arguments through constructive critique.",
-                icon: "👥",
-              },
-              {
-                title: "Publication",
-                description:
-                  "Dissemination of research findings through academic journals, books, and conference presentations.",
-                icon: "📝",
-              },
-              {
-                title: "Knowledge Transfer",
-                description:
-                  "Translation of research insights into practical applications for policy, education, and public engagement.",
-                icon: "🔄",
-              },
-            ].map((method, index) => (
-              <div
-                key={index}
-                className="flex flex-col space-y-3 rounded-lg border border-[#d3c5a9] bg-white p-6 shadow-sm"
-              >
-                <div className="text-4xl">{method.icon}</div>
-                <h3 className="font-serif text-xl font-bold text-[#3a2a1d]">{method.title}</h3>
-                <p className="text-[#5c4033]">{method.description}</p>
-              </div>
-            ))}
+            {mapper(filler2, "style2")}
           </div>
         </div>
       </section>
 
+      {/*Update with each render*/}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-[#f0e6d6] border-b border-[#d3c5a9]">
         <div className="container px-4 md:px-6">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
