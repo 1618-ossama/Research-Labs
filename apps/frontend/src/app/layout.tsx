@@ -1,22 +1,21 @@
 import "@styles/globals.css"
-import type React from "react"
 import type { Metadata } from "next"
+import SidebarLayout from "@/components/sidebar"
 
 export const metadata: Metadata = {
   title: "PFE",
-  description: "Labs reshearch management",
+  description: "Labs research management",
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" >
-      <body >
-        {children}
+    <html lang="en">
+      <body>
+        <SidebarLayout>
+          {children}
+        </SidebarLayout>
       </body>
     </html>
   )
 }
+

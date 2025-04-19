@@ -8,12 +8,10 @@ import { MailIcon, MapPinIcon, BuildingIcon, LinkIcon, GlobeIcon } from "lucide-
 import PublicationCard from "@/components/profile/publication-card"
 import ProfileHeader from "@/components/profile/profile-header"
 
-// Mock function to get user data - in a real app, this would fetch from your database
 async function getUser(username: string) {
-  // Simulate API call
+  // simulate gettings new user
   await new Promise((resolve) => setTimeout(resolve, 500))
 
-  // Mock data
   const users = {
     jsmith: {
       id: "1",
@@ -72,9 +70,7 @@ async function getUser(username: string) {
   return users[username] || null
 }
 
-// Mock function to get publications
 async function getPublications(userId: string) {
-  // Simulate API call
   await new Promise((resolve) => setTimeout(resolve, 300))
 
   return [
@@ -128,7 +124,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
   const publications = await getPublications(user.id)
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container w-full mx-auto px-4 py-8">
       <ProfileHeader user={user} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
@@ -161,7 +157,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
                 )}
 
               {user.website && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center max-w-screen-md gap-2">
                   <GlobeIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                   <a
                     href={user.website}

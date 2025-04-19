@@ -25,10 +25,9 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-6">
-        <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-0">
+        <TabsList className="w-full h-full md:w-auto grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-0">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
         </TabsList>
 
@@ -40,10 +39,6 @@ export default function SettingsPage() {
           <ProfileSettings />
         </TabsContent>
 
-        <TabsContent value="notifications">
-          <NotificationSettings />
-        </TabsContent>
-
         <TabsContent value="privacy">
           <PrivacySettings />
         </TabsContent>
@@ -53,3 +48,12 @@ export default function SettingsPage() {
 }
 
 import { Button } from "@/components/ui/button"
+
+/*
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+
+        <TabsContent value="notifications">
+          <NotificationSettings />
+        </TabsContent>
+
+*/

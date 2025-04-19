@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <section className="w-full py-22 md:py-24 lg:py-32 xl:py-48 border-b border-[#d3c5a9]">
+    <section className="w-full py-10 md:py-12 lg:py-12 xl:py-18 border-b border-[#d3c5a9]">
       <div className="container m-auto px-4 md:px-6">
         <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2">
           <div className="flex flex-col justify-center space-y-4">
@@ -29,7 +29,7 @@ export default function Hero() {
             </div>
           </div>
           <div className="flex items-center justify-center">
-            <div className="relative h-[300px] w-full max-w-[400px] overflow-hidden rounded-lg border-4 border-[#d3c5a9] shadow-lg sm:h-[400px]">
+            <div className="relative h-[300px] w-full max-w-[600px] overflow-hidden rounded-lg border-4 border-[#d3c5a9] shadow-lg sm:h-[400px]">
               <Image
                 src="/file.svg"
                 fill
@@ -38,6 +38,7 @@ export default function Hero() {
                 priority
               />
             </div>
+
           </div>
         </div>
       </div>

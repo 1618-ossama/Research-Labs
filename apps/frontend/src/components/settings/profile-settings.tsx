@@ -10,7 +10,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { toast } from "@/components/ui/use-toast"
+import { Toast as toast } from "@/components/ui/use-toast";
 import { UploadCloudIcon } from "lucide-react"
 
 const profileFormSchema = z.object({
@@ -41,15 +41,14 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
-// This can be replaced with actual data fetching in a real app
 const defaultValues: Partial<ProfileFormValues> = {
-  name: "Dr. Alex Johnson",
-  title: "Assistant Professor of Bioinformatics",
-  affiliation: "MIT",
-  location: "Cambridge, MA",
-  website: "https://alexjohnson.research.edu",
-  bio: "Developing computational methods for analyzing large-scale genomic data to understand disease mechanisms.",
-  interests: "Bioinformatics, Genomics, Machine Learning, Systems Biology",
+  name: "pfe",
+  title: "pfe",
+  affiliation: "pfe",
+  location: "rabat",
+  website: "https://pfe.edu",
+  bio: "Researching",
+  interests: "Machine Learning, Systems Biology",
 }
 
 export default function ProfileSettings() {
@@ -63,7 +62,7 @@ export default function ProfileSettings() {
   function onSubmit(data: ProfileFormValues) {
     setIsLoading(true)
 
-    // Simulate API call
+    // same problem
     setTimeout(() => {
       setIsLoading(false)
       toast({

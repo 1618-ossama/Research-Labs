@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { toast } from "@/components/ui/use-toast"
+import { Toast as toast } from "@/components/ui/use-toast";
 import { LockIcon, EyeIcon, UsersIcon } from "lucide-react"
 
 export default function PrivacySettings() {
@@ -39,7 +39,6 @@ export default function PrivacySettings() {
   const handleSave = () => {
     setIsLoading(true)
 
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false)
       toast({

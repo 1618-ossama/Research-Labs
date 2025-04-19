@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { toast } from "@/components/ui/use-toast"
+import { Toast as toast } from "@/components/ui/use-toast";
 
 export default function NotificationSettings() {
   const [isLoading, setIsLoading] = useState(false)

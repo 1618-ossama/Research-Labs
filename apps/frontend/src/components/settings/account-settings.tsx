@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { toast } from "@/components/ui/use-toast"
+import { Toast as toast } from "@/components/ui/use-toast";
 import { AlertCircleIcon } from "lucide-react"
 
 const accountFormSchema = z
@@ -55,9 +55,8 @@ const accountFormSchema = z
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
-// This can be replaced with actual data fetching in a real app
 const defaultValues: Partial<AccountFormValues> = {
-  email: "alex.johnson@mit.edu",
+  email: "pfe.test@gmail.com",
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
@@ -74,7 +73,7 @@ export default function AccountSettings() {
   function onSubmit(data: AccountFormValues) {
     setIsLoading(true)
 
-    // Simulate API call
+    // toast isn't working properly
     setTimeout(() => {
       setIsLoading(false)
       toast({
@@ -82,7 +81,6 @@ export default function AccountSettings() {
         description: "Your account information has been updated successfully.",
       })
 
-      // Reset password fields
       form.reset({
         ...data,
         currentPassword: "",
