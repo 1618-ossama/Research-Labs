@@ -52,6 +52,21 @@ impl Database for PostgresDatabase {
         &self,
         user_id: u32,
     ) -> Result<Vec<crate::models::publication::Publication>> {
-        todo!()
+        let record: Vec<Publication>;
+        let res = query!(
+            "Select * from publications where submitter_id=$1",
+            user_id as i32
+        )
+        .map(|record| Publication {
+            id: record.id as u32,
+            title: record.title,
+            journal: record.journal,
+            status: record.status,
+            submitter_id: record.submitter_id as u32,
+            submiited_at: record.submitted_at.to_string(),
+        })
+        .fetch_all(&self.pool)
+        .await?;
+        return Ok(res);
     }
 }

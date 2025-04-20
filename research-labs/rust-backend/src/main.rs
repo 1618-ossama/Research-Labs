@@ -1,6 +1,7 @@
 mod models;
 use dotenv::dotenv;
 
+use handler::publication_handler::get_publications_by_user;
 use repositories::postgres_db::PostgresDatabase;
 use routes::publication_route_config;
 use serde::Deserialize;
@@ -30,6 +31,7 @@ async fn main() -> std::io::Result<()> {
     println!("api running at {host}:{port}");
     HttpServer::new(move || {
         App::new()
+            .service(get_publications_by_user)
             .configure(publication_route_config)
             .app_data(Data::new(db_pool.clone()))
     })
