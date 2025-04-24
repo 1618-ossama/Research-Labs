@@ -31,6 +31,8 @@ requiredEnvVars.forEach(varName => {
   }
 });
 */
+// console.log('.env is at:', path.resolve(__dirname, './.env'));
+// console.log('Current working directory:', process.cwd());
 
 const config: AppConfig = {
   env: process.env,

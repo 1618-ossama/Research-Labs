@@ -4,7 +4,7 @@ import errorHandler from "../utils/errorHandler";
 
 export type RegistrationInput = z.infer<typeof registrationSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-export type UpdateInput = z.infer<typeof updateSchema>;
+//export type UpdateInput = z.infer<typeof updateSchema>;
 
 export const registrationSchema = z.object({
   username: z
@@ -25,14 +25,15 @@ export const registrationSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z
+  identifier: z
     .string()
-    .email("Invalid email address"),
+    .min(1, "email address or username required"),
   password: z
     .string()
     .min(1, "Password is required"),
 });
 
+/*
 export const updateSchema = z.object({
   username: z
     .string()
@@ -45,7 +46,7 @@ export const updateSchema = z.object({
     .email("Invalid email address")
     .optional(),
 });
-
+*/
 export const validate = <T extends z.ZodTypeAny>(schema: T) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {

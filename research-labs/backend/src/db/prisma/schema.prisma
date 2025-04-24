@@ -5,8 +5,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://root:root@localhost:5432/dev-db"
+  url      = env("DATABASE_URL")
 }
+
+///"postgresql://root:root@localhost:5432/dev-db"
 
 model publication_files {
   id             String       @id @db.Uuid

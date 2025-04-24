@@ -41,17 +41,9 @@ app.use('/', authRouter);
 
 app.use(errorMiddleware);
 
-const demo: User = {
-  username: 'john_doe',
-  email: 'johndoe@example.com',
-  password_hash: 'hashedPassword123',
-  role: 'admin',
-}
-
 app.listen(config.port, async () => {
   try {
     console.log(`Server running on port: ${config.port}`);
-    //console.log(await getUserById(1));
   } catch (error) {
     console.error('Failed to initialize database:', error);
     process.exit(1);

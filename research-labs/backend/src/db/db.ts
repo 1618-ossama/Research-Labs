@@ -125,9 +125,7 @@ async function getAllUsers(): Promise<User[]> {
   }
 }
 
-type Simple_User = Omit<User, "password_hash">
-
-async function verifyUserCredentials(identifier: string, password: string): Promise<Simple_User> {
+async function verifyUserCredentials(identifier: string, password: string): Promise<User> {
   try {
     const user = await prisma.users.findFirst({
       where: {
@@ -146,8 +144,9 @@ async function verifyUserCredentials(identifier: string, password: string): Prom
     if (!isPasswordValid) {
       throw new errorHandler.AuthenticationError('Invalid credentials');
     }
-
-    return user as Simple_User;
+    // or use the select prisma option 
+    const { password_hash, created_at, updated_at, ...userReturn } = user;
+    return userReturn as User;
   } catch (error) {
     handlePrismaError(error);
   }

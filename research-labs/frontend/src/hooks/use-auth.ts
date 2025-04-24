@@ -1,36 +1,89 @@
-"use client"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { useState } from "react"
+// register type definition with bio and avatar ....
 
-export interface UserData {
-  name: string
-  email: string
-  avatar?: string
+type FormData = {
+  [key: string]: string;
+};
+
+type User = {
+  id?: number;
+  username: string;
+  email: string;
+  password_hash: string;
+  role: string;
 }
 
-export function useAuth() {
-  const mockUser: UserData = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-  }
+type AuthMode = 'login' | 'register';
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userData, setUserData] = useState<UserData | null>(null)
+type AuthResponse = {
+  token?: string;
+  user?: User;
+  error?: string;
+  message?: string;
+};
 
-  const toggleLoginStatus = () => {
-    if (isLoggedIn) {
-      setIsLoggedIn(false)
-      setUserData(null)
-    } else {
-      setIsLoggedIn(true)
-      setUserData(mockUser)
+export const useAuthForm = (mode: AuthMode) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<User | null>(null);
+  const router = useRouter();
+
+  const submitForm = async (formData: FormData) => {
+    setIsLoading(true);
+
+    try {
+      const endpoint = (mode === 'login') ? 'http://127.0.0.1:3003/login' : 'http://127.0.0.1:3003/register';
+
+      console.log('Submit to:', endpoint);
+      console.log('Form data:', formData);
+
+      const requestData = (mode === 'login')
+        ? { identifier: formData.identifier, password: formData.password }
+        : formData;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const data: AuthResponse = await response.json();
+      console.log('API Response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Authentication failed');
+      }
+
+      if (data.user) {
+        setUserData(data.user);
+      }
+
+      if (mode === 'login' && data.token) {
+        document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
+        router.push('/');
+      } else if (mode === 'register') {
+        router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+      }
+
+      return data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError(message);
+      console.error('Authentication error:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   return {
-    isLoggedIn,
+    isLoading,
+    error,
     userData,
-    toggleLoginStatus,
-  }
-}
+    submitForm,
+  };
+};

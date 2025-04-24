@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@lib/utils"
 import { Button } from "@components/ui/button"
 import { Card, CardContent } from "@components/ui/card"
@@ -5,9 +7,7 @@ import { Input } from "@components/ui/input"
 import { Label } from "@components/ui/label"
 import Image from "next/image"
 import Link from "next/link"
-
-
-// add onclick function to the buttons
+import { useAuthForm } from "@/hooks/use-auth"
 
 interface LogFormProps extends React.ComponentProps<"div"> {
   formPosition?: "left" | "right"
@@ -47,16 +47,31 @@ export function LogForm({
 }
 
 function LoginFormContent() {
+  const { isLoading, error, submitForm } = useAuthForm('login');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const data = Object.fromEntries(formData.entries()) as Record<string, string>;
+    console.log('Form data before submission:', data);
+    try {
+      await submitForm(data);
+    } catch {
+      console.log('submit error', error);
+
+    }
+  };
   return (
-    <form className="p-6 md:p-8">
+    <form className="p-6 md:p-8" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col items-center text-center">
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="text-balance text-muted-foreground">Login to your account</p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Label htmlFor="identifier">Identifier</Label>
+          <Input id="identifier" name="identifier" type="text" placeholder="username or email" required />
         </div>
         <div className="grid gap-2">
           <div className="flex items-center">
@@ -65,10 +80,10 @@ function LoginFormContent() {
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input id="password" name="password" type="password" required />
         </div>
-        <Button type="submit" className="w-full">
-          Login
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Logging in...' : 'Login'}
         </Button>
         <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
           <span className="relative z-10 bg-background px-2 text-muted-foreground">Or continue with</span>
