@@ -88,7 +88,7 @@ sequenceDiagram
     S-->>R: Joined group
 
 ```
-Class Diagram :
+## Class Diagram :
 ```mermaid
 classDiagram
     class User {
@@ -136,6 +136,35 @@ classDiagram
     User "1" --> "0..*" Group : leads
     Group "1" --> "0..*" GroupUser : has members
     User "1" --> "0..*" GroupUser : joins
+```
+
+## Sequence diagram
+```mermaid
+sequenceDiagram
+    participant Researcher
+    participant Application
+    participant Database
+
+    Researcher->>Application: Initiate Publication Submission
+    Application->>Application: Validate User Authentication/Authorization
+    Application->>Database: Query users table (Check submitter_id exists)
+    Database-->>Application: User validation result
+
+    alt User Validated
+        Application->>Database: Insert new record into publications table
+        Database-->>Application: New publication ID
+
+        Researcher->>Application: Upload Publication Files (e.g., PDF, LaTeX)
+        loop For each file
+            Application->>Application: Process File Upload
+            Application->>Database: Insert new record into publication_files table (linking to publication ID)
+            Database-->>Application: File record confirmation
+        end
+
+        Application->>Researcher: Confirmation of Publication Submission
+    else User Invalid
+        Application->>Researcher: Error: User not authorized or found
+    end
 
 ```
 ## License
