@@ -1,7 +1,8 @@
 use crate::errors;
 
-use crate::models::publication::Publication;
+use crate::models::publication::{Group, Publication, PublicationFile};
 use errors::Result;
+use uuid::Uuid;
 
 pub trait Database {
     async fn add_publication(
@@ -9,20 +10,20 @@ pub trait Database {
         title: String,
         journal: String,
         status: String,
-        submitter_id: i32,
+        submitter_id: Uuid,
     ) -> Result<()>;
-    async fn get_publication(&self, publication_id: u32) -> Result<Vec<Publication>>;
-    async fn get_publications_by_user(&self, user_id: u32) -> Result<Vec<Publication>>;
+    async fn get_publication(&self, publication_id: Uuid) -> Result<Vec<Publication>>;
+    async fn get_publications_by_user(&self, user_id: Uuid) -> Result<Vec<Publication>>;
     // PUBLICATION FILES
     async fn add_file(
         &self,
         id: Uuid,
         file_type: String,
         file_path: String,
-        publication_id: i32,
+        publication_id: Uuid,
     ) -> Result<()>;
 
-    async fn get_files_by_publication(&self, publication_id: i32) -> Result<Vec<PublicationFile>>;
+    async fn get_files_by_publication(&self, publication_id: Uuid) -> Result<Vec<PublicationFile>>;
 
     // GROUPS
     async fn add_group(
@@ -31,8 +32,8 @@ pub trait Database {
         title: String,
         description: String,
         status: String,
-        leader_id: i32,
+        leader_id: Uuid,
     ) -> Result<()>;
     async fn get_group(&self, group_id: Uuid) -> Result<Group>;
-    async fn add_user_to_group(&self, leader_id: i32, group_id: Uuid) -> Result<()>;
+    async fn add_user_to_group(&self, leader_id: Uuid, group_id: Uuid) -> Result<()>;
 }

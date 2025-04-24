@@ -3,11 +3,11 @@ use sqlx::types::time::OffsetDateTime;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Publication {
-    pub id: u32,
+    pub id: Uuid,
     pub title: String,
     pub journal: String,
     pub status: String,
-    pub submitter_id: u32,
+    pub submitter_id: Uuid,
     pub submiited_at: String,
 }
 
@@ -16,7 +16,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct User {
-    pub id: i32,
+    pub id: Uuid,
     pub username: String,
     pub email: String,
     pub password_hash: String,
@@ -29,7 +29,7 @@ pub struct PublicationFile {
     pub id: Uuid,
     pub file_type: String,
     pub file_path: String,
-    pub publication_id: i32,
+    pub publication_id: Uuid,
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
@@ -38,11 +38,11 @@ pub struct Group {
     pub title: String,
     pub description: String,
     pub status: String,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub leader_id: i32,
+    pub created_at: OffsetDateTime,
+    pub leader_id: Uuid,
 }
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct GroupUser {
-    pub leader_id: i32,
+    pub leader_id: Uuid,
     pub group_id: Uuid,
 }
