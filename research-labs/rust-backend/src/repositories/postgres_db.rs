@@ -21,7 +21,24 @@ impl PostgresDatabase {
     }
 }
 impl Database for PostgresDatabase {
-    async fn get_publication(&self, publication_id: Uuid) -> Result<Vec<Publication>> {
+    async fn get_publication(&self, publication_id: Uuid) -> Result<Publication> {
+        let record = sqlx::query!("SELECT * FROM publications WHERE id = $1", publication_id)
+            .fetch_one(&self.pool)
+            .await?;
+
+        let publication = Publication {
+            id: record.id,
+            title: record.title,
+            journal: record.journal,
+            status: record.status,
+            submitter_id: record.submitter_id,
+            submiited_at: record.submitted_at.to_string(),
+        };
+
+        Ok(publication)
+    }
+
+    async fn get_publications(&self) -> Result<Vec<Publication>> {
         let record: Vec<Publication>;
         let res = query!("Select * from publications")
             .map(|record| Publication {
@@ -128,6 +145,20 @@ impl Database for PostgresDatabase {
         .execute(&self.pool)
         .await?;
         Ok(())
+    }
+
+    async fn get_groups_by_user_id(&self, user_id: Uuid) -> Result<Vec<Group>> {
+        let groups = sqlx::query_as!(
+            Group,
+            "SELECT g.id, g.title, g.description, g.status, g.created_at, g.leader_id
+         FROM groups g
+         JOIN group_user gu ON gu.group_id = g.id
+         WHERE gu.leader_id = $1",
+            user_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(groups)
     }
 
     async fn get_group(&self, group_id: Uuid) -> Result<Group> {
