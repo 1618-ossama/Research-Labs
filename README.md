@@ -1,314 +1,143 @@
-# Research Lab Management Web App
+# 🧪 Research Lab Management Web App
 
-A comprehensive web application designed for managing research labs at universities. It facilitates interactions between **Professors**, **Doctorants (PhD Students)**, and **Admins**, and includes features such as supervision, collaboration, file sharing, notifications, activity tracking, and more.
+A full-stack web application for managing research publications, groups, and user collaboration within a laboratory environment. Built with **Rust (SQLx)** and **Node.js** on the backend, and **Next.js** on the frontend.
 
-## Features
+---
 
-- **User Roles & Permissions**
-  - **Admin**: Manages user registrations, roles, and permissions.
-  - **Professor**: Supervises Doctorants and manages research activities , Upload researchs and conferences.
-  - **Doctorant**: Participates in research, uploads papers, and communicates with Professors.
-  - **External Professor**: External supervisor with limited permissions.
+## 🚀 Features
 
-- **Communication & Collaboration**
-  - **Chat**: Real-time messaging between users.
-  - **Group Chats**: Create and participate in group discussions.
-  - **Follow Research Topics**: Follow specific research areas or tags.
+### ✅ User Management
+- Register and manage user accounts
+- Roles: `admin`, `researcher`, `leader`
+- Secure password storage using hashes
+- Email format validation
 
-- **Research Management**
-  - **Upload Research**: Upload research papers, conference submissions, and presentations.
-  - **Version Control**: Track changes to uploaded research.
+### 📚 Publications
+- Submit, update, and track publication status (`DRAFT`, `WAITING`, `APPROVED`)
+- Upload and manage associated files
+- Link publications to submitting researchers
 
-- **Activity Tracking**
-  - **Activity Log**: Track all user activities and system events.
+### 👥 Group Collaboration
+- Create and manage research groups
+- Assign leaders to groups
+- Add users to groups
+- Group status: `OPENED`, `CLOSED`, `DELETED`
 
-- **Notifications & Alerts**
-  - **User Notifications**: Professors are notified of new Doctorants in their department. Users receive updates about follows, uploads, and messages.
+### 🗃️ Database Schema (PostgreSQL)
+- Well-structured tables for users, publications, publication files, and groups
+- Foreign key relationships to enforce data integrity
 
-- **Security**
-  - **Multi-Factor Authentication (MFA)**: Secure login with support for JWT and biometric login.
+---
 
-## Technologies Used
+## 🛠️ Tech Stack
 
-- **Frontend**: Next.js
-- **Backend**: Node.js 
-- **Database**: PostgreSQL 
-- **Authentication**: JWT tokens + Biometric Login
-- **Version Control**: Git, GitHub
+### Backend
+- **Rust**: Safe and performant web backend
+- **SQLx**: Async PostgreSQL driver with compile-time SQL checking
+- **Actix-Web**: Fast and powerful web framework
+- **Node.js**: Optional support for additional backend microservices
+
+### Frontend
+- **Next.js**: React-based framework for SSR and SPA capabilities
+
+### Database
+- **PostgreSQL**: Reliable and scalable relational database
 
 ## Setup & Installation
 
 ### Prerequisites
-
+- Rust toolchain
+- docker compose
 - Node.js .
 - NPM .
 - PostgreSQL 
 
 ### Steps
 
-1. **Clone the repository**:
 
-    ```bash
-    git clone https://github.com/yourusername/research-lab-management.git
-    cd research-lab-management
-    ```
 
-2. **Install dependencies**:
 
-    ```bash
-    npm install
-    ```
-
-3. **Set up the database**:
-   - Build the container running PostgreSQL.
-   
-4. **Run the development server**:
-
-    ```bash
-    npm run development
-    ```
-
-5. **Open the app**:
-   - Open `http://localhost:3000` in your web browser.
-
-## License
-
-This project is licensed under the MIT License.
 
 ## Diagrams 
 
 User Registration Diagram :
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Frontend
-    participant API_Gateway
-    participant Auth_Service
-    participant User_Service
-    participant Notification_Service
-    participant Admin_Dashboard
+    participant R as Researcher
+    participant S as Server
+    participant DB as Database
 
-    User->>Frontend: Submit Registration Form
-    Frontend->>API_Gateway: POST /register (email, password, institution)
-    API_Gateway->>Auth_Service: Validate Uniqueness
-    Auth_Service->>User_Service: Create Pending User Record
-    User_Service->>Notification_Service: Send Verification Email
-    Notification_Service->>User: Email with Verification Link
-    User->>Frontend: Click Verification Link
-    Frontend->>API_Gateway: Confirm Email
-    API_Gateway->>User_Service: Mark Email as Verified
-    User_Service->>Notification_Service: Notify Admins (New Pending User)
-    Notification_Service->>Admin_Dashboard: Show Approval Request
-    Admin->>Admin_Dashboard: Review User Details
-    Admin_Dashboard->>API_Gateway: PUT /users/{id}/approve
-    API_Gateway->>Auth_Service: Check Admin Permissions
-    Auth_Service->>User_Service: Activate User Account
-    User_Service->>Notification_Service: Send Welcome Email
-    Notification_Service->>User: Account Activated Notification
-```
+    R->>S: Submit Publication (title, journal)
+    S->>DB: INSERT INTO publications
+    DB-->>S: OK
+    S-->>R: Publication created
 
+    R->>S: Upload File (file_path, file_type)
+    S->>DB: INSERT INTO publication_files
+    DB-->>S: OK
+    S-->>R: File added
 
-Authentication Diagram 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API_Gateway
-    participant Auth_Service
-    participant User_Service
-    participant Redis
-    participant DB
+    R->>S: Create Group (title, desc)
+    S->>DB: INSERT INTO groups
+    DB-->>S: OK
+    S-->>R: Group created
 
-    Client->>Auth_Service: POST /login (credentials)
-    Auth_Service->>User_Service: Verify credentials
-    User_Service-->>Auth_Service: User data + roles
-    Auth_Service->>Auth_Service: Generate JWT (access) + refresh token
-    Auth_Service->>Redis: Store refresh token with metadata
-    Auth_Service-->>Client: Return JWT + refresh token
+    R->>S: Join Group
+    S->>DB: INSERT INTO group_user
+    DB-->>S: OK
+    S-->>R: Joined group
 
-    loop Token Usage
-        Client->>API_Gateway: Request with Authorization: Bearer <JWT>
-        API_Gateway->>Auth_Service: Introspect token
-        Auth_Service->>Auth_Service: Verify signature, expiry, issuer
-        Auth_Service->>Redis: Check revocation list
-        Auth_Service-->>API_Gateway: Token claims (user_id, roles, scopes)
-
-        API_Gateway->>Auth_Service: Check permissions for endpoint
-        Auth_Service-->>API_Gateway: Permission allowed/denied
-
-        alt Authorized
-            API_Gateway->>DB: Forward request with user context
-            DB-->>Client: Return data
-        else Unauthorized
-            API_Gateway-->>Client: 403 Forbidden
-        end
-    end
-
-    Client->>Auth_Service: POST /token/refresh (refresh token)
-    Auth_Service->>Redis: Validate refresh token
-    alt Valid
-        Auth_Service->>Auth_Service: Generate new JWT + new refresh token
-        Auth_Service->>Redis: Revoke old, store new refresh token
-        Auth_Service-->>Client: New tokens
-    else Invalid
-        Auth_Service-->>Client: 401 Unauthorized
-    end
 ```
 Class Diagram :
 ```mermaid
 classDiagram
-    class Users {
-        +UUID id PK
-        +VARCHAR email UNIQUE
-        +VARCHAR password_hash
-        +VARCHAR first_name
-        +VARCHAR last_name
-        +VARCHAR avatar_url
-        +BOOLEAN is_active
-        +TIMESTAMP created_at
-        +TIMESTAMP last_login
-        +TIMESTAMP last_updated_at
-        +UUID supervisor_id FK
+    class User {
+        UUID id
+        String username
+        String email
+        String password_hash
+        String role (admin | researcher | leader)
+        Timestamp created_at
+        Timestamp updated_at
     }
 
-    class Roles {
-        +UUID id PK
-        +VARCHAR name
-        <<Possible values: Admin, Professor, Doctorant, External Professor>>
+    class Publication {
+        UUID id
+        String title
+        Text journal
+        String status (DRAFT | APPROVED | WAITING)
+        UUID submitter_id
+        Timestamp submitted_at
     }
 
-    class Permissions {
-        +UUID id PK
-        +VARCHAR name
+    class PublicationFile {
+        UUID id
+        String file_type
+        String file_path
+        UUID publication_id
     }
 
-    class RolePermissions {
-        +UUID role_id PK, FK
-        +UUID permission_id PK, FK
+    class Group {
+        UUID id
+        String title
+        String description
+        String status (OPENED | CLOSED | DELETED)
+        Timestamp created_at
+        UUID leader_id
     }
 
-    class UserRoles {
-        +UUID user_id PK, FK
-        +UUID role_id PK, FK
+    class GroupUser {
+        UUID leader_id
+        UUID group_id
     }
 
-    class Publications {
-        +UUID id PK
-        +VARCHAR title
-        +VARCHAR status
-        +UUID submitter_id FK
-        +TIMESTAMP submitted_at
-        +TEXT[] keywords
-        +TEXT content
-    }
+    User "1" --> "0..*" Publication : submits
+    Publication "1" --> "0..*" PublicationFile : has files
+    User "1" --> "0..*" Group : leads
+    Group "1" --> "0..*" GroupUser : has members
+    User "1" --> "0..*" GroupUser : joins
 
-    class PublicationFiles {
-        +UUID id PK
-        +UUID publication_id FK
-        +VARCHAR storage_path
-        +VARCHAR file_type
-    }
-
-    class PublicationAuthors {
-        +UUID publication_id PK, FK
-        +UUID user_id PK, FK
-    }
-
-    class Chats {
-        +UUID id PK
-        +UUID user1_id FK
-        +UUID user2_id FK
-        +TIMESTAMP started_at
-        +TIMESTAMP last_message_at
-    }
-
-    class GroupChats {
-        +UUID id PK
-        +VARCHAR name
-        +TIMESTAMP created_at
-    }
-
-    class GroupChatMembers {
-        +UUID group_chat_id PK, FK
-        +UUID user_id PK, FK
-        +TIMESTAMP joined_at
-    }
-
-    class Messages {
-        +UUID id PK
-        +UUID chat_id FK  
-        +UUID sender_id FK
-        +TEXT content
-        +BOOLEAN is_read
-        +TIMESTAMP sent_at
-    }
-
-    class ResearchTopics {
-        +UUID id PK
-        +VARCHAR name
-        +TEXT description
-    }
-
-    class UserResearchTopics {
-        +UUID user_id PK, FK
-        +UUID research_topic_id PK, FK
-        +TIMESTAMP followed_at
-    }
-
-    class Notifications {
-        +UUID id PK
-        +UUID user_id FK
-        +VARCHAR type
-        +VARCHAR title
-        +TEXT message
-        +BOOLEAN is_read
-        +TIMESTAMP created_at
-    }
-
-    class Comments {
-        +UUID id PK
-        +UUID publication_id FK
-        +UUID author_id FK
-        +TEXT content
-        +UUID parent_id FK
-        +TIMESTAMP posted_at
-        +BOOLEAN is_edited
-    }
-
-    class ActivityLog {
-        +UUID id PK
-        +UUID user_id FK
-        +VARCHAR action
-        +TIMESTAMP created_at
-    }
-
-    Users "1" --> "*" UserRoles : "assigned"
-    Roles "1" --> "*" UserRoles : "grants"
-    Roles "1" --> "*" RolePermissions : "grants"
-    Permissions "1" --> "*" RolePermissions : "assigned to"
-
-    Users "1" --> "*" Publications : "submits"
-    Publications "1" --> "*" PublicationFiles : "has"
-    Publications "1" --> "*" PublicationAuthors : "written by"
-    Users "1" --> "*" PublicationAuthors : "co-author of"
-
-    Users "1" --> "*" Chats : "initiates"
-    Chats "1" --> "*" Messages : "contains"
-    Users "1" --> "*" Messages : "sends"
-
-    GroupChats "1" --> "*" GroupChatMembers : "has"
-    Users "1" --> "*" GroupChatMembers : "member"
-    GroupChats "1" --> "*" Messages : "contains"  %% Group messages
-
-    Users "1" --> "*" Notifications : "receives"
-
-    Publications "1" --> "*" Comments : "has"
-    Users "1" --> "*" Comments : "writes"
-    Comments "0..1" --> "*" Comments : "replies to"
-
-    Users "1" --> "*" UserResearchTopics : "follows"
-    ResearchTopics "1" --> "*" UserResearchTopics : "followed by"
-
-    Users "1" --> "*" ActivityLog : "generates"
-
-    Users "1" --> "*" Users : "supervises"
 ```
+## License
+
+This project is licensed under the MIT License.
