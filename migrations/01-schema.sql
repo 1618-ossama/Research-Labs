@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     password_hash TEXT NOT NULL,
@@ -11,11 +11,11 @@ CREATE TABLE users (
 
 -- Table for publications 
 CREATE TABLE publications (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     title VARCHAR(500) NOT NULL,
     journal TEXT NOT NULL,
     status VARCHAR(50) CHECK (status IN ('DRAFT', 'APPROVED', 'WAITING')) NOT NULL DEFAULT 'DRAFT',
-    submitter_id SERIAL NOT NULL REFERENCES users(id),
+    submitter_id UUID NOT NULL REFERENCES users(id),
     submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -24,9 +24,24 @@ CREATE TABLE publication_files (
     id UUID PRIMARY KEY,
     file_type VARCHAR(50) NOT NULL,
     file_path VARCHAR(50) NOT NULL,
-    publication_id SERIAL NOT NULL
+    publication_id UUID NOT NULL 
 
 );
+
+CREATE TABLE groups(
+    id UUID PRIMARY KEY,
+    title VARCHAR(50) NOT NULL DEFAULT 'default title',
+    description VARCHAR(50) NOT NULL DEFAULT 'default title',
+    status VARCHAR(50) CHECK (status IN ('OPENED', 'CLOSED', 'DELETED')) NOT NULL DEFAULT 'OPENED',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    leader_id UUID NOT NULL REFERENCES users(id)
+);
+
+CREATE TABLE group_user(
+    leader_id UUID NOT NULL REFERENCES users(id),
+    group_id UUID NOT NULL REFERENCES groups(id)
+);
+
 
 -- -- Table for experiments
 -- CREATE TABLE IF NOT EXISTS experiments (

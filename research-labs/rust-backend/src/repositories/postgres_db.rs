@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::models::publication::{Publication, PublicationFile};
+use crate::models::publication::{Group, Publication, PublicationFile};
 use sqlx::postgres::Postgres;
 use sqlx::{query, Pool};
 use uuid::Uuid;
@@ -21,15 +21,15 @@ impl PostgresDatabase {
     }
 }
 impl Database for PostgresDatabase {
-    async fn get_publication(&self, publication_id: u32) -> Result<Vec<Publication>> {
+    async fn get_publication(&self, publication_id: Uuid) -> Result<Vec<Publication>> {
         let record: Vec<Publication>;
         let res = query!("Select * from publications")
             .map(|record| Publication {
-                id: record.id as u32,
+                id: record.id,
                 title: record.title,
                 journal: record.journal,
                 status: record.status,
-                submitter_id: record.submitter_id as u32,
+                submitter_id: record.submitter_id,
                 submiited_at: record.submitted_at.to_string(),
             })
             .fetch_all(&self.pool)
@@ -41,7 +41,7 @@ impl Database for PostgresDatabase {
         title: String,
         journal: String,
         status: String,
-        submitter_id: i32,
+        submitter_id: Uuid,
     ) -> Result<()> {
         sqlx::query!(
             "insert into publications(title,journal,status,submitter_id) values($1,$2,$3,$4)",
@@ -58,23 +58,20 @@ impl Database for PostgresDatabase {
     }
     async fn get_publications_by_user(
         &self,
-        user_id: u32,
+        user_id: Uuid,
     ) -> Result<Vec<crate::models::publication::Publication>> {
         let record: Vec<Publication>;
-        let res = query!(
-            "Select * from publications where submitter_id=$1",
-            user_id as i32
-        )
-        .map(|record| Publication {
-            id: record.id as u32,
-            title: record.title,
-            journal: record.journal,
-            status: record.status,
-            submitter_id: record.submitter_id as u32,
-            submiited_at: record.submitted_at.to_string(),
-        })
-        .fetch_all(&self.pool)
-        .await?;
+        let res = query!("Select * from publications where submitter_id=$1", user_id)
+            .map(|record| Publication {
+                id: record.id,
+                title: record.title,
+                journal: record.journal,
+                status: record.status,
+                submitter_id: record.submitter_id,
+                submiited_at: record.submitted_at.to_string(),
+            })
+            .fetch_all(&self.pool)
+            .await?;
         return Ok(res);
     }
     // PUBLICATION FILES
@@ -83,7 +80,7 @@ impl Database for PostgresDatabase {
         id: Uuid,
         file_type: String,
         file_path: String,
-        publication_id: i32,
+        publication_id: Uuid,
     ) -> Result<()> {
         sqlx::query!(
             "INSERT INTO publication_files (id, file_type, file_path, publication_id)
@@ -98,7 +95,7 @@ impl Database for PostgresDatabase {
         Ok(())
     }
 
-    async fn get_files_by_publication(&self, publication_id: i32) -> Result<Vec<PublicationFile>> {
+    async fn get_files_by_publication(&self, publication_id: Uuid) -> Result<Vec<PublicationFile>> {
         let files = sqlx::query_as!(
             PublicationFile,
             "SELECT id, file_type, file_path, publication_id
@@ -117,7 +114,7 @@ impl Database for PostgresDatabase {
         title: String,
         description: String,
         status: String,
-        leader_id: i32,
+        leader_id: Uuid,
     ) -> Result<()> {
         sqlx::query!(
             "INSERT INTO groups (id, title, description, status, leader_id)
@@ -146,7 +143,7 @@ impl Database for PostgresDatabase {
     }
 
     // GROUP-USER
-    async fn add_user_to_group(&self, leader_id: i32, group_id: Uuid) -> Result<()> {
+    async fn add_user_to_group(&self, leader_id: Uuid, group_id: Uuid) -> Result<()> {
         sqlx::query!(
             "INSERT INTO group_user (leader_id, group_id) VALUES ($1, $2)",
             leader_id,
