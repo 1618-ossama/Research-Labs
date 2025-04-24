@@ -1,12 +1,9 @@
 mod models;
 use dotenv::dotenv;
 
-use handler::publication_handler::get_publications_by_user;
 use repositories::postgres_db::PostgresDatabase;
-use routes::publication_route_config;
-use serde::Deserialize;
-use sqlx::{MySqlPool, PgPool};
-use std::sync::Mutex;
+use routes::route_config;
+use sqlx::PgPool;
 mod handler;
 mod routes;
 
@@ -14,7 +11,6 @@ mod repositories;
 use actix_web::{web::Data, App, HttpServer};
 use std::env;
 pub mod errors;
-use errors::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -31,8 +27,7 @@ async fn main() -> std::io::Result<()> {
     println!("api running at {host}:{port}");
     HttpServer::new(move || {
         App::new()
-            .service(get_publications_by_user)
-            .configure(publication_route_config)
+            .configure(route_config)
             .app_data(Data::new(db_pool.clone()))
     })
     .bind(format!("{host}:{port}"))?
