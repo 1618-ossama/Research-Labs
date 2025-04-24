@@ -10,7 +10,7 @@ pub enum Error {
 }
 impl Error {
     pub fn custom(val: impl std::fmt::Display) -> Self {
-        Self::custom(val.to_string())
+        Self::Custom(val.to_string())
     }
 }
 impl From<&str> for Error {
