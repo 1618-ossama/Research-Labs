@@ -1,4 +1,5 @@
 mod models;
+use actix_cors::Cors;
 use dotenv::dotenv;
 
 use repositories::postgres_db::PostgresDatabase;
@@ -26,9 +27,14 @@ async fn main() -> std::io::Result<()> {
 
     println!("api running at {host}:{port}");
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin() // or .allowed_origin("http://localhost:3000")
+            .allow_any_method()
+            .allow_any_header();
         App::new()
             .configure(route_config)
             .app_data(Data::new(db_pool.clone()))
+            .wrap(cors)
     })
     .bind(format!("{host}:{port}"))?
     .run()

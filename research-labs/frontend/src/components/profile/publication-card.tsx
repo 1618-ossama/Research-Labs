@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookOpenIcon, DownloadIcon, ExternalLinkIcon } from "lucide-react"
 
+
 interface Publication {
   id: string
   title: string
@@ -18,6 +19,8 @@ interface Publication {
 interface PublicationCardProps {
   publication: Publication
 }
+
+
 
 export default function PublicationCard({ publication }: PublicationCardProps) {
   return (

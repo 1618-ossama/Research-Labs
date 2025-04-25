@@ -1,7 +1,17 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt, { Secret, SignOptions, JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
-import config from '../config/config';
-import { type TokenPayload, type CookieOptions, Role, User } from "../utils/types";
+import { NextFunction, Request, Response } from "express";
+import jwt, {
+  JsonWebTokenError,
+  Secret,
+  SignOptions,
+  TokenExpiredError,
+} from "jsonwebtoken";
+import config from "../config/config";
+import {
+  type CookieOptions,
+  Role,
+  type TokenPayload,
+  User,
+} from "../utils/types";
 import * as errorHandler from "../utils/errorHandler";
 
 declare global {
@@ -29,9 +39,9 @@ const verifyToken = (token: string): TokenPayload => {
     return jwt.verify(token, config.jwtSecret) as TokenPayload;
   } catch (error) {
     if (error instanceof TokenExpiredError) {
-      throw new errorHandler.InvalidTokenError('Token has expired');
+      throw new errorHandler.InvalidTokenError("Token has expired");
     } else if (error instanceof JsonWebTokenError) {
-      throw new errorHandler.InvalidTokenError('Invalid token');
+      throw new errorHandler.InvalidTokenError("Invalid token");
     }
     throw error;
   }
@@ -42,17 +52,17 @@ const verifyToken = (token: string): TokenPayload => {
  * @param res - Express response object
  * @param accessToken - JWT token to set in cookies
  */
-const cookie_name = 'AuthToken';
+const cookie_name = "AuthToken";
 const setAuthCookies = (res: Response, accessToken: string): void => {
   res.cookie(cookie_name, accessToken, {
     httpOnly: true,
     secure: false, // temporary option
-    maxAge: parseInt(config.jwtExpiresIn) * 1000
+    maxAge: parseInt(config.jwtExpiresIn) * 1000,
   } as CookieOptions);
 };
 
 const clearAuthCookie = (res: Response): void => {
-  res.clearCookie('token', {
+  res.clearCookie("token", {
     httpOnly: true,
     secure: true,
   });
@@ -68,7 +78,7 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies?.[cookie_name];
 
   if (!token) {
-    return next(new errorHandler.UnauthorizedError('No token provided'));
+    return next(new errorHandler.UnauthorizedError("No token provided"));
   }
   try {
     const decoded = verifyToken(token);
@@ -87,21 +97,23 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
 const authorize = (allowedRoles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return next(new errorHandler.UnauthorizedError('Unauthorized'));
+      return next(new errorHandler.UnauthorizedError("Unauthorized"));
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return next(new errorHandler.UnauthorizedError('Insufficient permissions'));
+      return next(
+        new errorHandler.UnauthorizedError("Insufficient permissions"),
+      );
     }
     next();
   };
 };
 
 export {
-  generateToken,
-  verifyToken,
-  setAuthCookies,
-  clearAuthCookie,
   authenticate,
-  authorize
+  authorize,
+  clearAuthCookie,
+  generateToken,
+  setAuthCookies,
+  verifyToken,
 };

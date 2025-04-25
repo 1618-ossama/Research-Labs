@@ -15,3 +15,5 @@ time = { version = "0.3", features = ["serde"] }
 chrono = { version = "0.4", features = ["serde"] }  # <--- this is what you're missing
 dotenv = "0.15"
 
+actix-cors = "0.7"
+

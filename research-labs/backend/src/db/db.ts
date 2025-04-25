@@ -33,13 +33,16 @@ function handlePrismaError(error: unknown): never {
   throw new errorHandler.ApplicationError('Unexpected error');
 }
 
-async function createUser(user_data: User): Promise<number | undefined> {
+async function createUser(user_data: User): Promise<string> {
+    console.log(user_data);
   try {
     if (!user_data.username || !user_data.email || !user_data.password_hash) {
       throw new errorHandler.ValidationError('Missing required fields');
     }
 
+    console.log(user_data);
     const hashedPassword = await bcrypt.hash(user_data.password_hash, config.saltRounds);
+
     const newUser = await prisma.users.create({
       data: {
         ...user_data,
@@ -47,13 +50,13 @@ async function createUser(user_data: User): Promise<number | undefined> {
       },
     });
 
-    return newUser.id;
+    return newUser.id as string;
   } catch (error) {
     handlePrismaError(error);
   }
 }
 
-async function getUserById(id: number): Promise<User | null> {
+async function getUserById(id: string): Promise<User | null> {
   try {
     const user = await prisma.users.findUnique({
       where: {
@@ -78,7 +81,7 @@ async function getUserByEmail(email: string): Promise<User | null> {
   }
 }
 
-async function updateUser(userId: number, user_data: Partial<User>): Promise<number | undefined> {
+async function updateUser(userId: string, user_data: Partial<User>): Promise<string | undefined> {
   try {
     if (!user_data) {
       throw new errorHandler.ValidationError('No data to update');
@@ -102,7 +105,7 @@ async function updateUser(userId: number, user_data: Partial<User>): Promise<num
   }
 }
 
-async function deleteUser(userId: number): Promise<boolean> {
+async function deleteUser(userId: string): Promise<boolean> {
   try {
     const deletedUser = await prisma.users.delete({
       where: {

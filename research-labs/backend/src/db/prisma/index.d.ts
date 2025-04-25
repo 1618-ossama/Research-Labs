@@ -28,6 +28,11 @@ export type publications = $Result.DefaultSelection<Prisma.$publicationsPayload>
  * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
  */
 export type users = $Result.DefaultSelection<Prisma.$usersPayload>
+/**
+ * Model groups
+ * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+ */
+export type groups = $Result.DefaultSelection<Prisma.$groupsPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -183,6 +188,16 @@ export class PrismaClient<
     * ```
     */
   get users(): Prisma.usersDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.groups`: Exposes CRUD operations for the **groups** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Groups
+    * const groups = await prisma.groups.findMany()
+    * ```
+    */
+  get groups(): Prisma.groupsDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -625,7 +640,8 @@ export namespace Prisma {
   export const ModelName: {
     publication_files: 'publication_files',
     publications: 'publications',
-    users: 'users'
+    users: 'users',
+    groups: 'groups'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -644,7 +660,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "publication_files" | "publications" | "users"
+      modelProps: "publication_files" | "publications" | "users" | "groups"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -870,6 +886,80 @@ export namespace Prisma {
           }
         }
       }
+      groups: {
+        payload: Prisma.$groupsPayload<ExtArgs>
+        fields: Prisma.groupsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.groupsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.groupsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>
+          }
+          findFirst: {
+            args: Prisma.groupsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.groupsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>
+          }
+          findMany: {
+            args: Prisma.groupsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>[]
+          }
+          create: {
+            args: Prisma.groupsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>
+          }
+          createMany: {
+            args: Prisma.groupsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.groupsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>[]
+          }
+          delete: {
+            args: Prisma.groupsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>
+          }
+          update: {
+            args: Prisma.groupsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>
+          }
+          deleteMany: {
+            args: Prisma.groupsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.groupsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.groupsUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>[]
+          }
+          upsert: {
+            args: Prisma.groupsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$groupsPayload>
+          }
+          aggregate: {
+            args: Prisma.GroupsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGroups>
+          }
+          groupBy: {
+            args: Prisma.groupsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GroupsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.groupsCountArgs<ExtArgs>
+            result: $Utils.Optional<GroupsCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -957,6 +1047,7 @@ export namespace Prisma {
     publication_files?: publication_filesOmit
     publications?: publicationsOmit
     users?: usersOmit
+    groups?: groupsOmit
   }
 
   /* Types for Logging */
@@ -1082,10 +1173,12 @@ export namespace Prisma {
    */
 
   export type UsersCountOutputType = {
+    groups: number
     publications: number
   }
 
   export type UsersCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    groups?: boolean | UsersCountOutputTypeCountGroupsArgs
     publications?: boolean | UsersCountOutputTypeCountPublicationsArgs
   }
 
@@ -1098,6 +1191,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the UsersCountOutputType
      */
     select?: UsersCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UsersCountOutputType without action
+   */
+  export type UsersCountOutputTypeCountGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: groupsWhereInput
   }
 
   /**
@@ -1118,32 +1218,22 @@ export namespace Prisma {
 
   export type AggregatePublication_files = {
     _count: Publication_filesCountAggregateOutputType | null
-    _avg: Publication_filesAvgAggregateOutputType | null
-    _sum: Publication_filesSumAggregateOutputType | null
     _min: Publication_filesMinAggregateOutputType | null
     _max: Publication_filesMaxAggregateOutputType | null
-  }
-
-  export type Publication_filesAvgAggregateOutputType = {
-    publication_id: number | null
-  }
-
-  export type Publication_filesSumAggregateOutputType = {
-    publication_id: number | null
   }
 
   export type Publication_filesMinAggregateOutputType = {
     id: string | null
     file_type: string | null
     file_path: string | null
-    publication_id: number | null
+    publication_id: string | null
   }
 
   export type Publication_filesMaxAggregateOutputType = {
     id: string | null
     file_type: string | null
     file_path: string | null
-    publication_id: number | null
+    publication_id: string | null
   }
 
   export type Publication_filesCountAggregateOutputType = {
@@ -1154,14 +1244,6 @@ export namespace Prisma {
     _all: number
   }
 
-
-  export type Publication_filesAvgAggregateInputType = {
-    publication_id?: true
-  }
-
-  export type Publication_filesSumAggregateInputType = {
-    publication_id?: true
-  }
 
   export type Publication_filesMinAggregateInputType = {
     id?: true
@@ -1223,18 +1305,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: Publication_filesAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: Publication_filesSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: Publication_filesMinAggregateInputType
@@ -1265,8 +1335,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: Publication_filesCountAggregateInputType | true
-    _avg?: Publication_filesAvgAggregateInputType
-    _sum?: Publication_filesSumAggregateInputType
     _min?: Publication_filesMinAggregateInputType
     _max?: Publication_filesMaxAggregateInputType
   }
@@ -1275,10 +1343,8 @@ export namespace Prisma {
     id: string
     file_type: string
     file_path: string
-    publication_id: number
+    publication_id: string
     _count: Publication_filesCountAggregateOutputType | null
-    _avg: Publication_filesAvgAggregateOutputType | null
-    _sum: Publication_filesSumAggregateOutputType | null
     _min: Publication_filesMinAggregateOutputType | null
     _max: Publication_filesMaxAggregateOutputType | null
   }
@@ -1348,7 +1414,7 @@ export namespace Prisma {
       id: string
       file_type: string
       file_path: string
-      publication_id: number
+      publication_id: string
     }, ExtArgs["result"]["publication_files"]>
     composites: {}
   }
@@ -1776,7 +1842,7 @@ export namespace Prisma {
     readonly id: FieldRef<"publication_files", 'String'>
     readonly file_type: FieldRef<"publication_files", 'String'>
     readonly file_path: FieldRef<"publication_files", 'String'>
-    readonly publication_id: FieldRef<"publication_files", 'Int'>
+    readonly publication_id: FieldRef<"publication_files", 'String'>
   }
     
 
@@ -2197,37 +2263,25 @@ export namespace Prisma {
 
   export type AggregatePublications = {
     _count: PublicationsCountAggregateOutputType | null
-    _avg: PublicationsAvgAggregateOutputType | null
-    _sum: PublicationsSumAggregateOutputType | null
     _min: PublicationsMinAggregateOutputType | null
     _max: PublicationsMaxAggregateOutputType | null
   }
 
-  export type PublicationsAvgAggregateOutputType = {
-    id: number | null
-    submitter_id: number | null
-  }
-
-  export type PublicationsSumAggregateOutputType = {
-    id: number | null
-    submitter_id: number | null
-  }
-
   export type PublicationsMinAggregateOutputType = {
-    id: number | null
+    id: string | null
     title: string | null
     journal: string | null
     status: string | null
-    submitter_id: number | null
+    submitter_id: string | null
     submitted_at: Date | null
   }
 
   export type PublicationsMaxAggregateOutputType = {
-    id: number | null
+    id: string | null
     title: string | null
     journal: string | null
     status: string | null
-    submitter_id: number | null
+    submitter_id: string | null
     submitted_at: Date | null
   }
 
@@ -2241,16 +2295,6 @@ export namespace Prisma {
     _all: number
   }
 
-
-  export type PublicationsAvgAggregateInputType = {
-    id?: true
-    submitter_id?: true
-  }
-
-  export type PublicationsSumAggregateInputType = {
-    id?: true
-    submitter_id?: true
-  }
 
   export type PublicationsMinAggregateInputType = {
     id?: true
@@ -2318,18 +2362,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: PublicationsAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: PublicationsSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: PublicationsMinAggregateInputType
@@ -2360,22 +2392,18 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: PublicationsCountAggregateInputType | true
-    _avg?: PublicationsAvgAggregateInputType
-    _sum?: PublicationsSumAggregateInputType
     _min?: PublicationsMinAggregateInputType
     _max?: PublicationsMaxAggregateInputType
   }
 
   export type PublicationsGroupByOutputType = {
-    id: number
+    id: string
     title: string
     journal: string
     status: string
-    submitter_id: number
+    submitter_id: string
     submitted_at: Date
     _count: PublicationsCountAggregateOutputType | null
-    _avg: PublicationsAvgAggregateOutputType | null
-    _sum: PublicationsSumAggregateOutputType | null
     _min: PublicationsMinAggregateOutputType | null
     _max: PublicationsMaxAggregateOutputType | null
   }
@@ -2455,11 +2483,11 @@ export namespace Prisma {
       users: Prisma.$usersPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: number
+      id: string
       title: string
       journal: string
       status: string
-      submitter_id: number
+      submitter_id: string
       submitted_at: Date
     }, ExtArgs["result"]["publications"]>
     composites: {}
@@ -2886,11 +2914,11 @@ export namespace Prisma {
    * Fields of the publications model
    */
   interface publicationsFieldRefs {
-    readonly id: FieldRef<"publications", 'Int'>
+    readonly id: FieldRef<"publications", 'String'>
     readonly title: FieldRef<"publications", 'String'>
     readonly journal: FieldRef<"publications", 'String'>
     readonly status: FieldRef<"publications", 'String'>
-    readonly submitter_id: FieldRef<"publications", 'Int'>
+    readonly submitter_id: FieldRef<"publications", 'String'>
     readonly submitted_at: FieldRef<"publications", 'DateTime'>
   }
     
@@ -3336,22 +3364,12 @@ export namespace Prisma {
 
   export type AggregateUsers = {
     _count: UsersCountAggregateOutputType | null
-    _avg: UsersAvgAggregateOutputType | null
-    _sum: UsersSumAggregateOutputType | null
     _min: UsersMinAggregateOutputType | null
     _max: UsersMaxAggregateOutputType | null
   }
 
-  export type UsersAvgAggregateOutputType = {
-    id: number | null
-  }
-
-  export type UsersSumAggregateOutputType = {
-    id: number | null
-  }
-
   export type UsersMinAggregateOutputType = {
-    id: number | null
+    id: string | null
     username: string | null
     email: string | null
     password_hash: string | null
@@ -3361,7 +3379,7 @@ export namespace Prisma {
   }
 
   export type UsersMaxAggregateOutputType = {
-    id: number | null
+    id: string | null
     username: string | null
     email: string | null
     password_hash: string | null
@@ -3381,14 +3399,6 @@ export namespace Prisma {
     _all: number
   }
 
-
-  export type UsersAvgAggregateInputType = {
-    id?: true
-  }
-
-  export type UsersSumAggregateInputType = {
-    id?: true
-  }
 
   export type UsersMinAggregateInputType = {
     id?: true
@@ -3459,18 +3469,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: UsersAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: UsersSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: UsersMinAggregateInputType
@@ -3501,14 +3499,12 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UsersCountAggregateInputType | true
-    _avg?: UsersAvgAggregateInputType
-    _sum?: UsersSumAggregateInputType
     _min?: UsersMinAggregateInputType
     _max?: UsersMaxAggregateInputType
   }
 
   export type UsersGroupByOutputType = {
-    id: number
+    id: string
     username: string
     email: string
     password_hash: string
@@ -3516,8 +3512,6 @@ export namespace Prisma {
     created_at: Date | null
     updated_at: Date | null
     _count: UsersCountAggregateOutputType | null
-    _avg: UsersAvgAggregateOutputType | null
-    _sum: UsersSumAggregateOutputType | null
     _min: UsersMinAggregateOutputType | null
     _max: UsersMaxAggregateOutputType | null
   }
@@ -3544,6 +3538,7 @@ export namespace Prisma {
     role?: boolean
     created_at?: boolean
     updated_at?: boolean
+    groups?: boolean | users$groupsArgs<ExtArgs>
     publications?: boolean | users$publicationsArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["users"]>
@@ -3580,6 +3575,7 @@ export namespace Prisma {
 
   export type usersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "email" | "password_hash" | "role" | "created_at" | "updated_at", ExtArgs["result"]["users"]>
   export type usersInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    groups?: boolean | users$groupsArgs<ExtArgs>
     publications?: boolean | users$publicationsArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -3589,10 +3585,11 @@ export namespace Prisma {
   export type $usersPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "users"
     objects: {
+      groups: Prisma.$groupsPayload<ExtArgs>[]
       publications: Prisma.$publicationsPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: number
+      id: string
       username: string
       email: string
       password_hash: string
@@ -3993,6 +3990,7 @@ export namespace Prisma {
    */
   export interface Prisma__usersClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    groups<T extends users$groupsArgs<ExtArgs> = {}>(args?: Subset<T, users$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     publications<T extends users$publicationsArgs<ExtArgs> = {}>(args?: Subset<T, users$publicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$publicationsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4023,7 +4021,7 @@ export namespace Prisma {
    * Fields of the users model
    */
   interface usersFieldRefs {
-    readonly id: FieldRef<"users", 'Int'>
+    readonly id: FieldRef<"users", 'String'>
     readonly username: FieldRef<"users", 'String'>
     readonly email: FieldRef<"users", 'String'>
     readonly password_hash: FieldRef<"users", 'String'>
@@ -4418,6 +4416,30 @@ export namespace Prisma {
   }
 
   /**
+   * users.groups
+   */
+  export type users$groupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    where?: groupsWhereInput
+    orderBy?: groupsOrderByWithRelationInput | groupsOrderByWithRelationInput[]
+    cursor?: groupsWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupsScalarFieldEnum | GroupsScalarFieldEnum[]
+  }
+
+  /**
    * users.publications
    */
   export type users$publicationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4457,6 +4479,1077 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: usersInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model groups
+   */
+
+  export type AggregateGroups = {
+    _count: GroupsCountAggregateOutputType | null
+    _min: GroupsMinAggregateOutputType | null
+    _max: GroupsMaxAggregateOutputType | null
+  }
+
+  export type GroupsMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    description: string | null
+    status: string | null
+    created_at: Date | null
+    leader_id: string | null
+  }
+
+  export type GroupsMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    description: string | null
+    status: string | null
+    created_at: Date | null
+    leader_id: string | null
+  }
+
+  export type GroupsCountAggregateOutputType = {
+    id: number
+    title: number
+    description: number
+    status: number
+    created_at: number
+    leader_id: number
+    _all: number
+  }
+
+
+  export type GroupsMinAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    status?: true
+    created_at?: true
+    leader_id?: true
+  }
+
+  export type GroupsMaxAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    status?: true
+    created_at?: true
+    leader_id?: true
+  }
+
+  export type GroupsCountAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    status?: true
+    created_at?: true
+    leader_id?: true
+    _all?: true
+  }
+
+  export type GroupsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which groups to aggregate.
+     */
+    where?: groupsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of groups to fetch.
+     */
+    orderBy?: groupsOrderByWithRelationInput | groupsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: groupsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` groups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` groups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned groups
+    **/
+    _count?: true | GroupsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GroupsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GroupsMaxAggregateInputType
+  }
+
+  export type GetGroupsAggregateType<T extends GroupsAggregateArgs> = {
+        [P in keyof T & keyof AggregateGroups]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGroups[P]>
+      : GetScalarType<T[P], AggregateGroups[P]>
+  }
+
+
+
+
+  export type groupsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: groupsWhereInput
+    orderBy?: groupsOrderByWithAggregationInput | groupsOrderByWithAggregationInput[]
+    by: GroupsScalarFieldEnum[] | GroupsScalarFieldEnum
+    having?: groupsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GroupsCountAggregateInputType | true
+    _min?: GroupsMinAggregateInputType
+    _max?: GroupsMaxAggregateInputType
+  }
+
+  export type GroupsGroupByOutputType = {
+    id: string
+    title: string
+    description: string
+    status: string
+    created_at: Date
+    leader_id: string
+    _count: GroupsCountAggregateOutputType | null
+    _min: GroupsMinAggregateOutputType | null
+    _max: GroupsMaxAggregateOutputType | null
+  }
+
+  type GetGroupsGroupByPayload<T extends groupsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GroupsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GroupsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GroupsGroupByOutputType[P]>
+            : GetScalarType<T[P], GroupsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type groupsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    status?: boolean
+    created_at?: boolean
+    leader_id?: boolean
+    users?: boolean | usersDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["groups"]>
+
+  export type groupsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    status?: boolean
+    created_at?: boolean
+    leader_id?: boolean
+    users?: boolean | usersDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["groups"]>
+
+  export type groupsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    status?: boolean
+    created_at?: boolean
+    leader_id?: boolean
+    users?: boolean | usersDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["groups"]>
+
+  export type groupsSelectScalar = {
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    status?: boolean
+    created_at?: boolean
+    leader_id?: boolean
+  }
+
+  export type groupsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "status" | "created_at" | "leader_id", ExtArgs["result"]["groups"]>
+  export type groupsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    users?: boolean | usersDefaultArgs<ExtArgs>
+  }
+  export type groupsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    users?: boolean | usersDefaultArgs<ExtArgs>
+  }
+  export type groupsIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    users?: boolean | usersDefaultArgs<ExtArgs>
+  }
+
+  export type $groupsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "groups"
+    objects: {
+      users: Prisma.$usersPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      description: string
+      status: string
+      created_at: Date
+      leader_id: string
+    }, ExtArgs["result"]["groups"]>
+    composites: {}
+  }
+
+  type groupsGetPayload<S extends boolean | null | undefined | groupsDefaultArgs> = $Result.GetResult<Prisma.$groupsPayload, S>
+
+  type groupsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<groupsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GroupsCountAggregateInputType | true
+    }
+
+  export interface groupsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['groups'], meta: { name: 'groups' } }
+    /**
+     * Find zero or one Groups that matches the filter.
+     * @param {groupsFindUniqueArgs} args - Arguments to find a Groups
+     * @example
+     * // Get one Groups
+     * const groups = await prisma.groups.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends groupsFindUniqueArgs>(args: SelectSubset<T, groupsFindUniqueArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Groups that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {groupsFindUniqueOrThrowArgs} args - Arguments to find a Groups
+     * @example
+     * // Get one Groups
+     * const groups = await prisma.groups.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends groupsFindUniqueOrThrowArgs>(args: SelectSubset<T, groupsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Groups that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {groupsFindFirstArgs} args - Arguments to find a Groups
+     * @example
+     * // Get one Groups
+     * const groups = await prisma.groups.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends groupsFindFirstArgs>(args?: SelectSubset<T, groupsFindFirstArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Groups that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {groupsFindFirstOrThrowArgs} args - Arguments to find a Groups
+     * @example
+     * // Get one Groups
+     * const groups = await prisma.groups.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends groupsFindFirstOrThrowArgs>(args?: SelectSubset<T, groupsFindFirstOrThrowArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Groups that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {groupsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Groups
+     * const groups = await prisma.groups.findMany()
+     * 
+     * // Get first 10 Groups
+     * const groups = await prisma.groups.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const groupsWithIdOnly = await prisma.groups.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends groupsFindManyArgs>(args?: SelectSubset<T, groupsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Groups.
+     * @param {groupsCreateArgs} args - Arguments to create a Groups.
+     * @example
+     * // Create one Groups
+     * const Groups = await prisma.groups.create({
+     *   data: {
+     *     // ... data to create a Groups
+     *   }
+     * })
+     * 
+     */
+    create<T extends groupsCreateArgs>(args: SelectSubset<T, groupsCreateArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Groups.
+     * @param {groupsCreateManyArgs} args - Arguments to create many Groups.
+     * @example
+     * // Create many Groups
+     * const groups = await prisma.groups.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends groupsCreateManyArgs>(args?: SelectSubset<T, groupsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Groups and returns the data saved in the database.
+     * @param {groupsCreateManyAndReturnArgs} args - Arguments to create many Groups.
+     * @example
+     * // Create many Groups
+     * const groups = await prisma.groups.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Groups and only return the `id`
+     * const groupsWithIdOnly = await prisma.groups.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends groupsCreateManyAndReturnArgs>(args?: SelectSubset<T, groupsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Groups.
+     * @param {groupsDeleteArgs} args - Arguments to delete one Groups.
+     * @example
+     * // Delete one Groups
+     * const Groups = await prisma.groups.delete({
+     *   where: {
+     *     // ... filter to delete one Groups
+     *   }
+     * })
+     * 
+     */
+    delete<T extends groupsDeleteArgs>(args: SelectSubset<T, groupsDeleteArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Groups.
+     * @param {groupsUpdateArgs} args - Arguments to update one Groups.
+     * @example
+     * // Update one Groups
+     * const groups = await prisma.groups.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends groupsUpdateArgs>(args: SelectSubset<T, groupsUpdateArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Groups.
+     * @param {groupsDeleteManyArgs} args - Arguments to filter Groups to delete.
+     * @example
+     * // Delete a few Groups
+     * const { count } = await prisma.groups.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends groupsDeleteManyArgs>(args?: SelectSubset<T, groupsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Groups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {groupsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Groups
+     * const groups = await prisma.groups.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends groupsUpdateManyArgs>(args: SelectSubset<T, groupsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Groups and returns the data updated in the database.
+     * @param {groupsUpdateManyAndReturnArgs} args - Arguments to update many Groups.
+     * @example
+     * // Update many Groups
+     * const groups = await prisma.groups.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Groups and only return the `id`
+     * const groupsWithIdOnly = await prisma.groups.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends groupsUpdateManyAndReturnArgs>(args: SelectSubset<T, groupsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Groups.
+     * @param {groupsUpsertArgs} args - Arguments to update or create a Groups.
+     * @example
+     * // Update or create a Groups
+     * const groups = await prisma.groups.upsert({
+     *   create: {
+     *     // ... data to create a Groups
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Groups we want to update
+     *   }
+     * })
+     */
+    upsert<T extends groupsUpsertArgs>(args: SelectSubset<T, groupsUpsertArgs<ExtArgs>>): Prisma__groupsClient<$Result.GetResult<Prisma.$groupsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Groups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {groupsCountArgs} args - Arguments to filter Groups to count.
+     * @example
+     * // Count the number of Groups
+     * const count = await prisma.groups.count({
+     *   where: {
+     *     // ... the filter for the Groups we want to count
+     *   }
+     * })
+    **/
+    count<T extends groupsCountArgs>(
+      args?: Subset<T, groupsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GroupsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Groups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroupsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GroupsAggregateArgs>(args: Subset<T, GroupsAggregateArgs>): Prisma.PrismaPromise<GetGroupsAggregateType<T>>
+
+    /**
+     * Group by Groups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {groupsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends groupsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: groupsGroupByArgs['orderBy'] }
+        : { orderBy?: groupsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, groupsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGroupsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the groups model
+   */
+  readonly fields: groupsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for groups.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__groupsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    users<T extends usersDefaultArgs<ExtArgs> = {}>(args?: Subset<T, usersDefaultArgs<ExtArgs>>): Prisma__usersClient<$Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the groups model
+   */
+  interface groupsFieldRefs {
+    readonly id: FieldRef<"groups", 'String'>
+    readonly title: FieldRef<"groups", 'String'>
+    readonly description: FieldRef<"groups", 'String'>
+    readonly status: FieldRef<"groups", 'String'>
+    readonly created_at: FieldRef<"groups", 'DateTime'>
+    readonly leader_id: FieldRef<"groups", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * groups findUnique
+   */
+  export type groupsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * Filter, which groups to fetch.
+     */
+    where: groupsWhereUniqueInput
+  }
+
+  /**
+   * groups findUniqueOrThrow
+   */
+  export type groupsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * Filter, which groups to fetch.
+     */
+    where: groupsWhereUniqueInput
+  }
+
+  /**
+   * groups findFirst
+   */
+  export type groupsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * Filter, which groups to fetch.
+     */
+    where?: groupsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of groups to fetch.
+     */
+    orderBy?: groupsOrderByWithRelationInput | groupsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for groups.
+     */
+    cursor?: groupsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` groups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` groups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of groups.
+     */
+    distinct?: GroupsScalarFieldEnum | GroupsScalarFieldEnum[]
+  }
+
+  /**
+   * groups findFirstOrThrow
+   */
+  export type groupsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * Filter, which groups to fetch.
+     */
+    where?: groupsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of groups to fetch.
+     */
+    orderBy?: groupsOrderByWithRelationInput | groupsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for groups.
+     */
+    cursor?: groupsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` groups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` groups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of groups.
+     */
+    distinct?: GroupsScalarFieldEnum | GroupsScalarFieldEnum[]
+  }
+
+  /**
+   * groups findMany
+   */
+  export type groupsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * Filter, which groups to fetch.
+     */
+    where?: groupsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of groups to fetch.
+     */
+    orderBy?: groupsOrderByWithRelationInput | groupsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing groups.
+     */
+    cursor?: groupsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` groups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` groups.
+     */
+    skip?: number
+    distinct?: GroupsScalarFieldEnum | GroupsScalarFieldEnum[]
+  }
+
+  /**
+   * groups create
+   */
+  export type groupsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * The data needed to create a groups.
+     */
+    data: XOR<groupsCreateInput, groupsUncheckedCreateInput>
+  }
+
+  /**
+   * groups createMany
+   */
+  export type groupsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many groups.
+     */
+    data: groupsCreateManyInput | groupsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * groups createManyAndReturn
+   */
+  export type groupsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * The data used to create many groups.
+     */
+    data: groupsCreateManyInput | groupsCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * groups update
+   */
+  export type groupsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * The data needed to update a groups.
+     */
+    data: XOR<groupsUpdateInput, groupsUncheckedUpdateInput>
+    /**
+     * Choose, which groups to update.
+     */
+    where: groupsWhereUniqueInput
+  }
+
+  /**
+   * groups updateMany
+   */
+  export type groupsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update groups.
+     */
+    data: XOR<groupsUpdateManyMutationInput, groupsUncheckedUpdateManyInput>
+    /**
+     * Filter which groups to update
+     */
+    where?: groupsWhereInput
+    /**
+     * Limit how many groups to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * groups updateManyAndReturn
+   */
+  export type groupsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * The data used to update groups.
+     */
+    data: XOR<groupsUpdateManyMutationInput, groupsUncheckedUpdateManyInput>
+    /**
+     * Filter which groups to update
+     */
+    where?: groupsWhereInput
+    /**
+     * Limit how many groups to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * groups upsert
+   */
+  export type groupsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * The filter to search for the groups to update in case it exists.
+     */
+    where: groupsWhereUniqueInput
+    /**
+     * In case the groups found by the `where` argument doesn't exist, create a new groups with this data.
+     */
+    create: XOR<groupsCreateInput, groupsUncheckedCreateInput>
+    /**
+     * In case the groups was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<groupsUpdateInput, groupsUncheckedUpdateInput>
+  }
+
+  /**
+   * groups delete
+   */
+  export type groupsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
+    /**
+     * Filter which groups to delete.
+     */
+    where: groupsWhereUniqueInput
+  }
+
+  /**
+   * groups deleteMany
+   */
+  export type groupsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which groups to delete
+     */
+    where?: groupsWhereInput
+    /**
+     * Limit how many groups to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * groups without action
+   */
+  export type groupsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the groups
+     */
+    select?: groupsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the groups
+     */
+    omit?: groupsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: groupsInclude<ExtArgs> | null
   }
 
 
@@ -4509,6 +5602,18 @@ export namespace Prisma {
   export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof UsersScalarFieldEnum]
 
 
+  export const GroupsScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    status: 'status',
+    created_at: 'created_at',
+    leader_id: 'leader_id'
+  };
+
+  export type GroupsScalarFieldEnum = (typeof GroupsScalarFieldEnum)[keyof typeof GroupsScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -4553,20 +5658,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Int'
-   */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int[]'
-   */
-  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -4581,16 +5672,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Float'
+   * Reference to a field of type 'Int'
    */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
 
 
   /**
-   * Reference to a field of type 'Float[]'
+   * Reference to a field of type 'Int[]'
    */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
   /**
    * Deep Input Types
@@ -4604,7 +5695,7 @@ export namespace Prisma {
     id?: UuidFilter<"publication_files"> | string
     file_type?: StringFilter<"publication_files"> | string
     file_path?: StringFilter<"publication_files"> | string
-    publication_id?: IntFilter<"publication_files"> | number
+    publication_id?: UuidFilter<"publication_files"> | string
     publications?: XOR<PublicationsScalarRelationFilter, publicationsWhereInput>
   }
 
@@ -4623,7 +5714,7 @@ export namespace Prisma {
     NOT?: publication_filesWhereInput | publication_filesWhereInput[]
     file_type?: StringFilter<"publication_files"> | string
     file_path?: StringFilter<"publication_files"> | string
-    publication_id?: IntFilter<"publication_files"> | number
+    publication_id?: UuidFilter<"publication_files"> | string
     publications?: XOR<PublicationsScalarRelationFilter, publicationsWhereInput>
   }, "id">
 
@@ -4633,10 +5724,8 @@ export namespace Prisma {
     file_path?: SortOrder
     publication_id?: SortOrder
     _count?: publication_filesCountOrderByAggregateInput
-    _avg?: publication_filesAvgOrderByAggregateInput
     _max?: publication_filesMaxOrderByAggregateInput
     _min?: publication_filesMinOrderByAggregateInput
-    _sum?: publication_filesSumOrderByAggregateInput
   }
 
   export type publication_filesScalarWhereWithAggregatesInput = {
@@ -4646,18 +5735,18 @@ export namespace Prisma {
     id?: UuidWithAggregatesFilter<"publication_files"> | string
     file_type?: StringWithAggregatesFilter<"publication_files"> | string
     file_path?: StringWithAggregatesFilter<"publication_files"> | string
-    publication_id?: IntWithAggregatesFilter<"publication_files"> | number
+    publication_id?: UuidWithAggregatesFilter<"publication_files"> | string
   }
 
   export type publicationsWhereInput = {
     AND?: publicationsWhereInput | publicationsWhereInput[]
     OR?: publicationsWhereInput[]
     NOT?: publicationsWhereInput | publicationsWhereInput[]
-    id?: IntFilter<"publications"> | number
+    id?: UuidFilter<"publications"> | string
     title?: StringFilter<"publications"> | string
     journal?: StringFilter<"publications"> | string
     status?: StringFilter<"publications"> | string
-    submitter_id?: IntFilter<"publications"> | number
+    submitter_id?: UuidFilter<"publications"> | string
     submitted_at?: DateTimeFilter<"publications"> | Date | string
     publication_files?: Publication_filesListRelationFilter
     users?: XOR<UsersScalarRelationFilter, usersWhereInput>
@@ -4675,14 +5764,14 @@ export namespace Prisma {
   }
 
   export type publicationsWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
+    id?: string
     AND?: publicationsWhereInput | publicationsWhereInput[]
     OR?: publicationsWhereInput[]
     NOT?: publicationsWhereInput | publicationsWhereInput[]
     title?: StringFilter<"publications"> | string
     journal?: StringFilter<"publications"> | string
     status?: StringFilter<"publications"> | string
-    submitter_id?: IntFilter<"publications"> | number
+    submitter_id?: UuidFilter<"publications"> | string
     submitted_at?: DateTimeFilter<"publications"> | Date | string
     publication_files?: Publication_filesListRelationFilter
     users?: XOR<UsersScalarRelationFilter, usersWhereInput>
@@ -4696,21 +5785,19 @@ export namespace Prisma {
     submitter_id?: SortOrder
     submitted_at?: SortOrder
     _count?: publicationsCountOrderByAggregateInput
-    _avg?: publicationsAvgOrderByAggregateInput
     _max?: publicationsMaxOrderByAggregateInput
     _min?: publicationsMinOrderByAggregateInput
-    _sum?: publicationsSumOrderByAggregateInput
   }
 
   export type publicationsScalarWhereWithAggregatesInput = {
     AND?: publicationsScalarWhereWithAggregatesInput | publicationsScalarWhereWithAggregatesInput[]
     OR?: publicationsScalarWhereWithAggregatesInput[]
     NOT?: publicationsScalarWhereWithAggregatesInput | publicationsScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"publications"> | number
+    id?: UuidWithAggregatesFilter<"publications"> | string
     title?: StringWithAggregatesFilter<"publications"> | string
     journal?: StringWithAggregatesFilter<"publications"> | string
     status?: StringWithAggregatesFilter<"publications"> | string
-    submitter_id?: IntWithAggregatesFilter<"publications"> | number
+    submitter_id?: UuidWithAggregatesFilter<"publications"> | string
     submitted_at?: DateTimeWithAggregatesFilter<"publications"> | Date | string
   }
 
@@ -4718,13 +5805,14 @@ export namespace Prisma {
     AND?: usersWhereInput | usersWhereInput[]
     OR?: usersWhereInput[]
     NOT?: usersWhereInput | usersWhereInput[]
-    id?: IntFilter<"users"> | number
+    id?: UuidFilter<"users"> | string
     username?: StringFilter<"users"> | string
     email?: StringFilter<"users"> | string
     password_hash?: StringFilter<"users"> | string
     role?: StringFilter<"users"> | string
     created_at?: DateTimeNullableFilter<"users"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"users"> | Date | string | null
+    groups?: GroupsListRelationFilter
     publications?: PublicationsListRelationFilter
   }
 
@@ -4736,11 +5824,12 @@ export namespace Prisma {
     role?: SortOrder
     created_at?: SortOrderInput | SortOrder
     updated_at?: SortOrderInput | SortOrder
+    groups?: groupsOrderByRelationAggregateInput
     publications?: publicationsOrderByRelationAggregateInput
   }
 
   export type usersWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
+    id?: string
     username?: string
     email?: string
     AND?: usersWhereInput | usersWhereInput[]
@@ -4750,6 +5839,7 @@ export namespace Prisma {
     role?: StringFilter<"users"> | string
     created_at?: DateTimeNullableFilter<"users"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"users"> | Date | string | null
+    groups?: GroupsListRelationFilter
     publications?: PublicationsListRelationFilter
   }, "id" | "username" | "email">
 
@@ -4762,17 +5852,15 @@ export namespace Prisma {
     created_at?: SortOrderInput | SortOrder
     updated_at?: SortOrderInput | SortOrder
     _count?: usersCountOrderByAggregateInput
-    _avg?: usersAvgOrderByAggregateInput
     _max?: usersMaxOrderByAggregateInput
     _min?: usersMinOrderByAggregateInput
-    _sum?: usersSumOrderByAggregateInput
   }
 
   export type usersScalarWhereWithAggregatesInput = {
     AND?: usersScalarWhereWithAggregatesInput | usersScalarWhereWithAggregatesInput[]
     OR?: usersScalarWhereWithAggregatesInput[]
     NOT?: usersScalarWhereWithAggregatesInput | usersScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"users"> | number
+    id?: UuidWithAggregatesFilter<"users"> | string
     username?: StringWithAggregatesFilter<"users"> | string
     email?: StringWithAggregatesFilter<"users"> | string
     password_hash?: StringWithAggregatesFilter<"users"> | string
@@ -4781,18 +5869,78 @@ export namespace Prisma {
     updated_at?: DateTimeNullableWithAggregatesFilter<"users"> | Date | string | null
   }
 
+  export type groupsWhereInput = {
+    AND?: groupsWhereInput | groupsWhereInput[]
+    OR?: groupsWhereInput[]
+    NOT?: groupsWhereInput | groupsWhereInput[]
+    id?: UuidFilter<"groups"> | string
+    title?: StringFilter<"groups"> | string
+    description?: StringFilter<"groups"> | string
+    status?: StringFilter<"groups"> | string
+    created_at?: DateTimeFilter<"groups"> | Date | string
+    leader_id?: UuidFilter<"groups"> | string
+    users?: XOR<UsersScalarRelationFilter, usersWhereInput>
+  }
+
+  export type groupsOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    leader_id?: SortOrder
+    users?: usersOrderByWithRelationInput
+  }
+
+  export type groupsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: groupsWhereInput | groupsWhereInput[]
+    OR?: groupsWhereInput[]
+    NOT?: groupsWhereInput | groupsWhereInput[]
+    title?: StringFilter<"groups"> | string
+    description?: StringFilter<"groups"> | string
+    status?: StringFilter<"groups"> | string
+    created_at?: DateTimeFilter<"groups"> | Date | string
+    leader_id?: UuidFilter<"groups"> | string
+    users?: XOR<UsersScalarRelationFilter, usersWhereInput>
+  }, "id">
+
+  export type groupsOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    leader_id?: SortOrder
+    _count?: groupsCountOrderByAggregateInput
+    _max?: groupsMaxOrderByAggregateInput
+    _min?: groupsMinOrderByAggregateInput
+  }
+
+  export type groupsScalarWhereWithAggregatesInput = {
+    AND?: groupsScalarWhereWithAggregatesInput | groupsScalarWhereWithAggregatesInput[]
+    OR?: groupsScalarWhereWithAggregatesInput[]
+    NOT?: groupsScalarWhereWithAggregatesInput | groupsScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"groups"> | string
+    title?: StringWithAggregatesFilter<"groups"> | string
+    description?: StringWithAggregatesFilter<"groups"> | string
+    status?: StringWithAggregatesFilter<"groups"> | string
+    created_at?: DateTimeWithAggregatesFilter<"groups"> | Date | string
+    leader_id?: UuidWithAggregatesFilter<"groups"> | string
+  }
+
   export type publication_filesCreateInput = {
     id: string
     file_type: string
     file_path: string
-    publications?: publicationsCreateNestedOneWithoutPublication_filesInput
+    publications: publicationsCreateNestedOneWithoutPublication_filesInput
   }
 
   export type publication_filesUncheckedCreateInput = {
     id: string
     file_type: string
     file_path: string
-    publication_id?: number
+    publication_id: string
   }
 
   export type publication_filesUpdateInput = {
@@ -4806,14 +5954,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     file_type?: StringFieldUpdateOperationsInput | string
     file_path?: StringFieldUpdateOperationsInput | string
-    publication_id?: IntFieldUpdateOperationsInput | number
+    publication_id?: StringFieldUpdateOperationsInput | string
   }
 
   export type publication_filesCreateManyInput = {
     id: string
     file_type: string
     file_path: string
-    publication_id?: number
+    publication_id: string
   }
 
   export type publication_filesUpdateManyMutationInput = {
@@ -4826,29 +5974,31 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     file_type?: StringFieldUpdateOperationsInput | string
     file_path?: StringFieldUpdateOperationsInput | string
-    publication_id?: IntFieldUpdateOperationsInput | number
+    publication_id?: StringFieldUpdateOperationsInput | string
   }
 
   export type publicationsCreateInput = {
+    id: string
     title: string
     journal: string
     status?: string
     submitted_at?: Date | string
     publication_files?: publication_filesCreateNestedManyWithoutPublicationsInput
-    users?: usersCreateNestedOneWithoutPublicationsInput
+    users: usersCreateNestedOneWithoutPublicationsInput
   }
 
   export type publicationsUncheckedCreateInput = {
-    id?: number
+    id: string
     title: string
     journal: string
     status?: string
-    submitter_id?: number
+    submitter_id: string
     submitted_at?: Date | string
     publication_files?: publication_filesUncheckedCreateNestedManyWithoutPublicationsInput
   }
 
   export type publicationsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -4858,25 +6008,26 @@ export namespace Prisma {
   }
 
   export type publicationsUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
-    submitter_id?: IntFieldUpdateOperationsInput | number
+    submitter_id?: StringFieldUpdateOperationsInput | string
     submitted_at?: DateTimeFieldUpdateOperationsInput | Date | string
     publication_files?: publication_filesUncheckedUpdateManyWithoutPublicationsNestedInput
   }
 
   export type publicationsCreateManyInput = {
-    id?: number
+    id: string
     title: string
     journal: string
     status?: string
-    submitter_id?: number
+    submitter_id: string
     submitted_at?: Date | string
   }
 
   export type publicationsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -4884,58 +6035,64 @@ export namespace Prisma {
   }
 
   export type publicationsUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
-    submitter_id?: IntFieldUpdateOperationsInput | number
+    submitter_id?: StringFieldUpdateOperationsInput | string
     submitted_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type usersCreateInput = {
+    id: string
     username: string
     email: string
     password_hash: string
     role: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    groups?: groupsCreateNestedManyWithoutUsersInput
     publications?: publicationsCreateNestedManyWithoutUsersInput
   }
 
   export type usersUncheckedCreateInput = {
-    id?: number
+    id: string
     username: string
     email: string
     password_hash: string
     role: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    groups?: groupsUncheckedCreateNestedManyWithoutUsersInput
     publications?: publicationsUncheckedCreateNestedManyWithoutUsersInput
   }
 
   export type usersUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password_hash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groups?: groupsUpdateManyWithoutUsersNestedInput
     publications?: publicationsUpdateManyWithoutUsersNestedInput
   }
 
   export type usersUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password_hash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groups?: groupsUncheckedUpdateManyWithoutUsersNestedInput
     publications?: publicationsUncheckedUpdateManyWithoutUsersNestedInput
   }
 
   export type usersCreateManyInput = {
-    id?: number
+    id: string
     username: string
     email: string
     password_hash: string
@@ -4945,6 +6102,7 @@ export namespace Prisma {
   }
 
   export type usersUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password_hash?: StringFieldUpdateOperationsInput | string
@@ -4954,13 +6112,75 @@ export namespace Prisma {
   }
 
   export type usersUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password_hash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type groupsCreateInput = {
+    id: string
+    title?: string
+    description?: string
+    status?: string
+    created_at?: Date | string
+    users: usersCreateNestedOneWithoutGroupsInput
+  }
+
+  export type groupsUncheckedCreateInput = {
+    id: string
+    title?: string
+    description?: string
+    status?: string
+    created_at?: Date | string
+    leader_id: string
+  }
+
+  export type groupsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: usersUpdateOneRequiredWithoutGroupsNestedInput
+  }
+
+  export type groupsUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    leader_id?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type groupsCreateManyInput = {
+    id: string
+    title?: string
+    description?: string
+    status?: string
+    created_at?: Date | string
+    leader_id: string
+  }
+
+  export type groupsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type groupsUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    leader_id?: StringFieldUpdateOperationsInput | string
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -4990,17 +6210,6 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type PublicationsScalarRelationFilter = {
     is?: publicationsWhereInput
     isNot?: publicationsWhereInput
@@ -5010,10 +6219,6 @@ export namespace Prisma {
     id?: SortOrder
     file_type?: SortOrder
     file_path?: SortOrder
-    publication_id?: SortOrder
-  }
-
-  export type publication_filesAvgOrderByAggregateInput = {
     publication_id?: SortOrder
   }
 
@@ -5028,10 +6233,6 @@ export namespace Prisma {
     id?: SortOrder
     file_type?: SortOrder
     file_path?: SortOrder
-    publication_id?: SortOrder
-  }
-
-  export type publication_filesSumOrderByAggregateInput = {
     publication_id?: SortOrder
   }
 
@@ -5066,22 +6267,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -5119,11 +6304,6 @@ export namespace Prisma {
     submitted_at?: SortOrder
   }
 
-  export type publicationsAvgOrderByAggregateInput = {
-    id?: SortOrder
-    submitter_id?: SortOrder
-  }
-
   export type publicationsMaxOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
@@ -5140,11 +6320,6 @@ export namespace Prisma {
     status?: SortOrder
     submitter_id?: SortOrder
     submitted_at?: SortOrder
-  }
-
-  export type publicationsSumOrderByAggregateInput = {
-    id?: SortOrder
-    submitter_id?: SortOrder
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -5172,6 +6347,12 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type GroupsListRelationFilter = {
+    every?: groupsWhereInput
+    some?: groupsWhereInput
+    none?: groupsWhereInput
+  }
+
   export type PublicationsListRelationFilter = {
     every?: publicationsWhereInput
     some?: publicationsWhereInput
@@ -5181,6 +6362,10 @@ export namespace Prisma {
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
+  }
+
+  export type groupsOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type publicationsOrderByRelationAggregateInput = {
@@ -5195,10 +6380,6 @@ export namespace Prisma {
     role?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-  }
-
-  export type usersAvgOrderByAggregateInput = {
-    id?: SortOrder
   }
 
   export type usersMaxOrderByAggregateInput = {
@@ -5221,10 +6402,6 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
-  export type usersSumOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -5237,6 +6414,33 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type groupsCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    leader_id?: SortOrder
+  }
+
+  export type groupsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    leader_id?: SortOrder
+  }
+
+  export type groupsMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    leader_id?: SortOrder
   }
 
   export type publicationsCreateNestedOneWithoutPublication_filesInput = {
@@ -5255,14 +6459,6 @@ export namespace Prisma {
     upsert?: publicationsUpsertWithoutPublication_filesInput
     connect?: publicationsWhereUniqueInput
     update?: XOR<XOR<publicationsUpdateToOneWithWhereWithoutPublication_filesInput, publicationsUpdateWithoutPublication_filesInput>, publicationsUncheckedUpdateWithoutPublication_filesInput>
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type publication_filesCreateNestedManyWithoutPublicationsInput = {
@@ -5325,11 +6521,25 @@ export namespace Prisma {
     deleteMany?: publication_filesScalarWhereInput | publication_filesScalarWhereInput[]
   }
 
+  export type groupsCreateNestedManyWithoutUsersInput = {
+    create?: XOR<groupsCreateWithoutUsersInput, groupsUncheckedCreateWithoutUsersInput> | groupsCreateWithoutUsersInput[] | groupsUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: groupsCreateOrConnectWithoutUsersInput | groupsCreateOrConnectWithoutUsersInput[]
+    createMany?: groupsCreateManyUsersInputEnvelope
+    connect?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+  }
+
   export type publicationsCreateNestedManyWithoutUsersInput = {
     create?: XOR<publicationsCreateWithoutUsersInput, publicationsUncheckedCreateWithoutUsersInput> | publicationsCreateWithoutUsersInput[] | publicationsUncheckedCreateWithoutUsersInput[]
     connectOrCreate?: publicationsCreateOrConnectWithoutUsersInput | publicationsCreateOrConnectWithoutUsersInput[]
     createMany?: publicationsCreateManyUsersInputEnvelope
     connect?: publicationsWhereUniqueInput | publicationsWhereUniqueInput[]
+  }
+
+  export type groupsUncheckedCreateNestedManyWithoutUsersInput = {
+    create?: XOR<groupsCreateWithoutUsersInput, groupsUncheckedCreateWithoutUsersInput> | groupsCreateWithoutUsersInput[] | groupsUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: groupsCreateOrConnectWithoutUsersInput | groupsCreateOrConnectWithoutUsersInput[]
+    createMany?: groupsCreateManyUsersInputEnvelope
+    connect?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
   }
 
   export type publicationsUncheckedCreateNestedManyWithoutUsersInput = {
@@ -5341,6 +6551,20 @@ export namespace Prisma {
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
+  }
+
+  export type groupsUpdateManyWithoutUsersNestedInput = {
+    create?: XOR<groupsCreateWithoutUsersInput, groupsUncheckedCreateWithoutUsersInput> | groupsCreateWithoutUsersInput[] | groupsUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: groupsCreateOrConnectWithoutUsersInput | groupsCreateOrConnectWithoutUsersInput[]
+    upsert?: groupsUpsertWithWhereUniqueWithoutUsersInput | groupsUpsertWithWhereUniqueWithoutUsersInput[]
+    createMany?: groupsCreateManyUsersInputEnvelope
+    set?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    disconnect?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    delete?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    connect?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    update?: groupsUpdateWithWhereUniqueWithoutUsersInput | groupsUpdateWithWhereUniqueWithoutUsersInput[]
+    updateMany?: groupsUpdateManyWithWhereWithoutUsersInput | groupsUpdateManyWithWhereWithoutUsersInput[]
+    deleteMany?: groupsScalarWhereInput | groupsScalarWhereInput[]
   }
 
   export type publicationsUpdateManyWithoutUsersNestedInput = {
@@ -5357,6 +6581,20 @@ export namespace Prisma {
     deleteMany?: publicationsScalarWhereInput | publicationsScalarWhereInput[]
   }
 
+  export type groupsUncheckedUpdateManyWithoutUsersNestedInput = {
+    create?: XOR<groupsCreateWithoutUsersInput, groupsUncheckedCreateWithoutUsersInput> | groupsCreateWithoutUsersInput[] | groupsUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: groupsCreateOrConnectWithoutUsersInput | groupsCreateOrConnectWithoutUsersInput[]
+    upsert?: groupsUpsertWithWhereUniqueWithoutUsersInput | groupsUpsertWithWhereUniqueWithoutUsersInput[]
+    createMany?: groupsCreateManyUsersInputEnvelope
+    set?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    disconnect?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    delete?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    connect?: groupsWhereUniqueInput | groupsWhereUniqueInput[]
+    update?: groupsUpdateWithWhereUniqueWithoutUsersInput | groupsUpdateWithWhereUniqueWithoutUsersInput[]
+    updateMany?: groupsUpdateManyWithWhereWithoutUsersInput | groupsUpdateManyWithWhereWithoutUsersInput[]
+    deleteMany?: groupsScalarWhereInput | groupsScalarWhereInput[]
+  }
+
   export type publicationsUncheckedUpdateManyWithoutUsersNestedInput = {
     create?: XOR<publicationsCreateWithoutUsersInput, publicationsUncheckedCreateWithoutUsersInput> | publicationsCreateWithoutUsersInput[] | publicationsUncheckedCreateWithoutUsersInput[]
     connectOrCreate?: publicationsCreateOrConnectWithoutUsersInput | publicationsCreateOrConnectWithoutUsersInput[]
@@ -5369,6 +6607,20 @@ export namespace Prisma {
     update?: publicationsUpdateWithWhereUniqueWithoutUsersInput | publicationsUpdateWithWhereUniqueWithoutUsersInput[]
     updateMany?: publicationsUpdateManyWithWhereWithoutUsersInput | publicationsUpdateManyWithWhereWithoutUsersInput[]
     deleteMany?: publicationsScalarWhereInput | publicationsScalarWhereInput[]
+  }
+
+  export type usersCreateNestedOneWithoutGroupsInput = {
+    create?: XOR<usersCreateWithoutGroupsInput, usersUncheckedCreateWithoutGroupsInput>
+    connectOrCreate?: usersCreateOrConnectWithoutGroupsInput
+    connect?: usersWhereUniqueInput
+  }
+
+  export type usersUpdateOneRequiredWithoutGroupsNestedInput = {
+    create?: XOR<usersCreateWithoutGroupsInput, usersUncheckedCreateWithoutGroupsInput>
+    connectOrCreate?: usersCreateOrConnectWithoutGroupsInput
+    upsert?: usersUpsertWithoutGroupsInput
+    connect?: usersWhereUniqueInput
+    update?: XOR<XOR<usersUpdateToOneWithWhereWithoutGroupsInput, usersUpdateWithoutGroupsInput>, usersUncheckedUpdateWithoutGroupsInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -5396,17 +6648,6 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -5419,6 +6660,17 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -5436,33 +6688,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -5527,19 +6752,20 @@ export namespace Prisma {
   }
 
   export type publicationsCreateWithoutPublication_filesInput = {
+    id: string
     title: string
     journal: string
     status?: string
     submitted_at?: Date | string
-    users?: usersCreateNestedOneWithoutPublicationsInput
+    users: usersCreateNestedOneWithoutPublicationsInput
   }
 
   export type publicationsUncheckedCreateWithoutPublication_filesInput = {
-    id?: number
+    id: string
     title: string
     journal: string
     status?: string
-    submitter_id?: number
+    submitter_id: string
     submitted_at?: Date | string
   }
 
@@ -5560,6 +6786,7 @@ export namespace Prisma {
   }
 
   export type publicationsUpdateWithoutPublication_filesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -5568,11 +6795,11 @@ export namespace Prisma {
   }
 
   export type publicationsUncheckedUpdateWithoutPublication_filesInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
-    submitter_id?: IntFieldUpdateOperationsInput | number
+    submitter_id?: StringFieldUpdateOperationsInput | string
     submitted_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5599,22 +6826,25 @@ export namespace Prisma {
   }
 
   export type usersCreateWithoutPublicationsInput = {
+    id: string
     username: string
     email: string
     password_hash: string
     role: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    groups?: groupsCreateNestedManyWithoutUsersInput
   }
 
   export type usersUncheckedCreateWithoutPublicationsInput = {
-    id?: number
+    id: string
     username: string
     email: string
     password_hash: string
     role: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    groups?: groupsUncheckedCreateNestedManyWithoutUsersInput
   }
 
   export type usersCreateOrConnectWithoutPublicationsInput = {
@@ -5645,7 +6875,7 @@ export namespace Prisma {
     id?: UuidFilter<"publication_files"> | string
     file_type?: StringFilter<"publication_files"> | string
     file_path?: StringFilter<"publication_files"> | string
-    publication_id?: IntFilter<"publication_files"> | number
+    publication_id?: UuidFilter<"publication_files"> | string
   }
 
   export type usersUpsertWithoutPublicationsInput = {
@@ -5660,25 +6890,55 @@ export namespace Prisma {
   }
 
   export type usersUpdateWithoutPublicationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password_hash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groups?: groupsUpdateManyWithoutUsersNestedInput
   }
 
   export type usersUncheckedUpdateWithoutPublicationsInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password_hash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    groups?: groupsUncheckedUpdateManyWithoutUsersNestedInput
+  }
+
+  export type groupsCreateWithoutUsersInput = {
+    id: string
+    title?: string
+    description?: string
+    status?: string
+    created_at?: Date | string
+  }
+
+  export type groupsUncheckedCreateWithoutUsersInput = {
+    id: string
+    title?: string
+    description?: string
+    status?: string
+    created_at?: Date | string
+  }
+
+  export type groupsCreateOrConnectWithoutUsersInput = {
+    where: groupsWhereUniqueInput
+    create: XOR<groupsCreateWithoutUsersInput, groupsUncheckedCreateWithoutUsersInput>
+  }
+
+  export type groupsCreateManyUsersInputEnvelope = {
+    data: groupsCreateManyUsersInput | groupsCreateManyUsersInput[]
+    skipDuplicates?: boolean
   }
 
   export type publicationsCreateWithoutUsersInput = {
+    id: string
     title: string
     journal: string
     status?: string
@@ -5687,7 +6947,7 @@ export namespace Prisma {
   }
 
   export type publicationsUncheckedCreateWithoutUsersInput = {
-    id?: number
+    id: string
     title: string
     journal: string
     status?: string
@@ -5703,6 +6963,34 @@ export namespace Prisma {
   export type publicationsCreateManyUsersInputEnvelope = {
     data: publicationsCreateManyUsersInput | publicationsCreateManyUsersInput[]
     skipDuplicates?: boolean
+  }
+
+  export type groupsUpsertWithWhereUniqueWithoutUsersInput = {
+    where: groupsWhereUniqueInput
+    update: XOR<groupsUpdateWithoutUsersInput, groupsUncheckedUpdateWithoutUsersInput>
+    create: XOR<groupsCreateWithoutUsersInput, groupsUncheckedCreateWithoutUsersInput>
+  }
+
+  export type groupsUpdateWithWhereUniqueWithoutUsersInput = {
+    where: groupsWhereUniqueInput
+    data: XOR<groupsUpdateWithoutUsersInput, groupsUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type groupsUpdateManyWithWhereWithoutUsersInput = {
+    where: groupsScalarWhereInput
+    data: XOR<groupsUpdateManyMutationInput, groupsUncheckedUpdateManyWithoutUsersInput>
+  }
+
+  export type groupsScalarWhereInput = {
+    AND?: groupsScalarWhereInput | groupsScalarWhereInput[]
+    OR?: groupsScalarWhereInput[]
+    NOT?: groupsScalarWhereInput | groupsScalarWhereInput[]
+    id?: UuidFilter<"groups"> | string
+    title?: StringFilter<"groups"> | string
+    description?: StringFilter<"groups"> | string
+    status?: StringFilter<"groups"> | string
+    created_at?: DateTimeFilter<"groups"> | Date | string
+    leader_id?: UuidFilter<"groups"> | string
   }
 
   export type publicationsUpsertWithWhereUniqueWithoutUsersInput = {
@@ -5725,12 +7013,72 @@ export namespace Prisma {
     AND?: publicationsScalarWhereInput | publicationsScalarWhereInput[]
     OR?: publicationsScalarWhereInput[]
     NOT?: publicationsScalarWhereInput | publicationsScalarWhereInput[]
-    id?: IntFilter<"publications"> | number
+    id?: UuidFilter<"publications"> | string
     title?: StringFilter<"publications"> | string
     journal?: StringFilter<"publications"> | string
     status?: StringFilter<"publications"> | string
-    submitter_id?: IntFilter<"publications"> | number
+    submitter_id?: UuidFilter<"publications"> | string
     submitted_at?: DateTimeFilter<"publications"> | Date | string
+  }
+
+  export type usersCreateWithoutGroupsInput = {
+    id: string
+    username: string
+    email: string
+    password_hash: string
+    role: string
+    created_at?: Date | string | null
+    updated_at?: Date | string | null
+    publications?: publicationsCreateNestedManyWithoutUsersInput
+  }
+
+  export type usersUncheckedCreateWithoutGroupsInput = {
+    id: string
+    username: string
+    email: string
+    password_hash: string
+    role: string
+    created_at?: Date | string | null
+    updated_at?: Date | string | null
+    publications?: publicationsUncheckedCreateNestedManyWithoutUsersInput
+  }
+
+  export type usersCreateOrConnectWithoutGroupsInput = {
+    where: usersWhereUniqueInput
+    create: XOR<usersCreateWithoutGroupsInput, usersUncheckedCreateWithoutGroupsInput>
+  }
+
+  export type usersUpsertWithoutGroupsInput = {
+    update: XOR<usersUpdateWithoutGroupsInput, usersUncheckedUpdateWithoutGroupsInput>
+    create: XOR<usersCreateWithoutGroupsInput, usersUncheckedCreateWithoutGroupsInput>
+    where?: usersWhereInput
+  }
+
+  export type usersUpdateToOneWithWhereWithoutGroupsInput = {
+    where?: usersWhereInput
+    data: XOR<usersUpdateWithoutGroupsInput, usersUncheckedUpdateWithoutGroupsInput>
+  }
+
+  export type usersUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    publications?: publicationsUpdateManyWithoutUsersNestedInput
+  }
+
+  export type usersUncheckedUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    publications?: publicationsUncheckedUpdateManyWithoutUsersNestedInput
   }
 
   export type publication_filesCreateManyPublicationsInput = {
@@ -5757,15 +7105,48 @@ export namespace Prisma {
     file_path?: StringFieldUpdateOperationsInput | string
   }
 
+  export type groupsCreateManyUsersInput = {
+    id: string
+    title?: string
+    description?: string
+    status?: string
+    created_at?: Date | string
+  }
+
   export type publicationsCreateManyUsersInput = {
-    id?: number
+    id: string
     title: string
     journal: string
     status?: string
     submitted_at?: Date | string
   }
 
+  export type groupsUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type groupsUncheckedUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type groupsUncheckedUpdateManyWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type publicationsUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -5774,7 +7155,7 @@ export namespace Prisma {
   }
 
   export type publicationsUncheckedUpdateWithoutUsersInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -5783,7 +7164,7 @@ export namespace Prisma {
   }
 
   export type publicationsUncheckedUpdateManyWithoutUsersInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     journal?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string

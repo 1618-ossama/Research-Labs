@@ -60,8 +60,10 @@ impl Database for PostgresDatabase {
         status: String,
         submitter_id: Uuid,
     ) -> Result<()> {
+        let id = Uuid::new_v4();
         sqlx::query!(
-            "insert into publications(title,journal,status,submitter_id) values($1,$2,$3,$4)",
+            "insert into publications(id, title,journal,status,submitter_id) values($1,$2,$3,$4,$5)",
+            id,
             title,
             journal,
             status,
