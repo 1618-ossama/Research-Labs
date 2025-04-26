@@ -143,6 +143,15 @@ exports.Prisma.UsersScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.GroupsScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  created_at: 'created_at',
+  leader_id: 'leader_id'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -162,7 +171,8 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   publication_files: 'publication_files',
   publications: 'publications',
-  users: 'users'
+  users: 'users',
+  groups: 'groups'
 };
 
 /**

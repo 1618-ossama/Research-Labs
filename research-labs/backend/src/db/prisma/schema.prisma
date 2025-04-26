@@ -1,30 +1,29 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../db/prisma"
+  provider      = "prisma-client-js"
+  output        = "../prisma/"
+  binaryTargets = ["native", "debian-openssl-1.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://root:root@localhost:5432/dev-db"
 }
-
-///"postgresql://root:root@localhost:5432/dev-db"
 
 model publication_files {
   id             String       @id @db.Uuid
   file_type      String       @db.VarChar(50)
   file_path      String       @db.VarChar(50)
-  publication_id Int          @default(autoincrement())
+  publication_id String       @db.Uuid
   publications   publications @relation(fields: [publication_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pub")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model publications {
-  id                Int                 @id @default(autoincrement())
+  id                String              @id @db.Uuid
   title             String              @db.VarChar(500)
   journal           String
   status            String              @default("DRAFT") @db.VarChar(50)
-  submitter_id      Int                 @default(autoincrement())
+  submitter_id      String              @db.Uuid
   submitted_at      DateTime            @default(now()) @db.Timestamptz(6)
   publication_files publication_files[]
   users             users               @relation(fields: [submitter_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -32,12 +31,36 @@ model publications {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model users {
-  id            Int            @id @default(autoincrement())
+  id            String         @id @db.Uuid
   username      String         @unique @db.VarChar(255)
   email         String         @unique @db.VarChar(255)
   password_hash String
   role          String         @db.VarChar(50)
   created_at    DateTime?      @default(now()) @db.Timestamp(6)
   updated_at    DateTime?      @default(now()) @db.Timestamp(6)
+  group_user    group_user[]   @ignore
+  groups        groups[]
   publications  publications[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model group_user {
+  leader_id String @db.Uuid
+  group_id  String @db.Uuid
+  groups    groups @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users     users  @relation(fields: [leader_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@ignore
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model groups {
+  id          String       @id @db.Uuid
+  title       String       @default("default title") @db.VarChar(50)
+  description String       @default("default title") @db.VarChar(50)
+  status      String       @default("OPENED") @db.VarChar(50)
+  created_at  DateTime     @default(now()) @db.Timestamptz(6)
+  leader_id   String       @db.Uuid
+  group_user  group_user[] @ignore
+  users       users        @relation(fields: [leader_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

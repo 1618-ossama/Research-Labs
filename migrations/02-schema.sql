@@ -1,115 +1,42 @@
-CREATE EXTENSION IF NOT EXISTS "ltree";
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Mock Data for the 'users' table
+INSERT INTO users (id, username, email, password_hash, role, created_at, updated_at) VALUES
+('a1b2c3d4-e5f6-7890-1234-567890abcdef', 'admin_user', 'admin@example.com', 'hashed_password_admin_1', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('b2c3d4e5-f6a7-8901-2345-67890abcdef1', 'researcher_alice', 'alice.r@example.com', 'hashed_password_alice_2', 'researcher', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('c3d4e5f6-a7b8-9012-3456-7890abcdef12', 'researcher_bob', 'bob.r@example.com', 'hashed_password_bob_3', 'researcher', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('d4e5f6a7-b8c9-0123-4567-890abcdef123', 'leader_carol', 'carol.l@example.com', 'hashed_password_carol_4', 'leader', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('e5f6a7b8-c9d0-1234-5678-90abcdef1234', 'leader_david', 'david.l@example.com', 'hashed_password_david_5', 'leader', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('f6a7b8c9-d0e1-2345-6789-0abcdef12345', 'researcher_eve', 'eve.r@example.com', 'hashed_password_eve_6', 'researcher', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-CREATE TYPE publication_status AS ENUM (
-    'UNDER_REVIEW',
-    'PUBLISHED',
-'DRAFT',
-    'ARCHIVED'
-);
+-- Mock Data for the 'groups' table
+INSERT INTO groups (id, title, description, status, created_at, leader_id) VALUES
+('11223344-5566-7788-9900-aabbccddeeff', 'Quantum Computing Lab', 'Research on quantum algorithms and hardware.', 'OPENED', NOW(), 'd4e5f6a7-b8c9-0123-4567-890abcdef123'), -- leader_carol
+('22334455-6677-8899-00aa-bbccddeeff11', 'AI Ethics Group', 'Discussing ethical implications of AI.', 'OPENED', NOW(), 'e5f6a7b8-c9d0-1234-5678-90abcdef1234'), -- leader_david
+('33445566-7788-9900-aabb-ccddeeff1122', 'Robotics Research', 'Developing autonomous systems.', 'CLOSED', NOW(), 'd4e5f6a7-b8c9-0123-4567-890abcdef123'); -- leader_carol
 
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email VARCHAR(255) NOT NULL UNIQUE CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
-    password_hash TEXT NOT NULL,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    avatar_url TEXT,
-    is_active BOOLEAN NOT NULL DEFAULT false,
-    supervisor_id UUID REFERENCES users(id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    last_login TIMESTAMPTZ,
-    last_updated_at TIMESTAMPTZ DEFAULT NOW(),
-    CHECK (supervisor_id != id)
-);
+-- Mock Data for the 'group_user' table
+INSERT INTO group_user (leader_id, group_id) VALUES
+('d4e5f6a7-b8c9-0123-4567-890abcdef123', '11223344-5566-7788-9900-aabbccddeeff'), -- carol in Quantum Computing Lab (as leader)
+('b2c3d4e5-f6a7-8901-2345-67890abcdef1', '11223344-5566-7788-9900-aabbccddeeff'), -- alice in Quantum Computing Lab
+('c3d4e5f6-a7b8-9012-3456-7890abcdef12', '11223344-5566-7788-9900-aabbccddeeff'), -- bob in Quantum Computing Lab
+('e5f6a7b8-c9d0-1234-5678-90abcdef1234', '22334455-6677-8899-00aa-bbccddeeff11'), -- david in AI Ethics Group (as leader)
+('b2c3d4e5-f6a7-8901-2345-67890abcdef1', '22334455-6677-8899-00aa-bbccddeeff11'), -- alice in AI Ethics Group
+('f6a7b8c9-d0e1-2345-6789-0abcdef12345', '22334455-6677-8899-00aa-bbccddeeff11'), -- eve in AI Ethics Group
+('d4e5f6a7-b8c9-0123-4567-890abcdef123', '33445566-7788-9900-aabb-ccddeeff1122'), -- carol in Robotics Research (as leader)
+('c3d4e5f6-a7b8-9012-3456-7890abcdef12', '33445566-7788-9900-aabb-ccddeeff1122'); -- bob in Robotics Research
 
+-- Mock Data for the 'publications' table
+INSERT INTO publications (id, title, journal, status, submitter_id, submitted_at) VALUES
+('44556677-8899-00aa-bbcc-ddeeff112233', 'A Novel Quantum Algorithm', 'Journal of Quantum Physics', 'APPROVED', 'b2c3d4e5-f6a7-8901-2345-67890abcdef1', NOW()), -- alice submitted
+('55667788-9900-aabb-ccdd-eeff11223344', 'Ethical Framework for Generative AI', 'AI Ethics Review', 'WAITING', 'e5f6a7b8-c9d0-1234-5678-90abcdef1234', NOW()), -- david submitted
+('66778899-00aa-bbcc-ddee-ff1122334455', 'Design of a Collaborative Robot Arm', 'Robotics Today', 'DRAFT', 'c3d4e5f6-a7b8-9012-3456-7890abcdef12', NOW()), -- bob submitted
+('77889900-aabb-ccdd-eeff-112233445566', 'Improving Qubit Stability', 'Physical Review Letters', 'WAITING', 'b2c3d4e5-f6a7-8901-2345-67890abcdef1', NOW()); -- alice submitted
 
-CREATE TABLE roles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(50) NOT NULL UNIQUE,
-    parent_role_id UUID REFERENCES roles(id)
-);
-
-CREATE TABLE permissions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(100) NOT NULL UNIQUE
-);
-
-CREATE TABLE role_permissions (
-    role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-    permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
-    context JSONB,
-    PRIMARY KEY (role_id, permission_id)
-);
-
-CREATE TABLE user_roles (
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-    attributes JSONB,
-    PRIMARY KEY (user_id, role_id)
-);
-
-CREATE TABLE publications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title VARCHAR(500) NOT NULL,
-    status publication_status NOT NULL DEFAULT 'DRAFT',
-    submitter_id UUID NOT NULL REFERENCES users(id),
-    submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE keywords (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    term VARCHAR(100) NOT NULL UNIQUE,
-    canonical_id UUID REFERENCES keywords(id)
-);
-
-CREATE TABLE publication_keywords (
-    publication_id UUID NOT NULL REFERENCES publications(id) ON DELETE CASCADE,
-    keyword_id UUID NOT NULL REFERENCES keywords(id) ON DELETE CASCADE,
-    PRIMARY KEY (publication_id, keyword_id)
-);
-
-CREATE TABLE publication_files (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    publication_id UUID NOT NULL REFERENCES publications(id) ON DELETE CASCADE,
-    content_hash BYTEA NOT NULL UNIQUE,
-    file_type VARCHAR(50) NOT NULL,
-    version INTEGER NOT NULL CHECK (version > 0),
-    valid_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    valid_to TIMESTAMPTZ,
-    EXCLUDE USING gist (publication_id WITH =, valid_from WITH <>, valid_to WITH <>)  -- No overlapping versions
-);
-
-CREATE TABLE chats (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user1_id UUID NOT NULL REFERENCES users(id),
-    user2_id UUID NOT NULL REFERENCES users(id),
-    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    last_message_at TIMESTAMPTZ,
-    EXCLUDE USING gist (
-        LEAST(user1_id, user2_id) WITH =,
-        GREATEST(user1_id, user2_id) WITH =
-    )
-);
-
-CREATE TABLE messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    chat_id UUID NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
-    sender_id UUID NOT NULL REFERENCES users(id),
-    content TEXT NOT NULL CHECK (length(content) > 0),
-    sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    search_vector TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', content)) STORED
-);
-
-CREATE INDEX idx_message_search ON messages USING GIN (search_vector);
-
-CREATE TABLE message_reads (
-    message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    read_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (message_id, user_id)
-);
-
+-- Mock Data for the 'publication_files' table
+INSERT INTO publication_files (id, file_type, file_path, publication_id) VALUES
+('889900aa-bbcc-ddee-ff11-223344556677', 'pdf', '/files/pub1_main.pdf', '44556677-8899-00aa-bbcc-ddeeff112233'), -- file for Quantum Algorithm
+('9900aabb-ccdd-eeff-1122-334455667788', 'latex', '/files/pub1_source.tex', '44556677-8899-00aa-bbcc-ddeeff112233'), -- file for Quantum Algorithm
+('aabbccdd-eeff-1122-3344-556677889900', 'pdf', '/files/pub2_draft.pdf', '55667788-9900-aabb-ccdd-eeff11223344'), -- file for AI Ethics Framework
+('bbccddff-ee11-2233-4455-6677889900aa', 'docx', '/files/pub3_report.docx', '66778899-00aa-bbcc-ddee-ff1122334455'); -- file for Robot Arm
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

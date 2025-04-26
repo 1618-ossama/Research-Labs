@@ -4,12 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sqlx = {version="0.8.3", features = ["postgres", "mysql", "runtime-tokio", "tls-native-tls", "time" ]}
+sqlx = { version = "0.8.3", features = ["uuid", "postgres", "mysql", "runtime-tokio", "tls-native-tls", "time"] }
 tokio = {version="1"}
 actix-web = "4.0"
 actix-rt = "2.5"
-serde = "1"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-uuid = {version = "1", features = ["v4"]}
+uuid = { version = "1", features = ["serde", "v4"] }
+time = { version = "0.3", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] }  # <--- this is what you're missing
 dotenv = "0.15"
+
+actix-cors = "0.7"
 

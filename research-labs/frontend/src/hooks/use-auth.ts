@@ -34,7 +34,7 @@ export const useAuthForm = (mode: AuthMode) => {
     setIsLoading(true);
 
     try {
-      const endpoint = (mode === 'login') ? 'http://127.0.0.1:3003/login' : 'http://127.0.0.1:3003/register';
+      const endpoint = (mode === 'login') ? 'http://127.0.0.1:3000/login' : 'http://127.0.0.1:3000/register';
 
       console.log('Submit to:', endpoint);
       console.log('Form data:', formData);

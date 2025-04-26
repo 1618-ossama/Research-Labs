@@ -1,11 +1,10 @@
 mod models;
+use actix_cors::Cors;
 use dotenv::dotenv;
 
 use repositories::postgres_db::PostgresDatabase;
-use routes::publication_route_config;
-use serde::Deserialize;
-use sqlx::{MySqlPool, PgPool};
-use std::sync::Mutex;
+use routes::route_config;
+use sqlx::PgPool;
 mod handler;
 mod routes;
 
@@ -13,7 +12,6 @@ mod repositories;
 use actix_web::{web::Data, App, HttpServer};
 use std::env;
 pub mod errors;
-use errors::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -29,9 +27,14 @@ async fn main() -> std::io::Result<()> {
 
     println!("api running at {host}:{port}");
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin() // or .allowed_origin("http://localhost:3000")
+            .allow_any_method()
+            .allow_any_header();
         App::new()
-            .configure(publication_route_config)
+            .configure(route_config)
             .app_data(Data::new(db_pool.clone()))
+            .wrap(cors)
     })
     .bind(format!("{host}:{port}"))?
     .run()
