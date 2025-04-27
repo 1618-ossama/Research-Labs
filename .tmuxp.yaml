@@ -1,0 +1,21 @@
+session_name: pfe 
+start_directory: ./             
+
+
+windows:
+  - window_name: editor
+    layout: main-vertical        # Example layout (tmux layouts: even-horizontal, even-vertical, main-horizontal, main-vertical, tiled)
+    panes:
+      - shell_command: nvim .    # Open Neovim (or your editor) in the main pane
+      - shell_command:            # Second pane (e.g., for git commands)
+          - git status
+      - focus: true              # Focus the first pane ('nvim .') on startup
+
+  - window_name: server
+    panes:
+      - shell_command: htop                        # Monitor system resources
+
+  - window_name: logs
+    panes:
+      - shell_command: tail -f logs/development.log # Tail development logs
+      - shell_command: tail -f logs/error.log       # Tail error logs

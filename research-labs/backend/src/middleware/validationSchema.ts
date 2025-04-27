@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import errorHandler from "../utils/errorHandler";
 
 export type RegistrationInput = z.infer<typeof registrationSchema>;
@@ -47,19 +47,39 @@ export const updateSchema = z.object({
     .optional(),
 });
 */
-export const validate = <T extends z.ZodTypeAny>(schema: T) =>
+
+export const validate =
+  <T extends z.ZodTypeAny>(schema: T) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
       req.body = schema.parse(req.body) as z.infer<T>;
       next();
     } catch (err) {
       if (err instanceof z.ZodError) {
-        const errors = err.errors.map(e => ({
-          path: e.path.join('.'),
+        const detailedErrors = err.errors.map((e) => ({
+          path: e.path.join("."),
           message: e.message,
+          code: e.code,
+          expected: (e as any).expected, // Zod error details
+          received: (e as any).received,
         }));
-        return next(new errorHandler.ValidationError('Schema validation error', errors));
+
+        console.error(
+          "Validation failed:",
+          JSON.stringify(detailedErrors, null, 2),
+        );
+
+        return next(
+          new errorHandler.ValidationError(
+            "Request body validation failed.",
+            detailedErrors,
+          ),
+        );
       }
-      next(new errorHandler.ValidationError('Schema validation error'));
+
+      console.error("Unexpected validation error:", err);
+      return next(
+        new errorHandler.ValidationError("Unexpected schema validation error"),
+      );
     }
   };

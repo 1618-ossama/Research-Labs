@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Search, Globe, User, Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Globe, Menu, Search, User, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { useScrollVisibility } from "@/hooks/use-scroll-visibility"
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useScrollVisibility } from "@/hooks/use-scroll-visibility";
 
 type navItemsType = {
   name: string;
@@ -31,19 +31,20 @@ const navItem = (links: navItemsType[]) =>
   ));
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { visible } = useScrollVisibility(100)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { visible } = useScrollVisibility(100);
 
   const navItems: navItemsType[] = [
     { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "publications", href: "/publications" },
+    { name: "Login", href: "/login" },
   ];
 
   return (
     <header
-      className={`sticky shadow-md top-0 z-50 w-full border-b bg-inherit transition-transform duration-300 ${visible ? "translate-y-0" : "-translate-y-full"
-        }`}
+      className={`sticky shadow-md top-0 z-50 w-full border-b bg-inherit transition-transform duration-300 ${
+        visible ? "translate-y-0" : "-translate-y-full"
+      }`}
     >
       <div className=" flex h-16 items-center justify-between w-full px-4 md:px-6">
         <div className="flex items-center gap-6 md:gap-10">
@@ -96,7 +97,9 @@ export default function Header() {
             className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileMenuOpen
+              ? <X className="h-5 w-5" />
+              : <Menu className="h-5 w-5" />}
             <span className="sr-only">Menu</span>
           </Button>
         </div>
@@ -106,7 +109,11 @@ export default function Header() {
         <div className="md:hidden border-t p-4 space-y-4 bg-background">
           <div className="relative mb-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search..." className="w-full pl-8 rounded-full bg-muted" />
+            <Input
+              type="search"
+              placeholder="Search..."
+              className="w-full pl-8 rounded-full bg-muted"
+            />
           </div>
           <nav className="flex flex-col space-y-4">
             {navItems.map((link) => (
@@ -122,6 +129,5 @@ export default function Header() {
         </div>
       )}
     </header>
-  )
+  );
 }
-
