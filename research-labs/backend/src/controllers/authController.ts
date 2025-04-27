@@ -28,6 +28,7 @@ const register = async (
       password_hash: password,
       role,
     });
+    console.log(req.body);
     const token = generateToken({ userId: userId as string, username, role });
     setAuthCookies(res, token);
 
