@@ -28,7 +28,6 @@ CREATE TABLE links(
 );
 
 
--- Table for publications 
 CREATE TABLE publications (
     id UUID PRIMARY KEY,
     title VARCHAR(500) NOT NULL,
@@ -40,7 +39,6 @@ CREATE TABLE publications (
     submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Table for publications files
 CREATE TABLE publication_files (
     id UUID PRIMARY KEY,
     file_type VARCHAR(50) NOT NULL,
@@ -61,7 +59,6 @@ CREATE TABLE groups(
 );
 
 
--- Table for group_user 
 CREATE TABLE group_user(
     user_id UUID NOT NULL REFERENCES users(id),
     group_id UUID NOT NULL REFERENCES groups(id),
@@ -69,7 +66,6 @@ CREATE TABLE group_user(
 );
 
 
--- Table for conferences
 CREATE TABLE conferences (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -88,12 +84,7 @@ CREATE TABLE Speaker (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-    
 
--- Update the publications table to include a conference reference
-
--- Table for messages (communication feature)
---
 CREATE TABLE messages (
     id UUID PRIMARY KEY,
     message TEXT NOT NULL,
@@ -103,7 +94,6 @@ CREATE TABLE messages (
     receiver_id UUID NOT NULL REFERENCES users(id)
 );
 
--- Table for notifications (communication feature)
 CREATE TABLE notifications (
     id UUID PRIMARY KEY,
     message TEXT NOT NULL,
