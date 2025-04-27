@@ -52,121 +52,119 @@ A full-stack web application for managing research publications, groups, and use
 - NPM .
 - PostgreSQL 
 
-### Steps
-
-
-
-
-
 ## Diagrams 
 
-User Registration Diagram :
 ```mermaid
-sequenceDiagram
-    participant R as Researcher
-    participant S as Server
-    participant DB as Database
 
-    R->>S: Submit Publication (title, journal)
-    S->>DB: INSERT INTO publications
-    DB-->>S: OK
-    S-->>R: Publication created
-
-    R->>S: Upload File (file_path, file_type)
-    S->>DB: INSERT INTO publication_files
-    DB-->>S: OK
-    S-->>R: File added
-
-    R->>S: Create Group (title, desc)
-    S->>DB: INSERT INTO groups
-    DB-->>S: OK
-    S-->>R: Group created
-
-    R->>S: Join Group
-    S->>DB: INSERT INTO group_user
-    DB-->>S: OK
-    S-->>R: Joined group
-
-```
-## Class Diagram :
-```mermaid
 classDiagram
     class User {
-        UUID id
-        String username
-        String email
-        String password_hash
-        String role (admin | researcher | leader)
-        Timestamp created_at
-        Timestamp updated_at
+        +id: String
+        +username: String
+        +email: String
+        +password_hash: String
+        +first_name: String
+        +last_name: String
+        +bio: String
+        +photo_url: String
+        +role: String
+        +status: String
+        +affiliation: String
+        +created_at: DateTime
+        +updated_at: DateTime
+    }
+
+    class Link {
+        +id: String
+        +type: String
+        +link: String
+        +user_id: String
     }
 
     class Publication {
-        UUID id
-        String title
-        Text journal
-        String status (DRAFT | APPROVED | WAITING)
-        UUID submitter_id
-        Timestamp submitted_at
+        +id: String
+        +title: String
+        +journal: String
+        +status: String
+        +visibility: String
+        +submitter_id: String
+        +conference_id: String
+        +submitted_at: DateTime
     }
 
     class PublicationFile {
-        UUID id
-        String file_type
-        String file_path
-        UUID publication_id
+        +id: String
+        +file_type: String
+        +file_path: String
+        +publication_id: String
     }
 
     class Group {
-        UUID id
-        String title
-        String description
-        String status (OPENED | CLOSED | DELETED)
-        Timestamp created_at
-        UUID leader_id
+        +id: String
+        +title: String
+        +description: String
+        +status: String
+        +created_at: DateTime
+        +leader_id: String
+        +publication_id: String
     }
 
     class GroupUser {
-        UUID leader_id
-        UUID group_id
+        +user_id: String
+        +group_id: String
+        +created_at: DateTime
     }
 
-    User "1" --> "0..*" Publication : submits
-    Publication "1" --> "0..*" PublicationFile : has files
-    User "1" --> "0..*" Group : leads
-    Group "1" --> "0..*" GroupUser : has members
-    User "1" --> "0..*" GroupUser : joins
+    class Conference {
+        +id: String
+        +name: String
+        +description: String
+        +location: String
+        +start_date: DateTime
+        +end_date: DateTime
+    }
+
+    class Speaker {
+        +id: Integer
+        +user_id: String
+        +conference_id: String
+        +affiliation: String
+        +title: String
+        +created_at: DateTime
+        +updated_at: DateTime
+    }
+
+    class Message {
+        +id: String
+        +message: String
+        +created_at: DateTime
+        +status: String
+        +sender_id: String
+        +receiver_id: String
+    }
+
+    class Notification {
+        +id: String
+        +message: String
+        +created_at: DateTime
+        +read_status: Boolean
+        +user_id: String
+    }
+
+    User "1" --> "*" Link : possède
+    User "1" --> "*" Publication : soumet
+    User "1" --> "*" GroupUser : participe à
+    User "1" --> "*" Message : envoie/reçoit
+    User "1" --> "*" Notification : reçoit
+    Group "1" --> "*" GroupUser : est composé de
+    Group "1" --> "1" User : a pour leader
+    Publication "1" --> "*" PublicationFile : contient
+    Publication "1" --> "*" Group : appartient à
+    Conference "1" --> "*" Speaker : organise
+    Publication "1" --> "*" Conference : est associée à
+
+
 ```
 
-## Sequence diagram
-```mermaid
-sequenceDiagram
-    participant Researcher
-    participant Application
-    participant Database
-
-    Researcher->>Application: Initiate Publication Submission
-    Application->>Application: Validate User Authentication/Authorization
-    Application->>Database: Query users table (Check submitter_id exists)
-    Database-->>Application: User validation result
-
-    alt User Validated
-        Application->>Database: Insert new record into publications table
-        Database-->>Application: New publication ID
-
-        Researcher->>Application: Upload Publication Files (e.g., PDF, LaTeX)
-        loop For each file
-            Application->>Application: Process File Upload
-            Application->>Database: Insert new record into publication_files table (linking to publication ID)
-            Database-->>Application: File record confirmation
-        end
-
-        Application->>Researcher: Confirmation of Publication Submission
-    else User Invalid
-        Application->>Researcher: Error: User not authorized or found
-    end
-
-```
 ## License
 
 This project is licensed under the MIT License.
