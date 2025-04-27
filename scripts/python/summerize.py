@@ -7,7 +7,6 @@ from nltk.tokenize import sent_tokenize
 import os
 import sys
 
-# --- CONFIGURATION VARIABLES ---
 PDF_PATH = "rust_research.pdf"  # Set your PDF file path here
 MODEL_NAME = "google/pegasus-large"  # Recommended smaller model for CPU
 
@@ -184,7 +183,11 @@ def main():
 
     print(f"[+] Loading summarization model '{MODEL_NAME}' on device {effective_device}...")
     try:
+<<<<<<< HEAD
         summarizer = pipeline("summarization", model=MODEL_NAME,device=effective_device)
+=======
+        summarizer = pipeline("summarization", model=MODEL_NAME,token="", device=effective_device)
+>>>>>>> 23b9847... Updates
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
         model_max_length = summarizer.model.config.max_position_embeddings
 
