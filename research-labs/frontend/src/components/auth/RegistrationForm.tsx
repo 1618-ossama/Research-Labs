@@ -17,10 +17,13 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/web
 const ACCEPTED_PDF_TYPES = ["application/pdf"];
 
 const formSchema = z.object({
+  first_name: z.string().min(3, { message: "Valid First Name required" }),
+  last_name: z.string().min(3, { message: "Valid Last Name required" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
   confirmPassword: z.string(),
-  phone: z.string().regex(/^\+?[0-9]{10,15}$/, { message: "Invalid phone number format" }),
+  phone: z.string().regex(/^\+?[0-9]{10,15}$/, { message: "Invalid phone number format" }).optional(),
   role: z.string().min(1, { message: "Role is required" }),
+  affiliation: z.string().optional(),
   bio: z.string().optional(),
   profileImage: z
     .instanceof(File, { message: "Please upload a profile image" })
@@ -51,7 +54,7 @@ const RoleOptions = [
 
 export function RegistrationForm() {
   const router = useRouter();
-  const { submitForm, isLoading, error } = useAuthForm("register");
+  const { submitForm } = useAuthForm("register");
   const { readValue, deleteValue } = useSessionStorage<{ username: string, email: string }>('FormPartOne');
   const [formData, setFormData] = useState<{ username?: string, email?: string } | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -62,7 +65,6 @@ export function RegistrationForm() {
     acceptedTypes: ACCEPTED_IMAGE_TYPES
   });
 
-  // Handle document upload
   const documentUpload = useFileUpload({
     type: 'pdf',
     maxSize: MAX_FILE_SIZE,
@@ -83,24 +85,14 @@ export function RegistrationForm() {
     handleSubmit,
     formState: { errors, isSubmitting, isSubmitSuccessful },
     setValue,
-    watch
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      password: "",
-      confirmPassword: "",
-      phone: "",
       role: "Guest",
-      bio: "",
       profileImage: undefined,
       document: null,
-      acceptTerms: false,
     },
   });
-
-  // Watch form values for validation display
-  const watchedRole = watch("role");
-  const watchedAcceptTerms = watch("acceptTerms");
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -113,7 +105,9 @@ export function RegistrationForm() {
       };
 
       const data = serializeFormData(completeData);
+      //@ts-expect-error : Never mind just ram it
       await submitForm(data);
+
 
       deleteValue();
       router.push("/");
@@ -123,14 +117,12 @@ export function RegistrationForm() {
     }
   };
 
-  // Set profile image value when file is selected
   useEffect(() => {
     if (profileImageUpload.file) {
       setValue("profileImage", profileImageUpload.file, { shouldValidate: true });
     }
   }, [profileImageUpload.file, setValue]);
 
-  // Set document value when file is selected
   useEffect(() => {
     if (documentUpload.file) {
       setValue("document", documentUpload.file, { shouldValidate: true });
@@ -139,65 +131,125 @@ export function RegistrationForm() {
 
   if (!formData && !isSubmitSuccessful) {
     return (
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md">
-        <div className="flex items-center justify-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="ml-2">Loading registration data...</span>
+      <div className="w-full max-w-lg mx-auto bg-white rounded-lg shadow-lg">
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+          <span className="ml-3 text-base font-medium text-gray-700">Loading registration data...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="p-6 border-b">
-        <h2 className="text-2xl font-semibold">Complete Registration</h2>
-        <p className="text-gray-500 mt-1">
-          Please fill in the details to complete your registration for {formData?.email}
+    <div className="w-full max-w-170 bg-white rounded-lg shadow-lg overflow-hidden transition-all">
+      <div className="px-6 py-6 sm:px-8 sm:py-8 border-b border-gray-200">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Complete Registration</h2>
+        <p className="mt-2 text-base text-gray-600">
+          Please fill in the details to complete your registration for{" "}
+          <span className="font-medium text-red-500">{formData?.username}</span>
         </p>
       </div>
 
-      {(error || submitError) && (
-        <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-300 rounded-md flex items-start">
-          <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+      {(submitError) && (
+        <div className="mx-6 sm:mx-8 mt-4 p-4 bg-red-50 border border-red-300 rounded-lg flex items-start">
+          <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
           <p className="text-red-800 text-sm">
-            {error || submitError}
+            {submitError}
           </p>
         </div>
       )}
 
-      <div className="p-6">
+      <div className="px-6 py-6 sm:px-8 sm:py-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+          <div className="space-y-2">
+            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+              First Name <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="first_name"
+                type="text"
+                className={`w-full px-4 py-2.5 rounded-lg border ${errors.first_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} focus:border-transparent focus:outline-none focus:ring-2 transition-colors`}
+                placeholder="Enter a first name"
+                {...register("first_name")}
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              Must be at least 3 characters
+            </p>
+            {errors.first_name && (
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.first_name.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+              Last Name <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="last_name"
+                type="text"
+                className={`w-full px-4 py-2.5 rounded-lg border ${errors.last_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} focus:border-transparent focus:outline-none focus:ring-2 transition-colors`}
+                placeholder="Enter a last name"
+                {...register("last_name")}
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              Must be at least 3 characters
+            </p>
+            {errors.last_name && (
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.last_name.message}
+              </p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
+              Password <span className="text-red-500">*</span>
             </label>
-            <input
-              id="password"
-              type="password"
-              className={`w-full px-3 py-2 border rounded-md ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
-              {...register("password")}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type="password"
+                className={`w-full px-4 py-2.5 rounded-lg border ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} focus:border-transparent focus:outline-none focus:ring-2 transition-colors`}
+                placeholder="Enter password"
+                {...register("password")}
+              />
+            </div>
             <p className="text-xs text-gray-500">
               Must be at least 8 characters with uppercase, lowercase, and numbers
             </p>
             {errors.password && (
-              <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-              Confirm Password
+              Confirm Password <span className="text-red-500">*</span>
             </label>
             <input
               id="confirmPassword"
               type="password"
-              className={`w-full px-3 py-2 border rounded-md ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
+              placeholder="Re-enter your password"
+              className={`w-full px-4 py-2.5 rounded-lg border ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} focus:border-transparent focus:outline-none focus:ring-2 transition-colors`}
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-red-500 mt-1">{errors.confirmPassword.message}</p>
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
@@ -208,71 +260,111 @@ export function RegistrationForm() {
             <input
               id="phone"
               type="tel"
-              placeholder="+1 1234567890"
-              className={`w-full px-3 py-2 border rounded-md ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
+              placeholder="+212 666666666"
+              className={`w-full px-4 py-2.5 rounded-lg border ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} focus:border-transparent focus:outline-none focus:ring-2 transition-colors`}
               {...register("phone")}
             />
-            <p className="text-xs text-gray-500">Include country code (e.g., +1 for US)</p>
+            <p className="text-xs text-gray-500">Include country code (e.g., +212 for Morocco)</p>
             {errors.phone && (
-              <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.phone.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-              Role
+            <label htmlFor="affiliation" className="block text-sm font-medium text-gray-700">
+              Affiliation
             </label>
-            <select
-              id="role"
-              className={`w-full px-3 py-2 border rounded-md bg-white ${errors.role ? 'border-red-500' : 'border-gray-300'}`}
-              {...register("role")}
-            >
-              {RoleOptions.map(role => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-            {errors.role && (
-              <p className="text-sm text-red-500 mt-1">{errors.role.message}</p>
+            <div className="relative">
+              <input
+                id="affiliation"
+                type="text"
+                className={`w-full px-4 py-2.5 rounded-lg border ${errors.affiliation ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} focus:border-transparent focus:outline-none focus:ring-2 transition-colors`}
+                placeholder="Your affiliation"
+                {...register("affiliation")}
+              />
+            </div>
+            {errors.affiliation && (
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.affiliation.message}
+              </p>
             )}
           </div>
+          <div className="space-y-2">
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+              Role <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <select
+                id="role"
+                className={`w-full px-4 py-2.5 rounded-lg border appearance-none bg-white ${errors.role ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} focus:border-transparent focus:outline-none focus:ring-2 transition-colors`}
+                {...register("role")}
+              >
+                {RoleOptions.map(role => (
+                  <option key={role.value} value={role.value}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"></path>
+                </svg>
+              </div>
+            </div>
+            {errors.role && (
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.role.message}
+              </p>
+            )}
+          </div>
+
 
           <div className="space-y-2">
             <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-              Bio (Optional)
+              Bio
             </label>
-            <input
+            <textarea
               id="bio"
-              type="text"
               placeholder="Tell us about yourself..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-transparent focus:outline-none focus:ring-2 transition-colors resize-none"
+              rows={4}
               {...register("bio")}
             />
             {errors.bio && (
-              <p className="text-sm text-red-500 mt-1">{errors.bio.message}</p>
+              <p className="text-sm text-red-600 flex items-center mt-1">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                {errors.bio.message}
+              </p>
             )}
           </div>
 
+
           <div className="space-y-2">
             <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700">
-              Profile Picture
+              Profile Picture <span className="text-red-500">*</span>
             </label>
             <FileUploadField
               type="image"
               previewUrl={profileImageUpload.previewUrl}
               onClear={() => {
                 profileImageUpload.clearFile();
+                //@ts-expect-error : Predictable
                 setValue("profileImage", undefined, { shouldValidate: true });
               }}
               onChange={profileImageUpload.handleFileChange}
               error={errors.profileImage?.message || profileImageUpload.error}
+              className="w-full"
             />
           </div>
 
           <div className="space-y-2">
             <label htmlFor="document" className="block text-sm font-medium text-gray-700">
-              Document Upload (Optional)
+              Document Upload
             </label>
             <FileUploadField
               type="pdf"
@@ -283,37 +375,45 @@ export function RegistrationForm() {
               }}
               onChange={documentUpload.handleFileChange}
               error={errors.document?.message || documentUpload.error}
+              className="w-full"
             />
           </div>
 
-          <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-            <input
-              id="acceptTerms"
-              type="checkbox"
-              className="h-4 w-4 mt-1 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
-              {...register("acceptTerms")}
-            />
-            <div className="space-y-1 leading-none">
-              <label htmlFor="acceptTerms" className="text-sm font-medium text-gray-700">
-                I accept the terms and conditions
-              </label>
-              <p className="text-xs text-gray-500">
-                By checking this box, you agree to our Terms of Service and Privacy Policy.
-              </p>
-              {errors.acceptTerms && (
-                <p className="text-sm text-red-500">{errors.acceptTerms.message}</p>
-              )}
+          <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 transition-all hover:bg-gray-100">
+            <div className="flex items-start space-x-3">
+              <div className="flex items-center h-5">
+                <input
+                  id="acceptTerms"
+                  type="checkbox"
+                  className={`h-4 w-4 rounded border ${errors.acceptTerms ? 'border-red-500' : 'border-gray-300'} text-blue-600 focus:ring-blue-500`}
+                  {...register("acceptTerms")}
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="acceptTerms" className="text-sm font-medium text-gray-700">
+                  I accept the terms and conditions <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  By checking this box, you agree to our Terms of Service and Privacy Policy.
+                </p>
+                {errors.acceptTerms && (
+                  <p className="text-sm text-red-600 flex items-center mt-2">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.acceptTerms.message}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading || isSubmitting}
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={isSubmitting}
           >
-            {isLoading || isSubmitting ? (
+            {isSubmitting ? (
               <span className="flex items-center justify-center">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Completing Registration...
               </span>
             ) : (
@@ -322,10 +422,11 @@ export function RegistrationForm() {
           </button>
         </form>
       </div>
-      <div className="px-6 py-4 border-t flex justify-center">
+
+      <div className="px-6 py-5 sm:px-8 border-t border-gray-200 flex justify-center bg-gray-50">
         <p className="text-sm text-gray-600">
           Already have an account?{" "}
-          <a href="/login" className="underline text-blue-600 hover:text-blue-800">
+          <a href="/login" className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-all">
             Sign in
           </a>
         </p>

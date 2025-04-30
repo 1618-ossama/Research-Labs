@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// register type definition with bio and avatar ....
-
 type FormData = {
   [key: string]: string;
 };
