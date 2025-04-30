@@ -8,6 +8,9 @@ import { Label } from "@components/ui/label"
 import Image from "next/image"
 import Link from "next/link"
 import { useAuthForm } from "@/hooks/use-auth"
+import useSessionStorage from "@/hooks/useSessionStorage"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface LogFormProps extends React.ComponentProps<"div"> {
   formPosition?: "left" | "right"
@@ -54,7 +57,6 @@ function LoginFormContent() {
 
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const data = Object.fromEntries(formData.entries()) as Record<string, string>;
-    console.log('Form data before submission:', data);
     try {
       await submitForm(data);
     } catch {
@@ -121,25 +123,48 @@ function LoginFormContent() {
 
 
 function RegisterFormContent() {
+  const { setValue } = useSessionStorage<{ username: string, email: string }>('FormPartOne');
+  const [form, setForm] = useState({ username: '', email: '' });
+  const router = useRouter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!form.username.trim() || !form.email.trim()) {
+      alert("Both fields are required.");
+      return;
+    }
+    setValue(form);
+    router.push(`/register/${encodeURIComponent(form.username)}?username=${encodeURIComponent(form.username)}`);
+  }
+
   return (
-    <form className="p-6 md:p-8">
+    <form className="p-6 md:p-8" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col items-center text-center">
           <h1 className="text-2xl font-bold">Welcome </h1>
           <p className="text-balance text-muted-foreground">Register a new account</p>
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="name">Full Name</Label>
-          <Input id="name" type="text" placeholder="Ahmed" required />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
-        </div>
+        {["username", "email"].map((field) => (
+          <div key={field} className="grid gap-2 text-left">
+            <Label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
+            <Input
+              id={field}
+              type={field === "email" ? "email" : "text"}
+              name={field}
+              placeholder={field === "email" ? "example@mail.com" : "Username"}
+              value={form[field as "username" | "email"]}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        ))}
+
         <Button type="submit" className="w-full">
-          <Link href="/register/id" >
-            Continue
-          </Link>
+          Continue
         </Button>
         <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
           <span className="relative z-10 bg-background px-2 text-muted-foreground">Or continue with</span>
@@ -172,7 +197,7 @@ function RegisterFormContent() {
         </div>
 
       </div>
-    </form>
+    </form >
   )
 }
 

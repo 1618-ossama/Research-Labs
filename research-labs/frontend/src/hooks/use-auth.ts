@@ -35,23 +35,15 @@ export const useAuthForm = (mode: AuthMode) => {
 
     try {
       const endpoint = (mode === "login")
-        ? "http://127.0.0.1:3000/login"
-        : "http://127.0.0.1:3000/register";
-
-      console.log("Submit to:", endpoint);
-      console.log("Form data:", formData);
-
-      const requestData = (mode === "login")
-        ? { identifier: formData.identifier, password: formData.password }
-        : formData;
+        ? "http://127.0.0.1:3005/login"
+        : "http://127.0.0.1:3005/register";
 
       const response = await fetch(endpoint, {
         method: "POST",
-        mode: "no-cors",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(formData),
       });
 
       const data: AuthResponse = await response.json();
@@ -66,13 +58,11 @@ export const useAuthForm = (mode: AuthMode) => {
       }
 
       if (mode === "login" && data.token) {
-        document.cookie =
-          `token=${data.token}; path=/; secure; samesite=strict`;
+        document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
         router.push("/");
       } else if (mode === "register") {
-        router.push(
-          `/verify-email?email=${encodeURIComponent(formData.email)}`,
-        );
+        // router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+        router.push("/register")
       }
 
       return data;

@@ -29,14 +29,14 @@ declare global {
  */
 const generateToken = (payload: TokenPayload): string => {
   const options: SignOptions = {
-    expiresIn: parseInt(config.jwtExpiresIn),
+    expiresIn: parseInt(config.jwtExpiresInAccess),
   };
-  return jwt.sign(payload, config.jwtSecret as Secret, options);
+  return jwt.sign(payload, config.jwtSecretAccess as Secret, options);
 };
 
 const verifyToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, config.jwtSecret) as TokenPayload;
+    return jwt.verify(token, config.jwtSecretAccess) as TokenPayload;
   } catch (error) {
     if (error instanceof TokenExpiredError) {
       throw new errorHandler.InvalidTokenError("Token has expired");
@@ -57,7 +57,7 @@ const setAuthCookies = (res: Response, accessToken: string): void => {
   res.cookie(cookie_name, accessToken, {
     httpOnly: true,
     secure: false, // temporary option
-    maxAge: parseInt(config.jwtExpiresIn) * 1000,
+    maxAge: parseInt(config.jwtExpiresInAccess) * 1000,
   } as CookieOptions);
 };
 

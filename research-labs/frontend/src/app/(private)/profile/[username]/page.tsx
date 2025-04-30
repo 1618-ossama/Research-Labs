@@ -13,7 +13,7 @@ async function getUser(username: string) {
   await new Promise((resolve) => setTimeout(resolve, 500))
 
   const users = {
-    jsmith: {
+    "jsmith": {
       id: "1",
       username: "jsmith",
       name: "Dr. Jane Smith",
@@ -67,12 +67,12 @@ async function getUser(username: string) {
     },
   }
 
-  return users[username] || null
+  return users[username] || null;
 }
 
 async function getPublications(userId: string) {
   await new Promise((resolve) => setTimeout(resolve, 300))
-
+  userId.substring(1);
   return [
     {
       id: "1",
@@ -181,7 +181,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
               <div>
                 <h4 className="font-medium mb-2">Research Interests</h4>
                 <div className="flex flex-wrap gap-2">
-                  {user.interests.map((interest) => (
+                  {user.interests.map((interest: string) => (
                     <Badge key={interest} variant="secondary">
                       {interest}
                     </Badge>

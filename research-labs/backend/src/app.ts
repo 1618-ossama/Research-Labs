@@ -6,9 +6,8 @@ import authRouter from "./routes/authRoutes";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import errorMiddleware from "./middleware/errorMiddleware";
-import { type User } from "./utils/types";
-import { getUserById } from "./db/db";
 import { rateLimiter } from "./middleware/rateLimiter";
+import errorHandler from "@utils/errorHandler";
 
 process.on(
   "unhandledRejection",
@@ -26,7 +25,22 @@ process.on("uncaughtException", (err: Error) => {
 });
 
 const app: Express = express();
+const OptionsCors: CorsOptions = {
+  origin: (origin, callback) => {
 
+    const origin_tf = origin || '';
+    const allowed = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+    if (allowed.includes(origin_tf)) {
+      callback(null, true);
+    } else {
+      callback(new errorHandler.ExternalServiceError('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}
+
+app.use(cors(OptionsCors));
 app.use(helmet());
 app.use(rateLimiter);
 app.use(express.json());
