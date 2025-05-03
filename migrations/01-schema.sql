@@ -101,3 +101,43 @@ CREATE TABLE notifications (
     read_status BOOLEAN DEFAULT FALSE,
     user_id UUID NOT NULL REFERENCES users(id)
 );
+
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_users_modtime 
+BEFORE UPDATE ON users 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_links_modtime 
+BEFORE UPDATE ON links 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_conferences_modtime 
+BEFORE UPDATE ON conferences 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_publications_modtime 
+BEFORE UPDATE ON publications 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_groups_modtime 
+BEFORE UPDATE ON groups 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_speaker_modtime 
+BEFORE UPDATE ON Speaker 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_messages_modtime 
+BEFORE UPDATE ON messages 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_notifications_modtime 
+BEFORE UPDATE ON notifications 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-const envPath = path.resolve(__dirname, '../.env');
+const envPath = path.resolve(__dirname, '../../.env');
 dotenv.config({ path: envPath });
 
 interface EmailConfig {
@@ -28,9 +28,9 @@ const config: AppConfig = {
   env: process.env,
   port: parseInt(process.env.PORT || '3005', 10),
   jwtSecretAccess: process.env.JWT_SECRET as string || "access",
-  jwtExpiresInAccess: process.env.JWT_EXPIRES_IN || '1h',
+  jwtExpiresInAccess: process.env.JWT_EXPIRES_IN_ACCESS || '1h',
   jwtSecretRefresh: process.env.JWT_SECRET_REFRESH as string || 'refresh',
-  jwtExpiresInRefresh: process.env.JWT_EXPIRES_IN_REFRESH || '1',
+  jwtExpiresInRefresh: process.env.JWT_EXPIRES_IN_REFRESH || '7d',
   saltRounds: parseInt(process.env.SALTROUNDS || '10', 10),
   email: {
     host: process.env.EMAIL_HOST as string,

@@ -9,36 +9,9 @@ import PublicationCard from "@/components/profile/publication-card"
 import ProfileHeader from "@/components/profile/profile-header"
 
 async function getUser(username: string) {
-  // simulate gettings new user
   await new Promise((resolve) => setTimeout(resolve, 500))
 
   const users = {
-    "jsmith": {
-      id: "1",
-      username: "jsmith",
-      name: "Dr. Jane Smith",
-      avatar: "/placeholder.svg?height=300&width=300",
-      coverImage: "/placeholder.svg?height=400&width=1200",
-      title: "Associate Professor of Molecular Biology",
-      affiliation: "Stanford University",
-      location: "Stanford, CA",
-      email: "jane.smith@stanford.edu",
-      website: "https://janesmith.research.edu",
-      bio: "Researching molecular mechanisms of cellular aging and regeneration with a focus on therapeutic applications.",
-      interests: ["Molecular Biology", "Cellular Aging", "Regenerative Medicine", "Gene Therapy"],
-      stats: {
-        publications: 47,
-        citations: 1283,
-        hIndex: 18,
-        followers: 215,
-      },
-      isCurrentUser: false,
-      isFollowing: false,
-      privacySettings: {
-        email: "public",
-        publications: "public",
-      },
-    },
     "current-user": {
       id: "2",
       username: "current-user",
