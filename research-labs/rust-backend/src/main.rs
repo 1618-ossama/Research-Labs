@@ -16,9 +16,10 @@ pub mod errors;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let host = env::var("HOST").unwrap();
-    let port = env::var("PORT").unwrap();
+    let host = env::var("RUST_HOST").unwrap();
+    let port = env::var("RUST_PORT").unwrap();
 
+    println!("database url: {}", &env::var("DATABASE_URL").unwrap());
     let db_pool = PostgresDatabase::new(
         PgPool::connect(&env::var("DATABASE_URL").unwrap())
             .await
@@ -28,7 +29,7 @@ async fn main() -> std::io::Result<()> {
     println!("api running at {host}:{port}");
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allow_any_origin() // or .allowed_origin("http://localhost:3000")
+            .allow_any_origin()
             .allow_any_method()
             .allow_any_header();
         App::new()
