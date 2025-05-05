@@ -2,6 +2,7 @@ use crate::errors::*;
 use crate::models::publication::{Group, Publication, PublicationFile};
 use sqlx::postgres::Postgres;
 use sqlx::{query, Pool};
+
 use uuid::Uuid;
 
 use super::database::Database;
@@ -17,7 +18,7 @@ impl Clone for PostgresDatabase {
 }
 impl PostgresDatabase {
     pub fn new(pool: Pool<Postgres>) -> Self {
-        PostgresDatabase { pool: pool }
+        PostgresDatabase { pool }
     }
 }
 impl Database for PostgresDatabase {
@@ -38,8 +39,15 @@ impl Database for PostgresDatabase {
         Ok(publication)
     }
 
+    // delete pub
+    async fn delete_publication(&self, publication_id: Uuid) -> Result<()> {
+        let _ = query!("Delete from publications where id=$1", publication_id)
+            .execute(&self.pool)
+            .await?;
+        return Ok(());
+    }
+
     async fn get_publications(&self) -> Result<Vec<Publication>> {
-        let record: Vec<Publication>;
         let res = query!("Select * from publications")
             .map(|record| Publication {
                 id: record.id,
@@ -53,6 +61,7 @@ impl Database for PostgresDatabase {
             .await?;
         return Ok(res);
     }
+
     async fn add_publication(
         &self,
         title: String,
@@ -75,11 +84,11 @@ impl Database for PostgresDatabase {
         println!("Inserted Problem:{:?}", title);
         Ok(())
     }
+
     async fn get_publications_by_user(
         &self,
         user_id: Uuid,
     ) -> Result<Vec<crate::models::publication::Publication>> {
-        let record: Vec<Publication>;
         let res = query!("Select * from publications where submitter_id=$1", user_id)
             .map(|record| Publication {
                 id: record.id,
@@ -154,8 +163,8 @@ impl Database for PostgresDatabase {
             Group,
             "SELECT g.id, g.title, g.description, g.status, g.created_at, g.leader_id
          FROM groups g
-         JOIN group_user gu ON gu.group_id = g.id
-         WHERE gu.leader_id = $1",
+         JOIN group_user gu ON gu.group_id= g.id
+         WHERE gu.user_id = $1",
             user_id
         )
         .fetch_all(&self.pool)
@@ -178,7 +187,7 @@ impl Database for PostgresDatabase {
     // GROUP-USER
     async fn add_user_to_group(&self, leader_id: Uuid, group_id: Uuid) -> Result<()> {
         sqlx::query!(
-            "INSERT INTO group_user (leader_id, group_id) VALUES ($1, $2)",
+            "INSERT INTO group_user (user_id, group_id) VALUES ($1, $2)",
             leader_id,
             group_id
         )

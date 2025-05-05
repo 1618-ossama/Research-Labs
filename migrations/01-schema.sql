@@ -27,6 +27,14 @@ CREATE TABLE links(
 
 );
 
+CREATE TABLE conferences (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL
+);
 
 CREATE TABLE publications (
     id UUID PRIMARY KEY,
@@ -66,16 +74,8 @@ CREATE TABLE group_user(
 );
 
 
-CREATE TABLE conferences (
-    id UUID PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    location VARCHAR(255) NOT NULL,
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL
-);
 
-CREATE TABLE Speaker (
+CREATE TABLE speaker (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     conference_id UUID NOT NULL REFERENCES conferences(id),

@@ -25,7 +25,31 @@ pub async fn add_publication(
     }
 }
 
-/// Get a publication by ID
+/// Delete a publication by ID
+pub async fn delete_publication(
+    db: web::Data<PostgresDatabase>,
+    id: web::Path<Uuid>,
+) -> HttpResponse {
+    println!("Delete request for publication with the id: {}", id.clone());
+    match db.delete_publication(id.into_inner()).await {
+        Ok(publi) => HttpResponse::Ok().json(publi),
+        Err(_) => HttpResponse::NotFound().finish(),
+    }
+}
+
+/// Delete a publication by ID
+// pub async fn update_status_publication(
+//     db: web::Data<PostgresDatabase>,
+//     id: web::Path<Uuid>,
+//     status: web::Path<String>,
+// ) -> HttpResponse {
+//     println!("Update status for {} to {}", id.clone(), status);
+//     match db.update_publication(id.into_inner()).await {
+//         Ok(publi) => HttpResponse::Ok().json(publi),
+//         Err(_) => HttpResponse::NotFound().finish(),
+//     }
+// }
+//
 pub async fn get_publication(db: web::Data<PostgresDatabase>, id: web::Path<Uuid>) -> HttpResponse {
     match db.get_publication(id.into_inner()).await {
         Ok(publi) => HttpResponse::Ok().json(publi),

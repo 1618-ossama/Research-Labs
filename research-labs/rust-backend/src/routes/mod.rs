@@ -5,9 +5,15 @@ use crate::handler::publication_handler::*;
 pub fn route_config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api")
+            .route("/", web::get().to(get_publications))
             .route("/publications", web::post().to(add_publication))
             .route("/publications", web::get().to(get_publications))
             .route("/publications/{id}", web::get().to(get_publication))
+            .route("/publications/{id}", web::delete().to(delete_publication))
+            // .route(
+            //     "/publications/update-status",
+            //     web::update().to(update_status_publication),
+            // )
             .route(
                 "/publications/user/{id}",
                 web::get().to(get_publications_by_user),

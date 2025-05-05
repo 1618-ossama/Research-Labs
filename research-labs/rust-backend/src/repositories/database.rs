@@ -13,6 +13,7 @@ pub trait Database {
         submitter_id: Uuid,
     ) -> Result<()>;
 
+    async fn delete_publication(&self, publication_id: Uuid) -> Result<()>;
     async fn get_publication(&self, publication_id: Uuid) -> Result<Publication>;
     async fn get_publications(&self) -> Result<Vec<Publication>>;
     // PUBLICATION FILES
