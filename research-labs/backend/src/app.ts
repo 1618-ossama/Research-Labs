@@ -6,44 +6,69 @@ import authRouter from "./routes/authRoutes";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import errorMiddleware from "./middleware/errorMiddleware";
-import { type User } from "./utils/types";
-import { getUserById } from "./db/db";
 import { rateLimiter } from "./middleware/rateLimiter";
+import errorHandler from "./utils/errorHandler";
+import profileRouter from "./routes/profileRoutes";
 
-process.on(
-  "unhandledRejection",
-  (reason: unknown, promise: Promise<unknown>) => {
-    console.error("UNHANDLED REJECTION! Shutting down...");
-    console.error("Reason:", reason);
-    console.error("Promise:", promise);
-  },
+process.on("unhandledRejection", (reason: unknown, promise: Promise<unknown>) => {
+  console.error("UNHANDLED REJECTION! Logging error to console...");
+  console.error("Reason:", reason);
+  console.error("Promise:", promise);
+},
 );
 
 process.on("uncaughtException", (err: Error) => {
-  console.error("UNCAUGHT EXCEPTION! Shutting down...");
+  console.error("UNCAUGHT EXCEPTION! Logging error to console...");
   console.error(err.name, err.message);
-  process.exit(1);
+  if (err instanceof errorHandler.ApplicationError && !err.isOperational) {
+    console.error("Non-operational error. Shutting down...");
+    process.exit(1);
+  }
 });
 
 const app: Express = express();
+const OptionsCors: CorsOptions = {
+  origin: (origin, callback) => {
 
+    const origin_tf = origin || '';
+    const allowed = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+    if (allowed.includes(origin_tf)) {
+      callback(null, true);
+    } else {
+      callback(new errorHandler.ExternalServiceError('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}
+
+//app.use(cors(OptionsCors)); // postman not allowed
 app.use(helmet());
 app.use(rateLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use("/", authRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/profiles', profileRouter);
 
 app.use(errorMiddleware);
 
-app.listen(config.port, async () => {
-  try {
-    console.log(`Server running on port: ${config.port}`);
-  } catch (error) {
-    console.error("Failed to initialize database:", error);
-    process.exit(1);
-  }
+const server = app.listen(config.port, () => {
+  console.log(`Server running on port: ${config.port}`);
 });
 
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('Process terminated.');
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('Process terminated.');
+  });
+});
 export default app;

@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, {
   JsonWebTokenError,
+  TokenExpiredError,
   Secret,
   SignOptions,
-  TokenExpiredError,
 } from "jsonwebtoken";
 import config from "../config/config";
 import {
   type CookieOptions,
-  Role,
   type TokenPayload,
+  Role,
   User,
 } from "../utils/types";
 import * as errorHandler from "../utils/errorHandler";
@@ -22,66 +22,71 @@ declare global {
   }
 }
 
-/**
- * Generates a JWT token
- * @param payload - Data to include in the token
- * @returns Signed JWT token
- */
-const generateToken = (payload: TokenPayload): string => {
+const generateToken = (payload: TokenPayload, type: 'access' | 'refresh' = 'access'): string => {
+  const secret = type === 'access' ? config.jwtSecretAccess : config.jwtSecretRefresh;
+  const expire = type === 'access' ?
+    parseInt(config.jwtExpiresInAccess) * 60 * 60 :
+    parseInt(config.jwtExpiresInRefresh) * 24 * 60 * 60;
+
   const options: SignOptions = {
-    expiresIn: parseInt(config.jwtExpiresIn),
+    expiresIn: expire,
   };
-  return jwt.sign(payload, config.jwtSecret as Secret, options);
+  return jwt.sign(payload, secret as Secret, options);
 };
 
-const verifyToken = (token: string): TokenPayload => {
+const verifyToken = (token: string, type: 'access' | 'refresh' = 'access'): TokenPayload => {
+  const secret = type === 'access' ? config.jwtSecretAccess : config.jwtSecretRefresh;
   try {
-    return jwt.verify(token, config.jwtSecret) as TokenPayload;
+    return jwt.verify(token, secret) as TokenPayload;
   } catch (error) {
     if (error instanceof TokenExpiredError) {
-      throw new errorHandler.InvalidTokenError("Token has expired");
+      throw new errorHandler.InvalidTokenError(`${type} token has expired`, {
+        context: { tokenType: type }
+      });
     } else if (error instanceof JsonWebTokenError) {
-      throw new errorHandler.InvalidTokenError("Invalid token");
+      throw new errorHandler.InvalidTokenError(`Invalid ${type} token`, {
+        context: { tokenType: type }
+      });
     }
-    throw error;
+    throw new errorHandler.InvalidTokenError('Verification of token error.');
   }
 };
 
-/**
- * Sets authentication cookies in the response
- * @param res - Express response object
- * @param accessToken - JWT token to set in cookies
- */
-const cookie_name = "AuthToken";
-const setAuthCookies = (res: Response, accessToken: string): void => {
-  res.cookie(cookie_name, accessToken, {
+const setAuthCookies = (res: Response, accessToken: string, refreshToken: string): void => {
+  res.cookie("AccessTokenCookie", accessToken, {
     httpOnly: true,
-    secure: false, // temporary option
-    maxAge: parseInt(config.jwtExpiresIn) * 1000,
+    // secure: true, 
+    maxAge: parseInt(config.jwtExpiresInAccess) * 60 * 60 * 1000,
+  } as CookieOptions);
+
+  res.cookie("RefreshTokenCookie", refreshToken, {
+    httpOnly: true,
+    // secure: true, 
+    maxAge: parseInt(config.jwtExpiresInRefresh) * 24 * 60 * 60 * 1000,
   } as CookieOptions);
 };
 
 const clearAuthCookie = (res: Response): void => {
-  res.clearCookie("token", {
+  res.clearCookie("AccessTokenCookie", {
     httpOnly: true,
-    secure: true,
+    // secure: true,
   });
+  res.clearCookie("RefreshTokenCookie", {
+    httpOnly: true,
+    // secure: true,
+    //path: '/api/auth/refresh',
+  });
+
 };
 
-/**
- * Middleware to authenticate the request
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next function
- */
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies?.[cookie_name];
+  const accessToken = req.cookies?.["AccessTokenCookie"];
 
-  if (!token) {
+  if (!accessToken) {
     return next(new errorHandler.UnauthorizedError("No token provided"));
   }
   try {
-    const decoded = verifyToken(token);
+    const decoded = verifyToken(accessToken);
     req.user = decoded;
     next();
   } catch (err) {
@@ -89,11 +94,6 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-/**
- * Middleware to authorize the request based on roles
- * @param allowedRoles - Array of roles allowed to access the route
- * @returns Middleware function
- */
 const authorize = (allowedRoles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -102,10 +102,28 @@ const authorize = (allowedRoles: Role[]) => {
 
     if (!allowedRoles.includes(req.user.role)) {
       return next(
-        new errorHandler.UnauthorizedError("Insufficient permissions"),
+        new errorHandler.UnauthorizedError("Insufficient permissions", {
+          context: {
+            requiredRoles: allowedRoles,
+            userRole: req.user.role
+          }
+        }),
       );
     }
     next();
+  };
+};
+
+const generateAuthTokens = (user: User) => {
+  const payload: TokenPayload = {
+    userId: user.id as string,
+    username: user.username,
+    role: user.role,
+  };
+
+  return {
+    accessToken: generateToken(payload, "access"),
+    refreshToken: generateToken(payload, "refresh"),
   };
 };
 
@@ -116,4 +134,5 @@ export {
   generateToken,
   setAuthCookies,
   verifyToken,
+  generateAuthTokens
 };

@@ -37,14 +37,12 @@ export default function Header() {
   const navItems: navItemsType[] = [
     { name: "Home", href: "/" },
     { name: "publications", href: "/publications" },
-    { name: "Login", href: "/login" },
   ];
 
   return (
     <header
-      className={`sticky shadow-md top-0 z-50 w-full border-b bg-inherit transition-transform duration-300 ${
-        visible ? "translate-y-0" : "-translate-y-full"
-      }`}
+      className={`sticky shadow-md top-0 z-50 w-full border-b bg-inherit transition-transform duration-300 ${visible ? "translate-y-0" : "-translate-y-full"
+        }`}
     >
       <div className=" flex h-16 items-center justify-between w-full px-4 md:px-6">
         <div className="flex items-center gap-6 md:gap-10">
@@ -85,12 +83,23 @@ export default function Header() {
               <DropdownMenuItem>French</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="ghost" size="icon" className="relative" asChild>
-            <Link href="/login">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Sign In</span>
-            </Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Sign In</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/login">Login</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/register">Register</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+
+          </DropdownMenu>
           <Button
             variant="ghost"
             size="icon"

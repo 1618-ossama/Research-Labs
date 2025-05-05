@@ -3,14 +3,39 @@ import * as bcrypt from 'bcrypt';
 import config from '../config/config';
 import { type User } from '../utils/types';
 import errorHandler from '../utils/errorHandler';
+import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
+const RETRY = 5;
+const DELAY = 5000;
 
-prisma.$connect()
-  .then(() => console.log('Connected to database'))
-  .catch(err => {
-    console.error('Database connection failed:', err);
-    throw new errorHandler.DatabaseError('Database connection failed');
+async function connectDB(left_try: number = RETRY, attemps: number = 1): Promise<boolean> {
+  try {
+    await prisma.$connect();
+    console.log('Connected to database');
+    return true;
+  } catch (error) {
+    console.log(`Attemp ${attemps} failed : `, error);
+    if (left_try > 0) {
+      console.log(`Retry attemps after ${DELAY / 1000} seconds... , [${left_try - 1} attemp left...]`);
+      await new Promise(resolve => { setTimeout(resolve, DELAY) });
+      return connectDB(left_try - 1, attemps + 1);
+    } else {
+      console.log(`Max attemps number reached , Unable to connect to DB`);
+      process.exitCode = 1;
+      return false;
+    }
+  }
+}
+
+connectDB()
+  .then(success => {
+    if (!success) {
+      console.log("Retry Connection in 5 min");
+      setTimeout(() => {
+        connectDB();
+      }, 5 * 60 * 1000);
+    }
   });
 
 function handlePrismaError(error: unknown): never {
@@ -24,65 +49,74 @@ function handlePrismaError(error: unknown): never {
       case 'P2002':
         throw new errorHandler.ValidationError(`Username or email already exists`);
       default:
-        throw new errorHandler.DatabaseError('Database operation failed');
+        throw new errorHandler.DatabaseError('Database operation failed', {
+          context: { Context_message: error.message },
+        });
     }
   }
   if (error instanceof Prisma.PrismaClientValidationError) {
     throw new errorHandler.ValidationError('Invalid data format');
   }
+  if (error instanceof errorHandler.ApplicationError) {
+    throw error;
+  }
   throw new errorHandler.ApplicationError('Unexpected error');
 }
 
-async function createUser(user_data: User): Promise<string> {
-    console.log(user_data);
+async function safeDbOperation<T>(operation: () => Promise<T>): Promise<T> {
   try {
-    if (!user_data.username || !user_data.email || !user_data.password_hash) {
-      throw new errorHandler.ValidationError('Missing required fields');
-    }
+    return await operation();
+  } catch (error) {
+    console.error('Database operation failed [Safe DB error] :', error);
+    handlePrismaError(error);
+  }
+}
 
-    console.log(user_data);
+async function createUser(user_data: User): Promise<string> {
+  return safeDbOperation(async () => {
+    const required_field = ['username', 'email', 'password_hash', 'role', 'first_name', 'last_name'] as const;
+    required_field.forEach((element) => {
+      if (!user_data[element]) {
+        throw new errorHandler.ValidationError('Missing required fields', [element]);
+      }
+    });
+
     const hashedPassword = await bcrypt.hash(user_data.password_hash, config.saltRounds);
-
     const newUser = await prisma.users.create({
       data: {
         ...user_data,
+        id: uuidv4(),
         password_hash: hashedPassword,
       },
     });
 
     return newUser.id as string;
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function getUserById(id: string): Promise<User | null> {
-  try {
+  return safeDbOperation(async () => {
     const user = await prisma.users.findUnique({
       where: {
         id
       },
     });
     return user as User;
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function getUserByEmail(email: string): Promise<User | null> {
-  try {
+  return safeDbOperation(async () => {
     return await prisma.users.findUnique({
       where: {
         email
       },
     }) as User;
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function updateUser(userId: string, user_data: Partial<User>): Promise<string | undefined> {
-  try {
+  return safeDbOperation(async () => {
     if (!user_data) {
       throw new errorHandler.ValidationError('No data to update');
     }
@@ -100,13 +134,11 @@ async function updateUser(userId: string, user_data: Partial<User>): Promise<str
     });
 
     return updatedUser.id;
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function deleteUser(userId: string): Promise<boolean> {
-  try {
+  return safeDbOperation(async () => {
     const deletedUser = await prisma.users.delete({
       where: {
         id: userId,
@@ -114,22 +146,18 @@ async function deleteUser(userId: string): Promise<boolean> {
     });
 
     return true;
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function getAllUsers(): Promise<User[]> {
-  try {
+  return safeDbOperation(async () => {
     const users = await prisma.users.findMany();
     return users as User[];
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function verifyUserCredentials(identifier: string, password: string): Promise<User> {
-  try {
+  return safeDbOperation(async () => {
     const user = await prisma.users.findFirst({
       where: {
         OR: [
@@ -150,13 +178,11 @@ async function verifyUserCredentials(identifier: string, password: string): Prom
     // or use the select prisma option 
     const { password_hash, created_at, updated_at, ...userReturn } = user;
     return userReturn as User;
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function userExists(identifier: string): Promise<boolean> {
-  try {
+  return safeDbOperation(async () => {
     const user = await prisma.users.findFirst({
       where: {
         OR: [
@@ -168,17 +194,13 @@ async function userExists(identifier: string): Promise<boolean> {
     });
 
     return !!user;
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 async function countUsers(): Promise<number> {
-  try {
+  return safeDbOperation(async () => {
     return await prisma.users.count();
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 export {
