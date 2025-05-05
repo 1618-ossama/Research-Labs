@@ -10,16 +10,20 @@ import useFileUpload from "@/hooks/useFileUpload";
 import FileUploadField from "@/components/auth/FileUploadField";
 import { useAuthForm } from "@/hooks/use-auth";
 import useSessionStorage from "@/hooks/useSessionStorage";
-import { serializeFormData } from "@/lib/serializeFormData";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const ACCEPTED_PDF_TYPES = ["application/pdf"];
 
 const formSchema = z.object({
-  first_name: z.string().min(3, { message: "Valid First Name required" }),
-  last_name: z.string().min(3, { message: "Valid Last Name required" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  first_name: z.string().min(3, { message: "First name must be at least 3 characters" }),
+  last_name: z.string().min(3, { message: "Last name must be at least 3 characters" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+    .regex(/\d/, { message: "Password must contain at least one number" }),
   confirmPassword: z.string(),
   phone: z.string().regex(/^\+?[0-9]{10,15}$/, { message: "Invalid phone number format" }).optional(),
   role: z.string().min(1, { message: "Role is required" }),
@@ -46,10 +50,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const RoleOptions = [
-  { value: "Leader", label: "Leader" },
-  { value: "Researcher", label: "Researcher" },
-  { value: "Guest", label: "Guest" },
-  { value: "Other", label: "Other" },
+  { value: "LEADER", label: "Leader" },
+  { value: "RESEARCHER", label: "Researcher" },
+  { value: "GUEST", label: "Guest" },
 ] as const;
 
 export function RegistrationForm() {
@@ -88,7 +91,7 @@ export function RegistrationForm() {
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      role: "Guest",
+      role: "GUEST",
       profileImage: undefined,
       document: null,
     },
@@ -98,16 +101,20 @@ export function RegistrationForm() {
     try {
       setSubmitError(null);
 
-      const completeData = {
-        ...values,
+      const userData = {
         username: formData?.username,
         email: formData?.email,
+        password_hash: values.password,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        role: values.role,
+        phone: values.phone || undefined,
+        affiliation: values.affiliation || undefined,
+        bio: values.bio || undefined
       };
 
-      const data = serializeFormData(completeData);
-      //@ts-expect-error : Never mind just ram it
-      await submitForm(data);
-
+      //@ts-expect-error : weak controllable type error
+      await submitForm(userData);
 
       deleteValue();
       router.push("/");
@@ -353,7 +360,7 @@ export function RegistrationForm() {
               previewUrl={profileImageUpload.previewUrl}
               onClear={() => {
                 profileImageUpload.clearFile();
-                //@ts-expect-error : Predictable
+                //@ts-expect-error : to be ignored
                 setValue("profileImage", undefined, { shouldValidate: true });
               }}
               onChange={profileImageUpload.handleFileChange}

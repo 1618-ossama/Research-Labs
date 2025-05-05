@@ -1,3 +1,9 @@
+export default function hello() {
+  return null;
+}
+
+
+/*
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose' // Add jose for JWT verification
@@ -127,10 +133,11 @@ export async function middleware(request: NextRequest) {
     return redirectToLogin(request)
   }
 }
-
+*/
 /**
  * Apply rate limiting and return true if rate limit is exceeded
  */
+/*
 function applyRateLimit(clientIp: string): boolean {
   const currentTime = Date.now()
   const windowStart = currentTime - RATE_LIMIT_WINDOW
@@ -164,10 +171,11 @@ function applyRateLimit(clientIp: string): boolean {
 
   return false
 }
-
+*/
 /**
  * Handle token expiration - could redirect to refresh token endpoint
  */
+/*
 function handleTokenExpiration(request: NextRequest) {
   // Option 1: Redirect to refresh token endpoint
   if (process.env.ENABLE_TOKEN_REFRESH === 'true') {
@@ -179,10 +187,11 @@ function handleTokenExpiration(request: NextRequest) {
   // Option 2: Just clear token and redirect to login
   return redirectToLogin(request)
 }
-
+*/
 /**
  * Redirect to login page
  */
+/*
 function redirectToLogin(request: NextRequest) {
   // Store the original URL to redirect back after login
   const response = NextResponse.redirect(new URL('/auth/login', request.url))
@@ -195,3 +204,4 @@ function redirectToLogin(request: NextRequest) {
   response.cookies.delete('authToken')
   return response
 }
+*/

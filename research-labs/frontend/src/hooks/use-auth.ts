@@ -33,8 +33,8 @@ export const useAuthForm = (mode: AuthMode) => {
 
     try {
       const endpoint = (mode === "login")
-        ? "http://127.0.0.1:3005/login"
-        : "http://127.0.0.1:3005/register";
+        ? "http://127.0.0.1:3005/api/auth/login"
+        : "http://127.0.0.1:3005/api/auth/register";
 
       const response = await fetch(endpoint, {
         method: "POST",

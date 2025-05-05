@@ -42,7 +42,7 @@ const OptionsCors: CorsOptions = {
   credentials: true,
 }
 
-//app.use(cors(OptionsCors)); // postman not allowed
+app.use(cors(OptionsCors)); // postman not allowed
 app.use(helmet());
 app.use(rateLimiter);
 app.use(express.json());

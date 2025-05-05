@@ -10,7 +10,7 @@ import errorHandler from "../utils/errorHandler";
 
 const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { username, email, password, role, first_name, last_name } = req.body;
+    const { username, email, password_hash, role, first_name, last_name } = req.body;
 
     const userExists = await prisma.userExists(username) || await prisma.userExists(email);
     if (userExists) {
@@ -21,7 +21,7 @@ const register = async (req: Request, res: Response, next: NextFunction): Promis
     const userData = {
       username,
       email,
-      password_hash: password,
+      password_hash,
       role: role || "GUEST" as const,
       first_name: first_name || null,
       last_name: last_name || null,

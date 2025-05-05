@@ -36,15 +36,6 @@ CREATE TABLE conferences (
     end_date TIMESTAMP NOT NULL
 );
 
-CREATE TABLE conferences (
-    id UUID PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    location VARCHAR(255) NOT NULL,
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL
-);
-
 CREATE TABLE publications (
     id UUID PRIMARY KEY,
     title VARCHAR(500) NOT NULL,

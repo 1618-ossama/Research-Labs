@@ -4,7 +4,6 @@ import errorHandler from "../utils/errorHandler";
 
 export type RegistrationInput = z.infer<typeof registrationSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-//export type UpdateInput = z.infer<typeof updateSchema>;
 
 export const registrationSchema = z.object({
   username: z
@@ -15,13 +14,35 @@ export const registrationSchema = z.object({
   email: z
     .string()
     .email("Invalid email address"),
-  password: z
+  password_hash: z
     .string()
     .min(8, "Password must be at least 8 characters")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/\d/, "Password must contain at least one number"),
-  role: z.string().optional(),
+  first_name: z
+    .string()
+    .min(3, "First name must be at least 3 characters")
+    .max(50, "First name cannot exceed 50 characters"),
+  last_name: z
+    .string()
+    .min(3, "Last name must be at least 3 characters")
+    .max(50, "Last name cannot exceed 50 characters"),
+  role: z
+    .string()
+    .default('GUEST'),
+  phone: z
+    .string()
+    .regex(/^\+?[0-9]{10,15}$/, "Invalid phone number format")
+    .optional(),
+  affiliation: z
+    .string()
+    .optional(),
+  bio: z
+    .string()
+    .optional(),
+  profileImage: z.any().optional(),
+  document: z.any().optional(),
 });
 
 export const loginSchema = z.object({
@@ -59,9 +80,16 @@ export const createUserSchema = z.object({
     .string()
     .min(1, "Last name is required")
     .max(50, "Last name cannot exceed 50 characters"),
-  is_active: z
-    .boolean()
-    .default(true),
+  phone: z
+    .string()
+    .regex(/^\+?[0-9]{10,15}$/, "Invalid phone number format")
+    .optional(),
+  affiliation: z
+    .string()
+    .optional(),
+  bio: z
+    .string()
+    .optional(),
 });
 
 export const updateUserSchema = z.object({
@@ -95,8 +123,15 @@ export const updateUserSchema = z.object({
     .min(1, "Last name is required")
     .max(50, "Last name cannot exceed 50 characters")
     .optional(),
-  is_active: z
-    .boolean()
+  phone: z
+    .string()
+    .regex(/^\+?[0-9]{10,15}$/, "Invalid phone number format")
+    .optional(),
+  affiliation: z
+    .string()
+    .optional(),
+  bio: z
+    .string()
     .optional(),
 });
 
@@ -112,7 +147,7 @@ export const validate =
             path: e.path.join("."),
             message: e.message,
             code: e.code,
-            expected: (e as any).expected, // Zod error details
+            expected: (e as any).expected,
             received: (e as any).received,
           }));
 
@@ -128,6 +163,5 @@ export const validate =
             ),
           );
         }
-
       }
     };

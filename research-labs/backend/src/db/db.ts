@@ -74,7 +74,7 @@ async function safeDbOperation<T>(operation: () => Promise<T>): Promise<T> {
 
 async function createUser(user_data: User): Promise<string> {
   return safeDbOperation(async () => {
-    const required_field = ['username', 'email', 'password_hash', 'role', 'first_name', 'last_name'] as const;
+    const required_field = ['username', 'email', 'password_hash', 'role'] as const;
     required_field.forEach((element) => {
       if (!user_data[element]) {
         throw new errorHandler.ValidationError('Missing required fields', [element]);
