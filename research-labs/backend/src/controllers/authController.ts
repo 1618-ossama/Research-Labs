@@ -17,7 +17,7 @@ const register = async (req: Request, res: Response, next: NextFunction): Promis
       throw new errorHandler.ValidationError("Username or email already exists");
       // redirect to login page
     }
-
+    // Store image locally , store path in the db.
     const userData = {
       username,
       email,
