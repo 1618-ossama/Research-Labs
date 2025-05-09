@@ -1,49 +1,55 @@
 import express from 'express';
+import * as messagesController from '../controllers/messagesController';
+import * as conversationsController from '../controllers/conversationsController';
+import * as groupsController from '../controllers/groupsController';
+import * as mediaController from '../controllers/mediaController';
+import * as realtimeController from '../controllers/realtimeController';
+import * as moderationController from '../controllers/moderationController';
 
 const chatRoutes = express.Router();
 
-chatRoutes.get('/messages') // Filter by params/query
-chatRoutes.get('/messages/:messageId') // Get specific message
-chatRoutes.post('/messages') // Send new message
-chatRoutes.put('/messages/:messageId/read') // Mark as read
-chatRoutes.put('/messages/:messageId/delete') // Soft delete
-chatRoutes.put('/messages/:messageId/recover') // Recover deleted message
-chatRoutes.put('/messages/:messageId') // Edit message content
+chatRoutes.get('/messages', messagesController.getMessages);
+chatRoutes.get('/messages/:messageId', messagesController.getMessageById);
+chatRoutes.post('/messages', messagesController.createMessage);
+chatRoutes.put('/messages/:messageId/read', messagesController.markMessageAsRead);
+chatRoutes.put('/messages/:messageId/delete', messagesController.softDeleteMessage);
+chatRoutes.put('/messages/:messageId/recover', messagesController.recoverDeletedMessage);
+chatRoutes.put('/messages/:messageId', messagesController.editMessage);
 
-chatRoutes.get('/conversations/:userId') // Get user conversations
-chatRoutes.get('/conversations/:userId/:otherUserId') // Get specific conversation
-chatRoutes.delete('/conversations/:conversationId') // Archive conversation
+chatRoutes.get('/conversations/:userId', conversationsController.getUserConversations);
+chatRoutes.get('/conversations/:userId/:otherUserId', conversationsController.getSpecificConversation);
+chatRoutes.delete('/conversations/:conversationId', conversationsController.archiveConversation);
+chatRoutes.put('/conversations/:conversationId/mute', conversationsController.muteConversation);
+chatRoutes.put('/conversations/:conversationId/block', conversationsController.blockUserInConversation);
 
-chatRoutes.post('/groups') // Create new group
-chatRoutes.get('/groups/:id') // Get group info 
-chatRoutes.put('/groups/:id') // Update group info
-chatRoutes.delete('/groups/:id') // Delete group
-chatRoutes.get('/groups') // Get all groups (admin)
-chatRoutes.post('/groups/:groupId/members') // Add member
-chatRoutes.delete('/groups/:groupId/members/:userId') // Remove member
-chatRoutes.get('/groups/:groupId/members') // List members
-chatRoutes.put('/groups/:groupId/members/:userId/role') // Change member role
-chatRoutes.post('/groups/:groupId/avatar') // Upload group avatar
-chatRoutes.delete('/groups/:groupId/avatar') // Remove group avatar
+chatRoutes.post('/groups', groupsController.createGroup);
+chatRoutes.get('/groups/:id', groupsController.getGroupInfo);
+chatRoutes.put('/groups/:id', groupsController.updateGroupInfo);
+chatRoutes.delete('/groups/:id', groupsController.deleteGroup);
+chatRoutes.get('/groups', groupsController.getAllGroups);
+chatRoutes.post('/groups/:groupId/members', groupsController.addGroupMember);
+chatRoutes.delete('/groups/:groupId/members/:userId', groupsController.removeGroupMember);
+chatRoutes.get('/groups/:groupId/members', groupsController.listGroupMembers);
+chatRoutes.put('/groups/:groupId/members/:userId/role', groupsController.changeGroupMemberRole);
+chatRoutes.post('/groups/:groupId/avatar', groupsController.uploadGroupAvatar);
+chatRoutes.delete('/groups/:groupId/avatar', groupsController.removeGroupAvatar);
 
-chatRoutes.post('/typing/:conversationId') // Send typing indicator
-chatRoutes.get('/presence/:userId') // Get user presence status
-chatRoutes.put('/presence') // Update own presence
+chatRoutes.post('/typing/:conversationId', realtimeController.sendTypingIndicator);
+chatRoutes.get('/presence/:userId', realtimeController.getUserPresenceStatus);
+chatRoutes.put('/presence', realtimeController.updateOwnPresence);
 
-chatRoutes.post('/attachments/upload') // Initiate file upload
-chatRoutes.get('/attachments/:fileId') // Get file metadata
-chatRoutes.delete('/attachments/:fileId') // Delete attachment
+chatRoutes.post('/attachments/upload', mediaController.initiateFileUpload);
+chatRoutes.get('/attachments/:fileId', mediaController.getFileMetadata);
+chatRoutes.delete('/attachments/:fileId', mediaController.deleteAttachment);
 
-chatRoutes.post('/reports') // Report message/user
-chatRoutes.put('/conversations/:conversationId/mute') // Mute conversation
-chatRoutes.put('/conversations/:conversationId/block') // Block user in conversation
-chatRoutes.get('/moderation/reports') // Get reports (admin)
+chatRoutes.post('/reports', moderationController.reportContent);
+chatRoutes.get('/moderation/reports', moderationController.getReports);
 
-chatRoutes.post('/ws/token') // Generate connection token
-chatRoutes.get('/ws/connections') // List active connections (admin)
+chatRoutes.post('/ws/token', realtimeController.generateConnectionToken);
+chatRoutes.get('/ws/connections', realtimeController.listActiveConnections);
 
-chatRoutes.get('/search/messages') // Search across messages
-chatRoutes.get('/search/conversations') // Search conversations
-chatRoutes.get('/search/groups') // Discover public groups
+chatRoutes.get('/search/messages', messagesController.searchMessages);
+chatRoutes.get('/search/conversations', conversationsController.searchConversations);
+chatRoutes.get('/search/groups', groupsController.searchGroups);
 
 export default chatRoutes;

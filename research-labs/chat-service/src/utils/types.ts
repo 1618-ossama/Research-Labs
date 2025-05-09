@@ -1,3 +1,5 @@
+import { WebSocket } from "ws";
+
 export type User = {
   id?: string;
   username: string;
@@ -48,5 +50,30 @@ export type GroupUser = {
   group_id: string;
   created_at: Date;
 };
+
+export interface WebSocketConfig {
+  jwtSecret: string;
+  heartbeatInterval?: number;
+  inactivityTimeout?: number;
+  maxConnectionsPerUser?: number;
+}
+
+export interface WSMessage {
+  type: string;
+  payload?: unknown;
+}
+
+export interface Connection {
+  id: string;
+  userId: string;
+  socket: WebSocket;
+  lastActivity: Date;
+}
+
+export type MessageMiddleware = (
+  message: WSMessage,
+  connection: Connection,
+  next: (err?: Error) => void
+) => void;
 
 
