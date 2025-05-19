@@ -46,7 +46,9 @@ export const useAuthForm = (mode: AuthMode) => {
       });
 
       const data: AuthResponse = await response.json();
+      console.log("----------------------------------");
       console.log("API Response:", data);
+      console.log("----------------------------------");
 
       if (!response.ok) {
         throw new Error(data.error || data.message || "Authentication failed");
@@ -56,12 +58,12 @@ export const useAuthForm = (mode: AuthMode) => {
         setUserData(data.user);
       }
 
-      if (mode === "login" && data.token) {
+      if (mode === "login" ) {
         document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
         router.push("/profile");
       } else if (mode === "register") {
         // router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
-        router.push("/register")
+        router.push("/login")
       }
 
       return data;

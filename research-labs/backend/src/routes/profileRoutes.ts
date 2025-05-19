@@ -13,8 +13,6 @@ profileRouter.use(authenticate);
 profileRouter.get("/", (req, res) => {
   // raw token from the cookie
   const token = req.cookies["AccessTokenCookie"];
-  console.log("token::::");
-  console.log(token);
   // decoded payload set by authenticate()
   const payload = req.user;
 

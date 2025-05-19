@@ -1,98 +1,96 @@
-import { notFound } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { MailIcon, MapPinIcon, BuildingIcon, LinkIcon, GlobeIcon } from "lucide-react"
-import PublicationCard from "@/components/profile/publication-card"
-import ProfileHeader from "@/components/profile/profile-header"
 
-async function getUser(username: string) {
-  await new Promise((resolve) => setTimeout(resolve, 500))
+import Link from "next/link"
+import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { MailIcon, MapPinIcon, BuildingIcon, LinkIcon, GlobeIcon } from "lucide-react";
+import PublicationCard from "@/components/profile/publication-card";
+import ProfileHeader from "@/components/profile/profile-header";
 
-  const users = {
-    "current-user": {
-      id: "2",
-      username: "current-user",
-      name: "Dr. Alex Johnson",
-      avatar: "/placeholder.svg?height=300&width=300",
-      coverImage: "/placeholder.svg?height=400&width=1200",
-      title: "Assistant Professor of Bioinformatics",
-      affiliation: "MIT",
-      location: "Cambridge, MA",
-      email: "alex.johnson@mit.edu",
-      website: "https://alexjohnson.research.edu",
-      bio: "Developing computational methods for analyzing large-scale genomic data to understand disease mechanisms.",
-      interests: ["Bioinformatics", "Genomics", "Machine Learning", "Systems Biology"],
-      stats: {
-        publications: 23,
-        citations: 578,
-        hIndex: 12,
-        followers: 98,
-      },
-      isCurrentUser: true,
-      isFollowing: false,
-      privacySettings: {
-        email: "followers",
-        publications: "public",
-      },
-    },
-  }
-
-  return users[username] || null;
+// User profile interface
+interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  status: string;
+  bio: string | null;
+  affiliation: string | null;
+  photo_url: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-async function getPublications(userId: string) {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  userId.substring(1);
-  return [
-    {
-      id: "1",
-      title: "Novel computational approach for predicting protein-protein interactions in cancer pathways",
-      journal: "Nature Bioinformatics",
-      year: 2023,
-      authors: ["Johnson, A.", "Zhang, L.", "Patel, S.", "Garcia, R."],
-      abstract:
-        "We present a new machine learning framework that integrates structural and functional data to predict protein interactions with high accuracy.",
-      doi: "10.1038/s41587-023-0123-4",
-      citations: 12,
-      isOpenAccess: true,
-    },
-    {
-      id: "2",
-      title: "Genomic analysis reveals new targets for immunotherapy in metastatic melanoma",
-      journal: "Cell",
-      year: 2022,
-      authors: ["Patel, S.", "Johnson, A.", "Williams, T.", "Chen, H."],
-      abstract:
-        "Comprehensive genomic profiling of metastatic melanoma samples identified novel immune checkpoint regulators that could serve as therapeutic targets.",
-      doi: "10.1016/j.cell.2022.08.015",
-      citations: 45,
-      isOpenAccess: false,
-    },
-    {
-      id: "3",
-      title:
-        "Single-cell transcriptomics of tumor microenvironment reveals prognostic signatures in treatment-resistant breast cancer",
-      journal: "Science Advances",
-      year: 2021,
-      authors: ["Johnson, A.", "Lee, K.", "Ramirez, J.", "Kim, Y."],
-      abstract:
-        "Single-cell RNA sequencing of breast cancer biopsies identified distinct cellular states associated with treatment resistance and poor clinical outcomes.",
-      doi: "10.1126/sciadv.abc1234",
-      citations: 78,
-      isOpenAccess: true,
-    },
-  ]
+
+export interface Publication {
+  id: string;
+  title: string;
+  journal: string;
+  status: Status;
+  submitterId: string;
+  submittedAt: string; // ISO string
 }
 
-export default async function ProfilePage({ params }: { params: { username: string } }) {
-  const user = await getUser(params.username)
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
 
-  if (!user) {
-    notFound()
+export async function getPublications(
+  userId: string,
+  token: string
+): Promise<Publication[]> {
+  const res = await fetch(
+    `http://127.0.0.1:3009/api/publications/user/${encodeURIComponent(
+      userId
+    )}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  console.log(res.text())
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Failed to load publications: ${errText}`);
   }
+
+  const json: ApiResponse<Publication[]> = await res.json();
+  return json.data;
+}
+
+export default async function ProfilePage() {
+  const cookieStore = cookies();
+  const userId = cookieStore.get("userId")?.value;
+  const token = cookieStore.get("AccessTokenCookie")?.value;
+
+  if (!userId || !token) {
+    redirect('/login');
+  }
+
+  // Fetch user profile
+  const userRes = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+
+  if (!userRes.ok) {
+    notFound();
+  }
+
+  const userJson = await userRes.json();
+  const user: UserProfile = userJson.data;
+
 
   const publications = await getPublications(user.id)
 
@@ -101,7 +99,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
       <ProfileHeader user={user} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>About</CardTitle>
@@ -110,81 +108,38 @@ export default async function ProfilePage({ params }: { params: { username: stri
               <div className="flex items-start gap-2">
                 <BuildingIcon className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">{user.affiliation}</p>
-                  <p className="text-sm text-muted-foreground">{user.title}</p>
+                  <p className="font-medium">{user.affiliation || 'N/A'}</p>
+                  <p className="text-sm text-muted-foreground">{user.role}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 <MapPinIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                <span>{user.location}</span>
+                <span>Member since {new Date(user.created_at).toLocaleDateString()}</span>
               </div>
-
-              {(user.isCurrentUser ||
-                user.privacySettings.email === "public" ||
-                (user.privacySettings.email === "followers" && user.isFollowing)) && (
-                  <div className="flex items-center gap-2">
-                    <MailIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <span>{user.email}</span>
-                  </div>
-                )}
-
-              {user.website && (
-                <div className="flex items-center max-w-screen-md gap-2">
-                  <GlobeIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <a
-                    href={user.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center"
-                  >
-                    {user.website.replace(/^https?:\/\//, "")}
-                    <LinkIcon className="h-3 w-3 ml-1" />
-                  </a>
-                </div>
-              )}
 
               <Separator />
 
               <div>
                 <h4 className="font-medium mb-2">Bio</h4>
-                <p className="text-sm">{user.bio}</p>
-              </div>
-
-              <div>
-                <h4 className="font-medium mb-2">Research Interests</h4>
-                <div className="flex flex-wrap gap-2">
-                  {user.interests.map((interest: string) => (
-                    <Badge key={interest} variant="secondary">
-                      {interest}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-sm">{user.bio || 'No bio available.'}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card>
             <CardHeader>
               <CardTitle>Research Impact</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{user.stats.publications}</p>
-                  <p className="text-sm text-muted-foreground">Publications</p>
+                  <p className="text-2xl font-bold">{user.status}</p>
+                  <p className="text-sm text-muted-foreground">Status</p>
                 </div>
                 <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{user.stats.citations}</p>
-                  <p className="text-sm text-muted-foreground">Citations</p>
-                </div>
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{user.stats.hIndex}</p>
-                  <p className="text-sm text-muted-foreground">h-index</p>
-                </div>
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{user.stats.followers}</p>
-                  <p className="text-sm text-muted-foreground">Followers</p>
+                  <p className="text-2xl font-bold">{new Date(user.updated_at).toLocaleDateString()}</p>
+                  <p className="text-sm text-muted-foreground">Last Updated</p>
                 </div>
               </div>
             </CardContent>
@@ -226,7 +181,8 @@ export default async function ProfilePage({ params }: { params: { username: stri
             </TabsContent>
           </Tabs>
         </div>
+
       </div>
     </div>
-  )
+  );
 }
