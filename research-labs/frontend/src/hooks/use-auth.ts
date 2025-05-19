@@ -58,7 +58,7 @@ export const useAuthForm = (mode: AuthMode) => {
 
       if (mode === "login" && data.token) {
         document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
-        router.push("/");
+        router.push("/profile");
       } else if (mode === "register") {
         // router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
         router.push("/register")

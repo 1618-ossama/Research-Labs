@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+interface Props {
+  userId: string
+}
 
 // Define the `PublicationInput` type
 interface PublicationInput {
@@ -22,7 +25,7 @@ interface PublicationInput {
   submitter_id: string;
 }
 
-const SubmitPublicationForm = () => {
+const SubmitPublicationForm = ({ userId }: Props) => {
   const [title, setTitle] = useState<string>("");
   const [journal, setJournal] = useState<string>("");
   const [status, setStatus] = useState<"DRAFT" | "APPROVED" | "WAITING">(
@@ -122,10 +125,12 @@ const SubmitPublicationForm = () => {
         </div>
 
         <div>
+      <p>User ID: {userId ?? 'Not logged in'}</p>
           <Label htmlFor="submitterId">Submitter ID</Label>
           <Input
             id="submitterId"
             type="text"
+            placeholder = "{userId}"
             value={submitterId}
             onChange={(e) => setSubmitterId(e.target.value)}
             required
