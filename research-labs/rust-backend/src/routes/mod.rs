@@ -10,6 +10,7 @@ pub fn route_config(cfg: &mut web::ServiceConfig) {
             .route("/publications", web::get().to(get_publications))
             .route("/publications/{id}", web::get().to(get_publication))
             .route("/publications/{id}", web::delete().to(delete_publication))
+            .route("/upload", web::post().to(upload_file))
             // .route(
             //     "/publications/update-status",
             //     web::update().to(update_status_publication),

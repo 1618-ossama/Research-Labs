@@ -7,6 +7,8 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FaFileAlt, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa";
+import UploadFiles from "@/components/publication/upload-files"; // New client upload component
+import { cookies } from "next/headers";
 
 const fileTypeIcon = (fileType: string) => {
   switch (fileType.toUpperCase()) {
@@ -63,6 +65,7 @@ function FileList({ files }: { files: FileInfo[] }) {
     </Card>
   );
 }
+
 interface FileInfo {
   id: string;
   file_type: string;
@@ -74,9 +77,10 @@ interface PublicationPageProps {
   params: { id: string };
 }
 
-export default async function PublicationPage(
-  { params }: PublicationPageProps,
-) {
+export default async function PublicationPage({ params }: PublicationPageProps) {
+  const cookieStore = cookies();
+  const userId = cookieStore.get("userId")?.value;
+
   const [pubRes, filesRes] = await Promise.all([
     fetch(`http://127.0.0.1:3009/api/publications/${params.id}`, {
       cache: "no-store",
@@ -91,6 +95,9 @@ export default async function PublicationPage(
   const publication: Publication = await pubRes.json();
   const files: FileInfo[] = filesRes.ok ? await filesRes.json() : [];
 
+  // Check ownership for upload permission
+  const canUpload = publication.submitter_id === userId;
+
   return (
     <div className="max-w-3xl mx-auto py-10 space-y-6">
       <h1 className="text-3xl font-bold mb-6">Publication Details</h1>
@@ -98,6 +105,13 @@ export default async function PublicationPage(
       <PublicationCard publication={publication} />
 
       <FileList files={files} />
+
+      {canUpload && (
+        <>
+          <h2 className="text-xl font-semibold mt-8 mb-4">Upload Publication Files</h2>
+          <UploadFiles publicationId={params.id} />
+        </>
+      )}
     </div>
   );
 }

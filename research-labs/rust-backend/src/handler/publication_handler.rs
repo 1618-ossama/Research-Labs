@@ -1,10 +1,11 @@
-use actix_web::{web, HttpResponse};
-use uuid::Uuid;
-
 use crate::{
     models::*,
     repositories::{database::Database, postgres_db::PostgresDatabase},
 };
+use actix_multipart::Multipart;
+use actix_web::HttpRequest;
+use actix_web::{web, Error, HttpResponse};
+use uuid::Uuid;
 
 /// Add a publication
 pub async fn add_publication(
@@ -76,11 +77,67 @@ pub async fn get_publications_by_user(
     }
 }
 
+use futures::StreamExt;
+use serde_json::json; // For .next() on the Multipart stream
+pub async fn upload_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
+    while let Some(field) = payload.next().await {
+        let mut field = field?;
+        while let Some(chunk) = field.next().await {
+            let _ = chunk?;
+        }
+    }
+    let dummy_filename = format!("{}.txt", Uuid::new_v4());
+    let dummy_file_path = format!("/public/uploads/{}", dummy_filename);
+
+    Ok(HttpResponse::Ok().json(json!({ "filePath": dummy_file_path })))
+}
+
 /// Add file to a publication
 pub async fn add_file(
     db: web::Data<PostgresDatabase>,
     file: web::Json<PublicationFileInput>,
+    req: HttpRequest,
 ) -> HttpResponse {
+    println!("Incoming request: {:?}", req);
+    println!("Cookies: {:?}", req.cookies());
+
+    let user_id = match req.cookie("userId") {
+        Some(cookie) => match Uuid::parse_str(cookie.value()) {
+            Ok(uid) => {
+                println!("Parsed userId from cookie: {}", uid);
+                uid
+            }
+            Err(e) => {
+                println!(
+                    "Invalid userId cookie value: {}, error: {:?}",
+                    cookie.value(),
+                    e
+                );
+                return HttpResponse::Unauthorized().body("Invalid userId cookie");
+            }
+        },
+        None => {
+            println!("Missing userId cookie");
+            return HttpResponse::Unauthorized().body("Missing userId cookie");
+        }
+    };
+
+    let publication = match db.get_publication(file.publication_id).await {
+        Ok(pub_) => {
+            println!("Found publication with submitter_id: {}", pub_.submitter_id);
+            pub_
+        }
+        Err(e) => {
+            println!("Error fetching publication: {:?}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    if publication.submitter_id != user_id {
+        println!("User ID does not match publication submitter");
+        return HttpResponse::Unauthorized().body("You do not own this publication");
+    }
+
     match db
         .add_file(
             file.id,
@@ -90,8 +147,14 @@ pub async fn add_file(
         )
         .await
     {
-        Ok(_) => HttpResponse::Created().finish(),
-        Err(_) => HttpResponse::InternalServerError().finish(),
+        Ok(_) => {
+            println!("File added successfully");
+            HttpResponse::Created().finish()
+        }
+        Err(e) => {
+            println!("Error adding file: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
 

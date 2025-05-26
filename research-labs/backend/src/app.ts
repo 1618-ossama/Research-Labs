@@ -43,7 +43,7 @@ const OptionsCors: CorsOptions = {
 
 app.use(cors(OptionsCors)); // postman not allowed
 app.use(helmet());
-app.use(rateLimiter);
+// app.use(rateLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

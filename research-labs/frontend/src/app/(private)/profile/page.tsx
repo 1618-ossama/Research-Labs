@@ -155,7 +155,9 @@ export default async function ProfilePage() {
 
             <TabsContent value="publications" className="space-y-4">
               {publications.map((publication) => (
-                <PublicationCard key={publication.id} publication={publication} />
+                <Link href={`publications/${publication.id}`}>
+                  <PublicationCard key={publication.id} publication={publication} />
+                </Link>
               ))}
 
               <Button variant="outline" className="w-full mt-4">

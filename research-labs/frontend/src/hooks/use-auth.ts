@@ -50,6 +50,9 @@ export const useAuthForm = (mode: AuthMode) => {
       console.log("API Response:", data);
       console.log("----------------------------------");
 
+      if (data.statue == 'INACTIVE') {
+        router.push("/inactive")
+      }
       if (!response.ok) {
         throw new Error(data.error || data.message || "Authentication failed");
       }
@@ -60,11 +63,11 @@ export const useAuthForm = (mode: AuthMode) => {
 
       if (mode === "login" ) {
         document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
-        router.push("/profile");
       } else if (mode === "register") {
         // router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
         router.push("/login")
       }
+        router.push("/profile");
 
       return data;
     } catch (err) {

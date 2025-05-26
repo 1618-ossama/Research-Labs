@@ -9,6 +9,11 @@ const PROTECTED_PATHS = [
   '/publications',
   '/settings'
 ]
+const ADMIN_ONLY_PATHS = [
+  '/admin',
+  '/admin/dashboard',
+  // add other admin-only paths here
+]
 
 const rateLimit = new Map<string, number[]>()
 const RATE_LIMIT_WINDOW = 60 * 1000
@@ -20,20 +25,21 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  console.log(`[Middleware] Incoming request to: ${pathname}`)
+  // console.log(`[Middleware] Incoming request to: ${pathname}`)
 
   const isProtected = PROTECTED_PATHS.some(path => pathname.startsWith(path))
-  console.log(`[Middleware] Is protected path: ${isProtected}`)
+  const isAdminOnly = ADMIN_ONLY_PATHS.some(path => pathname.startsWith(path))
+  // console.log(`[Middleware] Is protected path: ${isProtected}`)
 
-  if (!isProtected) {
+  if (!isProtected && !isAdminOnly) {
     return NextResponse.next()
   }
 
   const clientIp = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown'
-  console.log(`[Middleware] Client IP: ${clientIp}`)
+  // console.log(`[Middleware] Client IP: ${clientIp}`)
 
   if (applyRateLimit(clientIp)) {
-    console.warn(`[RateLimit] IP ${clientIp} exceeded limit`)
+    // console.warn(`[RateLimit] IP ${clientIp} exceeded limit`)
     return new NextResponse(
       JSON.stringify({ error: 'Too many requests', retryAfter: RATE_LIMIT_WINDOW / 1000 }),
       {
@@ -56,7 +62,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     try {
-      console.log(`[JWT] Attempting local verification`)
+      // console.log(`[JWT] Attempting local verification`)
       console.log(JWT_SECRET)
       const { payload } = await jwtVerify(token, JWT_SECRET, {
         algorithms: ['HS256']
@@ -67,6 +73,13 @@ export async function middleware(request: NextRequest) {
       if (payload.exp && payload.exp < currentTime) {
         console.warn(`[JWT] Token expired at ${payload.exp}, current time: ${currentTime}`)
         return handleTokenExpiration(request)
+      }
+
+      const role = payload.role as string | undefined
+
+      if (isAdminOnly && role !== 'ADMIN') {
+        console.warn(`[Auth] Access denied for path ${pathname}, user role: ${role}`)
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
       }
 
       const requestHeaders = new Headers(request.headers)
@@ -82,6 +95,7 @@ const response  = NextResponse.next({
   path: '/',
   maxAge: 60 * 60, // 1 hour
 })
+
 return response
 
     } catch (jwtError) {
@@ -114,6 +128,24 @@ return response
       const user = await verifyResponse.json()
       console.log(`[JWT] Backend verification successful for user: ${user.id}`)
 
+      // let userRole: string | undefined = undefined
+
+      const role = payload.role as string | undefined
+
+      console.log("====");
+      console.log(role);
+      console.log("====");
+      if (isAdminOnly && role !== 'ADMIN') {
+        console.warn(`[Auth] Access denied for path ${pathname}, user role: ${role}`)
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+      response.cookies.set('userRole', role ?? '', {
+        httpOnly: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60,
+      })
+      console.log("hehehe role : ", user.role);
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-user-id', user.id)
       requestHeaders.set('x-user-role', user.role)

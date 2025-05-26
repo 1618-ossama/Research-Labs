@@ -26,6 +26,7 @@ import Link from "next/link"
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", icon: Users },
+  { name: "Publications", href: "/publications", icon: Users },
   { name: "Profile", href: "/profile", icon: Home },
   { name: "Settings", href: "/Settings", icon: CalendarDays },
 ]
