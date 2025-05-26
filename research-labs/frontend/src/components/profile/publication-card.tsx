@@ -3,18 +3,18 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookOpenIcon, DownloadIcon, ExternalLinkIcon } from "lucide-react"
 
+export type RawStatus = "DRAFT" | "APPROVED" | "WAITING";
 
-interface Publication {
-  id: string
-  title: string
-  journal: string
-  year: number
-  authors: string[]
-  abstract: string
-  doi: string
-  citations: number
-  isOpenAccess: boolean
+export interface Publication{
+  id: string;
+  title: string;
+  journal: string;
+  status: RawStatus;
+  submitter_id: string;
+  submiited_at: string;  // Note the typo as returned by the API
 }
+
+
 
 interface PublicationCardProps {
   publication: Publication
@@ -41,7 +41,7 @@ export default function PublicationCard({ publication }: PublicationCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-2">{publication.authors.join(", ")}</p>
+        <p className="text-sm text-muted-foreground mb-2">{["John"].join(", ")}</p>
 
         <p className="text-sm mb-4">{publication.abstract}</p>
 

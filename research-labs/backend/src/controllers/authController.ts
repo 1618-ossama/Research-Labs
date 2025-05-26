@@ -85,6 +85,7 @@ const login = async (req: Request, res: Response, next: NextFunction): Promise<v
         userId: user.id,
         username: user.username,
         role: user.role,
+        token: accessToken,
         message: "Login successful",
       },
     });

@@ -1,13 +1,13 @@
+// src/app/(private)/profile/page.tsx
 
 import Link from "next/link"
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MailIcon, MapPinIcon, BuildingIcon, LinkIcon, GlobeIcon } from "lucide-react";
+import {  MapPinIcon, BuildingIcon, } from "lucide-react";
 import PublicationCard from "@/components/profile/publication-card";
 import ProfileHeader from "@/components/profile/profile-header";
 
@@ -26,26 +26,21 @@ interface UserProfile {
   created_at: string;
   updated_at: string;
 }
+export type RawStatus = "DRAFT" | "APPROVED" | "WAITING";
 
-
-export interface Publication {
+export interface RawPublication {
   id: string;
   title: string;
   journal: string;
-  status: Status;
-  submitterId: string;
-  submittedAt: string; // ISO string
-}
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
+  status: RawStatus;
+  submitter_id: string;
+  submiited_at: string;  // Note the typo as returned by the API
 }
 
 export async function getPublications(
   userId: string,
   token: string
-): Promise<Publication[]> {
+): Promise<RawPublication[]> {
   const res = await fetch(
     `http://127.0.0.1:3009/api/publications/user/${encodeURIComponent(
       userId
@@ -59,16 +54,16 @@ export async function getPublications(
     }
   );
 
-  console.log(res.text())
+  // console.log(res.text())
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(`Failed to load publications: ${errText}`);
   }
 
-  const json: ApiResponse<Publication[]> = await res.json();
-  return json.data;
+const json: RawPublication[] = await res.json();
+  console.log(json);
+  return json;
 }
-
 export default async function ProfilePage() {
   const cookieStore = cookies();
   const userId = cookieStore.get("userId")?.value;
@@ -94,6 +89,10 @@ export default async function ProfilePage() {
 
   const publications = await getPublications(user.id)
 
+  console.log("hehe")
+  console.log(publications)
+  console.log("hehe")
+  user.isCurrentUser = true;
   return (
     <div className="container w-full mx-auto px-4 py-8">
       <ProfileHeader user={user} />
@@ -156,7 +155,9 @@ export default async function ProfilePage() {
 
             <TabsContent value="publications" className="space-y-4">
               {publications.map((publication) => (
-                <PublicationCard key={publication.id} publication={publication} />
+                <Link href={`publications/${publication.id}`}>
+                  <PublicationCard key={publication.id} publication={publication} />
+                </Link>
               ))}
 
               <Button variant="outline" className="w-full mt-4">
