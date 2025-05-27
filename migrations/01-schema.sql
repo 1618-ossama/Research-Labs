@@ -24,7 +24,6 @@ CREATE TABLE links(
     type VARCHAR(50) CHECK (type IN ('LINKEDIN', 'GITHUB', 'WEBSITE', 'RESEARCHGATE', 'OTHER')) DEFAULT 'LINKEDIN',
     link VARCHAR(255),
     user_id UUID NOT NULL REFERENCES users(id)
-
 );
 
 CREATE TABLE conferences (
@@ -40,6 +39,7 @@ CREATE TABLE publications (
     id UUID PRIMARY KEY,
     title VARCHAR(500) NOT NULL,
     journal TEXT NOT NULL,
+    doi VARCHAR(60) default '0',
     status VARCHAR(50) CHECK (status IN ('DRAFT', 'APPROVED', 'WAITING')) NOT NULL DEFAULT 'DRAFT',
     visibility VARCHAR(50) CHECK (visibility IN ('PUBLIC', 'PRIVATE')) NOT NULL DEFAULT 'PRIVATE',
     submitter_id UUID NOT NULL REFERENCES users(id),

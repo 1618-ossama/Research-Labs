@@ -29,22 +29,21 @@ process.on("uncaughtException", (err: Error) => {
 const app: Express = express();
 const OptionsCors: CorsOptions = {
   origin: (origin, callback) => {
-
-    const origin_tf = origin || '';
     const allowed = ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
-    if (allowed.includes(origin_tf)) {
+    // Allow requests without origin (e.g., from server or curl)
+    if (!origin || allowed.includes(origin)) {
       callback(null, true);
     } else {
       callback(new errorHandler.ExternalServiceError('Not allowed by CORS'));
     }
   },
   credentials: true,
-}
+};
 
 app.use(cors(OptionsCors)); // postman not allowed
 app.use(helmet());
-app.use(rateLimiter);
+// app.use(rateLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

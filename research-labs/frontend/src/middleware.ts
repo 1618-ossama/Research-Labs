@@ -1,12 +1,6 @@
-export default function hello() {
-  return null;
-}
-
-
-/*
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { jwtVerify } from 'jose' // Add jose for JWT verification
+import { jwtVerify } from 'jose'
 
 const PROTECTED_PATHS = [
   '/private',
@@ -15,27 +9,37 @@ const PROTECTED_PATHS = [
   '/publications',
   '/settings'
 ]
+const ADMIN_ONLY_PATHS = [
+  '/admin',
+  '/admin/dashboard',
+  // add other admin-only paths here
+]
 
 const rateLimit = new Map<string, number[]>()
-const RATE_LIMIT_WINDOW = 60 * 1000 // 1 minute window
-const RATE_LIMIT_MAX = 10 // Max requests per window
+const RATE_LIMIT_WINDOW = 60 * 1000
+const RATE_LIMIT_MAX = 10
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'fallback_secret_for_development_only'
+  process.env.JWT_SECRET || 'access'
 )
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  // console.log(`[Middleware] Incoming request to: ${pathname}`)
 
-  // Check if the path is protected
   const isProtected = PROTECTED_PATHS.some(path => pathname.startsWith(path))
-  if (!isProtected) {
+  const isAdminOnly = ADMIN_ONLY_PATHS.some(path => pathname.startsWith(path))
+  // console.log(`[Middleware] Is protected path: ${isProtected}`)
+
+  if (!isProtected && !isAdminOnly) {
     return NextResponse.next()
   }
 
-  // Apply rate limiting
   const clientIp = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown'
+  // console.log(`[Middleware] Client IP: ${clientIp}`)
+
   if (applyRateLimit(clientIp)) {
+    // console.warn(`[RateLimit] IP ${clientIp} exceeded limit`)
     return new NextResponse(
       JSON.stringify({ error: 'Too many requests', retryAfter: RATE_LIMIT_WINDOW / 1000 }),
       {
@@ -48,53 +52,69 @@ export async function middleware(request: NextRequest) {
     )
   }
 
-  // Check for authentication token
-  const token = request.cookies.get('authToken')?.value
+  const token = request.cookies.get('AccessTokenCookie')?.value
+  console.log(`[Middleware] Token present: ${Boolean(token)}`)
 
   if (!token) {
+    console.warn(`[Auth] No token found, redirecting to login`)
     return redirectToLogin(request)
   }
 
   try {
-    // Verify JWT token locally first (reduces unnecessary backend calls)
     try {
+      // console.log(`[JWT] Attempting local verification`)
+      console.log(JWT_SECRET)
       const { payload } = await jwtVerify(token, JWT_SECRET, {
         algorithms: ['HS256']
       })
+      console.log(`[JWT] Local verification successful for user: ${payload.userId}`)
 
-      // Check if token is expired
       const currentTime = Math.floor(Date.now() / 1000)
       if (payload.exp && payload.exp < currentTime) {
+        console.warn(`[JWT] Token expired at ${payload.exp}, current time: ${currentTime}`)
         return handleTokenExpiration(request)
       }
 
-      // Set user data from JWT payload
-      const requestHeaders = new Headers(request.headers)
-      requestHeaders.set('x-user-id', payload.sub as string)
-      requestHeaders.set('x-user-role', payload.role as string)
+      const role = payload.role as string | undefined
 
-      return NextResponse.next({
+      if (isAdminOnly && role !== 'ADMIN') {
+        console.warn(`[Auth] Access denied for path ${pathname}, user role: ${role}`)
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+
+      const requestHeaders = new Headers(request.headers)
+
+const response  = NextResponse.next({
         request: {
           headers: requestHeaders
         }
       })
+  response.cookies.set('userId', payload.userId as string, {
+  httpOnly: false, // so that Next.js pages (and client code, if needed) can read it
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 60 * 60, // 1 hour
+})
+
+return response
 
     } catch (jwtError) {
-      // If local verification fails, verify with backend
-      // This handles cases where JWT secret might have changed or token needs additional validation
+      console.warn(`[JWT] Local verification failed:`, jwtError)
+
+      console.log(`[JWT] Attempting backend verification`)
       const verifyResponse = await fetch(`${process.env.BACKEND_URL}/api/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        signal: AbortSignal.timeout(3000) // Reduced timeout for better UX
+        signal: AbortSignal.timeout(3000)
       })
 
       if (!verifyResponse.ok) {
         const errorData = await verifyResponse.json().catch(() => ({}))
+        console.warn(`[JWT] Backend verification failed with status ${verifyResponse.status}`, errorData)
 
-        // Handle specific error cases
         if (verifyResponse.status === 401) {
           if (errorData.code === 'token_expired') {
             return handleTokenExpiration(request)
@@ -106,13 +126,29 @@ export async function middleware(request: NextRequest) {
       }
 
       const user = await verifyResponse.json()
+      console.log(`[JWT] Backend verification successful for user: ${user.id}`)
 
-      // Add user information to request headers
+      // let userRole: string | undefined = undefined
+
+      const role = payload.role as string | undefined
+
+      console.log("====");
+      console.log(role);
+      console.log("====");
+      if (isAdminOnly && role !== 'ADMIN') {
+        console.warn(`[Auth] Access denied for path ${pathname}, user role: ${role}`)
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+      response.cookies.set('userRole', role ?? '', {
+        httpOnly: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60,
+      })
+      console.log("hehehe role : ", user.role);
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-user-id', user.id)
       requestHeaders.set('x-user-role', user.role)
-
-      // For security, also add a timestamp for when this authentication happened
       requestHeaders.set('x-auth-time', Date.now().toString())
 
       return NextResponse.next({
@@ -123,41 +159,35 @@ export async function middleware(request: NextRequest) {
     }
   } catch (error) {
     if (error.name === 'AbortError') {
+      console.error(`[JWT] Backend verification aborted: service timeout`)
       return new NextResponse(
         JSON.stringify({ error: 'Authentication service unavailable' }),
         { status: 503, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
-    console.error('Authentication error:', error)
+    console.error('[Auth] Unexpected error during authentication:', error)
     return redirectToLogin(request)
   }
 }
-*/
-/**
- * Apply rate limiting and return true if rate limit is exceeded
- */
-/*
+
 function applyRateLimit(clientIp: string): boolean {
   const currentTime = Date.now()
   const windowStart = currentTime - RATE_LIMIT_WINDOW
 
-  // Initialize or get existing timestamps for this IP
   const timestamps = rateLimit.get(clientIp) || []
-
-  // Filter out timestamps outside the current window
   const recentTimestamps = timestamps.filter(time => time > windowStart)
 
-  // Check if rate limit is exceeded
-  if (recentTimestamps.length >= RATE_LIMIT_MAX) {
+  const isLimited = recentTimestamps.length >= RATE_LIMIT_MAX
+  console.log(`[RateLimit] IP ${clientIp}: ${recentTimestamps.length} requests in window (limit: ${RATE_LIMIT_MAX})`)
+
+  if (isLimited) {
     return true
   }
 
-  // Add current timestamp and update the map
   recentTimestamps.push(currentTime)
   rateLimit.set(clientIp, recentTimestamps)
 
-  // Clean up old entries from other IPs
   rateLimit.forEach((timestamps, ip) => {
     if (ip !== clientIp) {
       const filteredTimestamps = timestamps.filter(time => time > windowStart)
@@ -171,37 +201,29 @@ function applyRateLimit(clientIp: string): boolean {
 
   return false
 }
-*/
-/**
- * Handle token expiration - could redirect to refresh token endpoint
- */
-/*
+
 function handleTokenExpiration(request: NextRequest) {
-  // Option 1: Redirect to refresh token endpoint
+  console.warn(`[JWT] Token expired, handling expiration`)
+
   if (process.env.ENABLE_TOKEN_REFRESH === 'true') {
-    const response = NextResponse.redirect(new URL('/api/auth/refresh', request.url))
-    // Keep the token for the refresh endpoint to use
-    return response
+    console.log(`[JWT] Redirecting to refresh endpoint`)
+    return NextResponse.redirect(new URL('/api/auth/refresh', request.url))
   }
 
-  // Option 2: Just clear token and redirect to login
+  console.log(`[JWT] Token refresh disabled, redirecting to login`)
   return redirectToLogin(request)
 }
-*/
-/**
- * Redirect to login page
- */
-/*
+
 function redirectToLogin(request: NextRequest) {
-  // Store the original URL to redirect back after login
-  const response = NextResponse.redirect(new URL('/auth/login', request.url))
+  console.log(`[Auth] Redirecting to /login with redirectAfterLogin=${request.nextUrl.pathname}`)
+
+  const response = NextResponse.redirect(new URL('/login', request.url))
   response.cookies.set('redirectAfterLogin', request.nextUrl.pathname, {
     path: '/',
     httpOnly: true,
-    maxAge: 60 * 5, // 5 minutes max age
+    maxAge: 60 * 5,
     sameSite: 'lax'
   })
   response.cookies.delete('authToken')
   return response
 }
-*/

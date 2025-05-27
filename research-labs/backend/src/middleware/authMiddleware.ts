@@ -80,17 +80,23 @@ const clearAuthCookie = (res: Response): void => {
 };
 
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  const accessToken = req.cookies?.["AccessTokenCookie"];
+  // try cookie first…
+  let token = req.cookies?.["AccessTokenCookie"];
+  // …then Authorization header
+  if (!token && req.headers.authorization) {
+    const [scheme, creds] = req.headers.authorization.split(" ");
+    if (scheme === "Bearer") token = creds;
+  }
 
-  if (!accessToken) {
+  if (!token) {
     return next(new errorHandler.UnauthorizedError("No token provided"));
   }
+
   try {
-    const decoded = verifyToken(accessToken);
-    req.user = decoded;
+    req.user = verifyToken(token);
     next();
   } catch (err) {
-    return next(err);
+    next(err);
   }
 };
 
