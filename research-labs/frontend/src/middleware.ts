@@ -95,6 +95,12 @@ const response  = NextResponse.next({
   path: '/',
   maxAge: 60 * 60, // 1 hour
 })
+response.cookies.set('userRole', role ?? '', {
+  httpOnly: false,
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 60 * 60,
+})
 
 return response
 
