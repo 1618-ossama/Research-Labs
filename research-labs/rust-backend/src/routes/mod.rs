@@ -27,6 +27,19 @@ pub fn route_config(cfg: &mut web::ServiceConfig) {
             .route("/groups", web::post().to(add_group))
             .route("/groups/{id}", web::get().to(get_group))
             .route("/groups/user/{id}", web::get().to(get_groups_by_user_id))
-            .route("/groups/add-user", web::post().to(add_user_to_group)),
+            .route("/groups/add-user", web::post().to(add_user_to_group))
+            .route("/conferences", web::get().to(get_all_conferences))
+            .route("/conferences/{id}", web::get().to(get_conference_by_id))
+            .route("/conferences", web::post().to(create_conference))
+            .route("/conferences/{id}", web::put().to(update_conference))
+            .route(
+                "/conferences/{id}/publications",
+                web::get().to(get_conference_pubs),
+            )
+            .route("/conferences/{id}", web::delete().to(delete_conference))
+            .route(
+                "/conference/link-publication",
+                web::post().to(link_publication),
+            ),
     );
 }

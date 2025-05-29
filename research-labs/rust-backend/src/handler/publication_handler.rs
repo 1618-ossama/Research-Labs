@@ -1,10 +1,13 @@
 use crate::{
-    models::*,
+    models::{
+        publication::{CreateConference, LinkPayload},
+        *,
+    },
     repositories::{database::Database, postgres_db::PostgresDatabase},
 };
 use actix_multipart::Multipart;
-use actix_web::HttpRequest;
 use actix_web::{web, Error, HttpResponse};
+use actix_web::{HttpRequest, Responder};
 use uuid::Uuid;
 
 /// Add a publication
@@ -162,10 +165,11 @@ pub async fn get_groups_by_user_id(
     db: web::Data<PostgresDatabase>,
     user_id: web::Path<Uuid>,
 ) -> HttpResponse {
-    match db.get_groups_by_user_id(user_id.into_inner()).await {
-        Ok(groups) => HttpResponse::Ok().json(groups),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
+    return HttpResponse::NoContent().finish();
+    // match db.get_groups_by_user_id(user_id.into_inner()).await {
+    //     Ok(groups) => HttpResponse::Ok().json(groups),
+    //     Err(_) => HttpResponse::InternalServerError().finish(),
+    // }
 }
 /// Get files for a publication
 pub async fn get_files_by_publication(
@@ -183,27 +187,30 @@ pub async fn add_group(
     db: web::Data<PostgresDatabase>,
     group: web::Json<GroupInput>,
 ) -> HttpResponse {
-    match db
-        .add_group(
-            group.id,
-            group.title.clone(),
-            group.description.clone(),
-            group.status.clone(),
-            group.leader_id,
-        )
-        .await
-    {
-        Ok(_) => HttpResponse::Created().finish(),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
+    return HttpResponse::NoContent().finish();
+    // match db
+    //     .add_group(
+    //         group.id,
+    //         group.title.clone(),
+    //         group.description.clone(),
+    //         group.status.clone(),
+    //         group.leader_id,
+    //     )
+    //     .await
+    // {
+    //     Ok(_) => HttpResponse::Created().finish(),
+    //     Err(_) => HttpResponse::InternalServerError().finish(),
+    // }
 }
 
 /// Get a group by ID
 pub async fn get_group(db: web::Data<PostgresDatabase>, id: web::Path<Uuid>) -> HttpResponse {
-    match db.get_group(id.into_inner()).await {
-        Ok(group) => HttpResponse::Ok().json(group),
-        Err(_) => HttpResponse::NotFound().finish(),
-    }
+    return HttpResponse::NoContent().finish();
+
+    // match db.get_group(id.into_inner()).await {
+    //     Ok(group) => HttpResponse::Ok().json(group),
+    //     Err(_) => HttpResponse::NotFound().finish(),
+    // }
 }
 
 /// Add user to group
@@ -211,8 +218,90 @@ pub async fn add_user_to_group(
     db: web::Data<PostgresDatabase>,
     body: web::Json<AddUserToGroupInput>,
 ) -> HttpResponse {
-    match db.add_user_to_group(body.leader_id, body.group_id).await {
-        Ok(_) => HttpResponse::Created().finish(),
+    return HttpResponse::NoContent().finish();
+    // match db.add_user_to_group(body.leader_id, body.group_id).await {
+    //     Ok(_) => HttpResponse::Created().finish(),
+    //     Err(_) => HttpResponse::InternalServerError().finish(),
+    // }
+}
+
+pub async fn get_all_conferences(db: web::Data<PostgresDatabase>) -> HttpResponse {
+    match db.get_all_conferences().await {
+        Ok(list) => HttpResponse::Ok().json(list),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
+}
+
+pub async fn get_conference_by_id(
+    db: web::Data<PostgresDatabase>,
+    id: web::Path<Uuid>,
+) -> HttpResponse {
+    match db.get_conference_by_id(id.into_inner()).await {
+        Ok(conf) => HttpResponse::Ok().json(conf),
+        Err(_) => HttpResponse::NotFound().finish(),
+    }
+}
+
+pub async fn create_conference(
+    db: web::Data<PostgresDatabase>,
+    payload: web::Json<CreateConference>,
+) -> HttpResponse {
+    match db.create_conference(payload.into_inner()).await {
+        Ok(id) => HttpResponse::Created().json(id),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+pub async fn get_conference_pubs(
+    db: web::Data<PostgresDatabase>,
+    path: web::Path<Uuid>,
+) -> impl Responder {
+    let conference_id = path.into_inner();
+    println!("conf: {}", conference_id);
+
+    match db.get_publications_by_conference(conference_id).await {
+        Ok(publications) => HttpResponse::Ok().json(publications),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+pub async fn update_conference(
+    db: web::Data<PostgresDatabase>,
+    id: web::Path<Uuid>,
+    payload: web::Json<CreateConference>,
+) -> HttpResponse {
+    return HttpResponse::NoContent().finish();
+    // match db
+    //     .update_conference(id.into_inner(), payload.into_inner())
+    //     .await
+    // {
+    //     Ok(_) => HttpResponse::Ok().finish(),
+    //     Err(_) => HttpResponse::NotFound().finish(),
+    // }
+}
+
+pub async fn delete_conference(
+    db: web::Data<PostgresDatabase>,
+    id: web::Path<Uuid>,
+) -> HttpResponse {
+    return HttpResponse::NoContent().finish();
+    // match db.delete_conference(id.into_inner()).await {
+    //     Ok(_) => HttpResponse::Ok().finish(),
+    //     Err(_) => HttpResponse::NotFound().finish(),
+    // }
+}
+
+pub async fn link_publication(
+    db: web::Data<PostgresDatabase>,
+    payload: web::Json<LinkPayload>,
+) -> HttpResponse {
+    for pub_id in &payload.publication_ids {
+        if let Err(_) = db
+            .link_publication_to_conference(payload.conference_id, *pub_id)
+            .await
+        {
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
+
+    HttpResponse::Ok().json("Linked successfully.")
 }
