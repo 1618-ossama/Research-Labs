@@ -66,14 +66,12 @@ CREATE TABLE groups(
     publication_id UUID NOT NULL REFERENCES publications(id)
 );
 
-
 CREATE TABLE group_user(
     user_id UUID NOT NULL REFERENCES users(id),
     group_id UUID NOT NULL REFERENCES groups(id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, group_id)
 );
-
-
 
 CREATE TABLE speaker (
     id SERIAL PRIMARY KEY,
@@ -90,13 +88,33 @@ CREATE TABLE conference_publications (
     PRIMARY KEY (conference_id, publication_id)
 );
 
+CREATE TABLE conversations (
+    id UUID PRIMARY KEY,
+    group_id UUID NULL REFERENCES groups(id),
+    conversation_type VARCHAR(20) CHECK (conversation_type IN ('DIRECT', 'GROUP')) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT valid_conversation CHECK (
+        (group_id IS NOT NULL AND conversation_type = 'GROUP') OR
+        (group_id IS NULL AND conversation_type = 'DIRECT')
+    )
+);
+
+CREATE TABLE conversation_participants (
+    conversation_id UUID REFERENCES conversations(id),
+    user_id UUID REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    role VARCHAR(20) DEFAULT 'MEMBER',
+    PRIMARY KEY (conversation_id, user_id)
+);
+
 CREATE TABLE messages (
     id UUID PRIMARY KEY,
     message TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) CHECK (status IN ('SENT', 'READ', 'ARCHIVED')) DEFAULT 'SENT',
     sender_id UUID NOT NULL REFERENCES users(id),
-    receiver_id UUID NOT NULL REFERENCES users(id)
+    conversation_id UUID NOT NULL REFERENCES conversations(id)
 );
 
 CREATE TABLE notifications (
@@ -107,10 +125,22 @@ CREATE TABLE notifications (
     user_id UUID NOT NULL REFERENCES users(id)
 );
 
+
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION sync_group_conversation() RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO conversation_participants (conversation_id, user_id)
+    SELECT c.id, NEW.user_id
+    FROM conversations c
+    WHERE c.group_id = NEW.group_id
+    ON CONFLICT DO NOTHING;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -146,3 +176,17 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_notifications_modtime 
 BEFORE UPDATE ON notifications 
 FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_conversation_modtime 
+BEFORE UPDATE ON conversations 
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER after_group_user_insert
+AFTER INSERT ON group_user
+FOR EACH ROW EXECUTE FUNCTION sync_group_conversation();
+
+
+
+/*
+ON DELETE CASCADE or ON DELETE SET NULL to be added to the references
+ */

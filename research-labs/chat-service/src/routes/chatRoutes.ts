@@ -1,49 +1,34 @@
-import express from 'express';
+import express, { RequestHandler, Router } from 'express';
+import { isAuthenticated, isAdmin } from '../middleware/authMiddleware';
+import * as conversationController from '../controllers/conversationController';
+import * as messageController from '../controllers/messageController';
+import * as groupController from '../controllers/groupController';
+import * as notificationController from '../controllers/notificationController';
 
-const chatRoutes = express.Router();
+export function createChatRouter(): Router {
+  const router = Router();
+  router.use(isAuthenticated);
 
-chatRoutes.get('/messages') // Filter by params/query
-chatRoutes.get('/messages/:messageId') // Get specific message
-chatRoutes.post('/messages') // Send new message
-chatRoutes.put('/messages/:messageId/read') // Mark as read
-chatRoutes.put('/messages/:messageId/delete') // Soft delete
-chatRoutes.put('/messages/:messageId/recover') // Recover deleted message
-chatRoutes.put('/messages/:messageId') // Edit message content
+  router.post('/conversations', conversationController.createConversation);
+  router.get('/conversations', conversationController.listConversations);
+  router.get('/conversations/:conversationId', conversationController.getConversationDetails);
+  router.post('/conversations/:conversationId/read', conversationController.markConversationAsRead);
 
-chatRoutes.get('/conversations/:userId') // Get user conversations
-chatRoutes.get('/conversations/:userId/:otherUserId') // Get specific conversation
-chatRoutes.delete('/conversations/:conversationId') // Archive conversation
+  router.get('/conversations/:conversationId/messages', messageController.getMessages);
+  router.post('/conversations/:conversationId/messages', messageController.sendMessage);
+  router.put('/conversations/:conversationId/messages/:messageId', messageController.editMessage);
+  router.delete('/conversations/:conversationId/messages/:messageId', messageController.deleteMessage);
 
-chatRoutes.post('/groups') // Create new group
-chatRoutes.get('/groups/:id') // Get group info 
-chatRoutes.put('/groups/:id') // Update group info
-chatRoutes.delete('/groups/:id') // Delete group
-chatRoutes.get('/groups') // Get all groups (admin)
-chatRoutes.post('/groups/:groupId/members') // Add member
-chatRoutes.delete('/groups/:groupId/members/:userId') // Remove member
-chatRoutes.get('/groups/:groupId/members') // List members
-chatRoutes.put('/groups/:groupId/members/:userId/role') // Change member role
-chatRoutes.post('/groups/:groupId/avatar') // Upload group avatar
-chatRoutes.delete('/groups/:groupId/avatar') // Remove group avatar
+  router.put('/conversations/:conversationId/group-details', isAdmin, groupController.updateGroupDetails);
+  router.get('/conversations/:conversationId/members', groupController.listGroupMembers);
+  router.post('/conversations/:conversationId/members', isAdmin, groupController.addGroupMembers);
+  router.delete('/conversations/:conversationId/members/:memberUserId', groupController.removeGroupMember);
+  router.put('/conversations/:conversationId/members/:memberUserId/role', isAdmin, groupController.updateGroupMemberRole);
+  router.post('/conversations/:conversationId/leave', groupController.leaveGroup);
 
-chatRoutes.post('/typing/:conversationId') // Send typing indicator
-chatRoutes.get('/presence/:userId') // Get user presence status
-chatRoutes.put('/presence') // Update own presence
+  router.get('/notifications', notificationController.getNotifications);
+  router.post('/notifications/mark-all-read', notificationController.markAllNotificationsAsRead);
+  router.post('/notifications/:notificationId/mark-read', notificationController.markNotificationAsRead);
 
-chatRoutes.post('/attachments/upload') // Initiate file upload
-chatRoutes.get('/attachments/:fileId') // Get file metadata
-chatRoutes.delete('/attachments/:fileId') // Delete attachment
-
-chatRoutes.post('/reports') // Report message/user
-chatRoutes.put('/conversations/:conversationId/mute') // Mute conversation
-chatRoutes.put('/conversations/:conversationId/block') // Block user in conversation
-chatRoutes.get('/moderation/reports') // Get reports (admin)
-
-chatRoutes.post('/ws/token') // Generate connection token
-chatRoutes.get('/ws/connections') // List active connections (admin)
-
-chatRoutes.get('/search/messages') // Search across messages
-chatRoutes.get('/search/conversations') // Search conversations
-chatRoutes.get('/search/groups') // Discover public groups
-
-export default chatRoutes;
+  return router;
+}

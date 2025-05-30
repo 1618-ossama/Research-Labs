@@ -1,8 +1,9 @@
+import { UserManagement } from "@/components/user-management"
 
-export default function Home() {
+export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#f8f5f0]">
-    </div >
+    <main className="container mx-auto py-10">
+      <UserManagement />
+    </main>
   )
 }
-

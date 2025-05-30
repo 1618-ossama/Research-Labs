@@ -1,5 +1,6 @@
 import "@styles/globals.css"
 import type { Metadata } from "next"
+import { Toaster } from "@/components/ui/toaster"
 import Navbar from "@/components/navbar";
 import BackButton from "@/components/back-btn";
 
@@ -15,15 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
 
-        <Navbar />
-
-      <div className="p-4 border-b bg-muted">
-        {/* <BackButton /> */}
-      </div>
-
-      {/* <main className="p-4">{children}</main> */}
-
-          {children}
+        <Toaster />
+        {/* <Navbar /> */}
+        {children}
       </body>
     </html>
   )

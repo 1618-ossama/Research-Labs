@@ -374,46 +374,107 @@ INSERT INTO speaker (id, user_id, conference_id, affiliation, title, created_at,
 INSERT INTO speaker (id, user_id, conference_id, affiliation, title, created_at, updated_at) VALUES (
     693, 'c1b54672-f483-449b-b0e6-8502b6f1b54c', 'f70e64b3-e730-4bef-916b-62193d094902', 'Lopez-Trujillo', 'Clinical research associate', '2025-05-05 13:34:12', '2025-05-05 13:34:12'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+-- Create conversations for the direct messages
+INSERT INTO conversations (id, group_id, conversation_type, created_at, updated_at) VALUES (
+    'a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890', NULL, 'DIRECT', '2025-05-05T13:29:00', '2025-05-05T13:34:10'
+);
+INSERT INTO conversations (id, group_id, conversation_type, created_at, updated_at) VALUES (
+    'b2c3d4e5-f6a7-890b-1c2d-3e4f5a6b7c8d', NULL, 'DIRECT', '2025-05-05T13:29:00', '2025-05-05T13:34:10'
+);
+INSERT INTO conversations (id, group_id, conversation_type, created_at, updated_at) VALUES (
+    'c3d4e5f6-a7b8-901c-2d3e-4f5a6b7c8d9e', NULL, 'DIRECT', '2025-05-05T13:29:00', '2025-05-05T13:34:10'
+);
+INSERT INTO conversations (id, group_id, conversation_type, created_at, updated_at) VALUES (
+    'd4e5f6a7-b8c9-012d-3e4f-5a6b7c8d9e0f', NULL, 'DIRECT', '2025-05-05T13:29:00', '2025-05-05T13:34:10'
+);
+INSERT INTO conversations (id, group_id, conversation_type, created_at, updated_at) VALUES (
+    'e5f6a7b8-c9d0-123e-4f5a-6b7c8d9e0f1a', NULL, 'DIRECT', '2025-05-05T13:29:00', '2025-05-05T13:34:10'
+);
+
+-- Add participants to conversations
+-- Conversation 1: Between 5fdb2598-0c8a-4ba8-bac5-678abc01de14 and 87410b02-b6ed-4eca-af3c-eefdc7a2189e
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', '2025-05-05T13:29:00', 'MEMBER'
+);
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890', '87410b02-b6ed-4eca-af3c-eefdc7a2189e', '2025-05-05T13:29:00', 'MEMBER'
+);
+
+-- Conversation 2: Between 5fdb2598-0c8a-4ba8-bac5-678abc01de14 and 20cc842c-cb28-4b36-9ddb-4f7fa26e44f8
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'b2c3d4e5-f6a7-890b-1c2d-3e4f5a6b7c8d', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', '2025-05-05T13:29:00', 'MEMBER'
+);
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'b2c3d4e5-f6a7-890b-1c2d-3e4f5a6b7c8d', '20cc842c-cb28-4b36-9ddb-4f7fa26e44f8', '2025-05-05T13:29:00', 'MEMBER'
+);
+
+-- Conversation 3: Between 87410b02-b6ed-4eca-af3c-eefdc7a2189e and 3e272e72-a52f-41af-8366-063c2a046906
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'c3d4e5f6-a7b8-901c-2d3e-4f5a6b7c8d9e', '87410b02-b6ed-4eca-af3c-eefdc7a2189e', '2025-05-05T13:29:00', 'MEMBER'
+);
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'c3d4e5f6-a7b8-901c-2d3e-4f5a6b7c8d9e', '3e272e72-a52f-41af-8366-063c2a046906', '2025-05-05T13:29:00', 'MEMBER'
+);
+
+-- Conversation 4: Between a0cec4a9-ed6e-4f95-b81d-3d1271a92b85 and 3e272e72-a52f-41af-8366-063c2a046906
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'd4e5f6a7-b8c9-012d-3e4f-5a6b7c8d9e0f', 'a0cec4a9-ed6e-4f95-b81d-3d1271a92b85', '2025-05-05T13:29:00', 'MEMBER'
+);
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'd4e5f6a7-b8c9-012d-3e4f-5a6b7c8d9e0f', '3e272e72-a52f-41af-8366-063c2a046906', '2025-05-05T13:29:00', 'MEMBER'
+);
+
+-- Conversation 5: Between eb55a489-c602-4d5e-a27a-9696eb48a3d7 and b7b9b825-18f2-43fa-a6f4-992651d8a0a2
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'e5f6a7b8-c9d0-123e-4f5a-6b7c8d9e0f1a', 'eb55a489-c602-4d5e-a27a-9696eb48a3d7', '2025-05-05T13:29:00', 'MEMBER'
+);
+INSERT INTO conversation_participants (conversation_id, user_id, created_at, role) VALUES (
+    'e5f6a7b8-c9d0-123e-4f5a-6b7c8d9e0f1a', 'b7b9b825-18f2-43fa-a6f4-992651d8a0a2', '2025-05-05T13:29:00', 'MEMBER'
+);
+
+-- Update messages to use conversation_id instead of receiver_id
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     'cb299f54-fe6a-4858-8e53-6823bdf508a4', 'Open east wear agent possible thousand allow.', '2025-05-05T13:33:23',
-    'ARCHIVED', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', '87410b02-b6ed-4eca-af3c-eefdc7a2189e'
+    'ARCHIVED', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', 'a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     'c932080c-d669-4be2-a8df-5d35e07da527', 'Charge until argue hospital less common maybe.', '2025-05-05T13:32:25',
-    'SENT', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', '20cc842c-cb28-4b36-9ddb-4f7fa26e44f8'
+    'SENT', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', 'b2c3d4e5-f6a7-890b-1c2d-3e4f5a6b7c8d'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     '07d53642-841f-4168-8e2e-5da645563c3e', 'Enjoy single cup will wonder military material.', '2025-05-05T13:31:55',
-    'SENT', '87410b02-b6ed-4eca-af3c-eefdc7a2189e', '3e272e72-a52f-41af-8366-063c2a046906'
+    'SENT', '87410b02-b6ed-4eca-af3c-eefdc7a2189e', 'c3d4e5f6-a7b8-901c-2d3e-4f5a6b7c8d9e'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     '9ab5695a-1c82-4ceb-a91e-d3e94f57e2e9', 'Lose although exist institution skin until continue know.', '2025-05-05T13:34:10',
-    'READ', 'a0cec4a9-ed6e-4f95-b81d-3d1271a92b85', '3e272e72-a52f-41af-8366-063c2a046906'
+    'READ', 'a0cec4a9-ed6e-4f95-b81d-3d1271a92b85', 'd4e5f6a7-b8c9-012d-3e4f-5a6b7c8d9e0f'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     '88c1b4ce-5d3c-48de-9083-337dd34a7f2e', 'Box form physical method against modern.', '2025-05-05T13:32:33',
-    'SENT', 'eb55a489-c602-4d5e-a27a-9696eb48a3d7', 'b7b9b825-18f2-43fa-a6f4-992651d8a0a2'
+    'SENT', 'eb55a489-c602-4d5e-a27a-9696eb48a3d7', 'e5f6a7b8-c9d0-123e-4f5a-6b7c8d9e0f1a'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     '3ac9167b-ed58-47d1-9d3f-03bf4809d594', 'Seat worker painting partner party develop forward different whole heart.', '2025-05-05T13:29:31',
-    'ARCHIVED', '782771da-39dc-4ed1-b5f9-b35f185aea53', '5fdb2598-0c8a-4ba8-bac5-678abc01de14'
+    'ARCHIVED', '782771da-39dc-4ed1-b5f9-b35f185aea53', 'a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     '5bc5ecbb-a4c8-4777-9bfc-3648a4b5d208', 'Player charge subject visit soon safe treat.', '2025-05-05T13:31:37',
-    'ARCHIVED', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', '782771da-39dc-4ed1-b5f9-b35f185aea53'
+    'ARCHIVED', '5fdb2598-0c8a-4ba8-bac5-678abc01de14', 'a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     'afdf6661-5c49-4c00-9225-7c95de21dee2', 'Budget opportunity left strong water among head have avoid policy.', '2025-05-05T13:30:01',
-    'ARCHIVED', '87410b02-b6ed-4eca-af3c-eefdc7a2189e', '782771da-39dc-4ed1-b5f9-b35f185aea53'
+    'ARCHIVED', '87410b02-b6ed-4eca-af3c-eefdc7a2189e', 'a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     '1ca33457-4f63-4779-bd8e-30c29fcfbe05', 'Site mention talk action ahead practice night election.', '2025-05-05T13:29:31',
-    'ARCHIVED', 'eb55a489-c602-4d5e-a27a-9696eb48a3d7', '86eaf371-6827-4583-ad0e-7384be573573'
+    'ARCHIVED', 'eb55a489-c602-4d5e-a27a-9696eb48a3d7', 'e5f6a7b8-c9d0-123e-4f5a-6b7c8d9e0f1a'
 );
-INSERT INTO messages (id, message, created_at, status, sender_id, receiver_id) VALUES (
+INSERT INTO messages (id, message, created_at, status, sender_id, conversation_id) VALUES (
     '58a09372-100a-4988-8c30-a48fcfa266cf', 'Sit similar mean half pattern.', '2025-05-05T13:34:09',
-    'SENT', 'a0cec4a9-ed6e-4f95-b81d-3d1271a92b85', '87410b02-b6ed-4eca-af3c-eefdc7a2189e'
+    'SENT', 'a0cec4a9-ed6e-4f95-b81d-3d1271a92b85', 'd4e5f6a7-b8c9-012d-3e4f-5a6b7c8d9e0f'
 );
+
+-- Rest of the file (notifications) remains the same
 INSERT INTO notifications (id, message, created_at, read_status, user_id) VALUES (
     '16953fe8-7553-4fc0-8054-e90ce238904c', 'Particularly special real actually major class use.', '2025-05-05T13:29:25',
     TRUE, '86eaf371-6827-4583-ad0e-7384be573573'

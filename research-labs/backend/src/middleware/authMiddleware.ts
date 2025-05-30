@@ -80,9 +80,8 @@ const clearAuthCookie = (res: Response): void => {
 };
 
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  // try cookie first…
   let token = req.cookies?.["AccessTokenCookie"];
-  // …then Authorization header
+
   if (!token && req.headers.authorization) {
     const [scheme, creds] = req.headers.authorization.split(" ");
     if (scheme === "Bearer") token = creds;
