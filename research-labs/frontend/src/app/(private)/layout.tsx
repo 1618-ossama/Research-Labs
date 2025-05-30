@@ -5,9 +5,9 @@ import SidebarLayout from "@/components/sidebar"
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
-        <SidebarLayout>
+        {/* <SidebarLayout> */}
           {children}
-        </SidebarLayout>
+        {/* </SidebarLayout> */}
     </>
   )
 }

@@ -41,7 +41,6 @@ export default function CreateConferenceClient({ userId }: Props) {
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!userId) {
-    alert('User ID not found in cookies.');
     return;
   }
 
@@ -69,7 +68,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   });
 
   if (!res.ok) {
-    alert('Failed to create conference.');
     return;
   }
 
@@ -88,7 +86,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     });
 
     if (!linkRes.ok) {
-      alert('Failed to link publications.');
       return;
     }
   }

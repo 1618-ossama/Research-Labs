@@ -26,9 +26,9 @@ export default async function PublicationsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Publications</h1>
+      {/* <h1 className="text-3xl font-bold mb-6">Publications</h1> */}
 
-      <p>User ID: {userId ?? 'Not logged in'}</p>
+      {/* <p>User ID: {userId ?? 'Not logged in'}</p> */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Publications</h1>
         <Link href="/publications/create">

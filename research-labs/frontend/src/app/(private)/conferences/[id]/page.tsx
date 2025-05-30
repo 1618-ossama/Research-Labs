@@ -94,7 +94,7 @@ async function handleAddPublication() {
       });
       setAllPublications(allPublications.filter((p) => p.id !== selectedPub.value));
       setSelectedPub(null);
-      alert("Publication added!");
+      // alert("Publication added!");
     }
   } catch (error) {
     alert("Not Added");

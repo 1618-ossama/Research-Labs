@@ -14,7 +14,7 @@ export default function SubmissionPage() {
 
   const options = [
     { title: 'New Publication', path: '/publications/create' },
-    { title: 'New Conference', path: '/conference/create' },
+    { title: 'New Conference', path: '/conferences/create' },
     { title: 'New Group', path: '/group/create' }
   ]
 
