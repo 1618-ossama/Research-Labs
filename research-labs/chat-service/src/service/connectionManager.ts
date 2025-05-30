@@ -14,7 +14,7 @@ export class ConnectionManager {
   private eventEmitter: WSEventEmitter;
   private maxConnectionsPerUser: number;
 
-  constructor(eventEmitter: WSEventEmitter, maxConnectionsPerUser: number = 10) {
+  constructor(eventEmitter: WSEventEmitter, maxConnectionsPerUser: number = 5) {
     this.eventEmitter = eventEmitter;
     this.maxConnectionsPerUser = maxConnectionsPerUser;
   }

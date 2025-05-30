@@ -107,3 +107,82 @@ export class WSErrorHandler {
     return message;
   }
 }
+/*
+import { ConnectionManager } from '../service/connectionManager';
+import { WSEventEmitter } from '../service/eventEmitter';
+
+export class WSErrorHandler {
+  constructor(
+    private connectionManager: ConnectionManager,
+    private eventEmitter: WSEventEmitter
+  ) {}
+
+  handleConnectionError(error: Error, connectionId: string): void {
+    console.error(`Connection error for ${connectionId}:`, error);
+    
+    try {
+      this.connectionManager.removeConnection(connectionId);
+      this.eventEmitter.emit('connection:error', {
+        connectionId,
+        error: error.message
+      });
+    } catch (cleanupError) {
+      console.error(`Error during connection cleanup for ${connectionId}:`, cleanupError);
+    }
+  }
+
+  handleMessageProcessingError(error: Error, rawMessage: any, connectionId: string): void {
+    console.error(`Message processing error for connection ${connectionId}:`, error);
+    
+    this.eventEmitter.emit('message:error', {
+      connectionId,
+      error: error.message,
+      rawMessage
+    });
+
+    // Optionally close connection for severe errors
+    if (this.isSevereError(error)) {
+      try {
+        const connection = this.connectionManager.getConnection(connectionId);
+        if (connection) {
+          connection.socket.close(1011, 'Message processing error');
+        }
+        this.connectionManager.removeConnection(connectionId);
+      } catch (closeError) {
+        console.error(`Error closing connection ${connectionId}:`, closeError);
+      }
+    }
+  }
+
+  handleBroadcastError(error: Error, message: any, excludedConnectionId?: string): void {
+    console.error('Broadcast error:', error);
+    
+    this.eventEmitter.emit('broadcast:error', {
+      error: error.message,
+      message,
+      excludedConnectionId
+    });
+  }
+
+  handleAuthenticationError(error: Error, socketInfo?: any): void {
+    console.error('WebSocket authentication error:', error);
+    
+    this.eventEmitter.emit('auth:error', {
+      error: error.message,
+      socketInfo
+    });
+  }
+
+  private isSevereError(error: Error): boolean {
+    const severeErrorTypes = [
+      'SyntaxError',
+      'ReferenceError',
+      'TypeError'
+    ];
+    
+    return severeErrorTypes.some(type => error.constructor.name === type) ||
+           error.message.includes('malformed') ||
+           error.message.includes('protocol');
+  }
+}
+*/

@@ -7,9 +7,9 @@ export class AuthService {
     this.jwtSecret = jwtSecret;
   }
 
-  verifyToken(token: string): { userId: string } {
+  verifyToken(token: string): any {
     try {
-      const payload = jwt.verify(token, this.jwtSecret) as { userId: string };
+      const payload = jwt.verify(token, this.jwtSecret);
       return payload;
     } catch (error) {
       throw new Error('Invalid token');

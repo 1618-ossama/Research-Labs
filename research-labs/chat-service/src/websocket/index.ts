@@ -1,15 +1,18 @@
 import { WebSocketServer as WSServer } from 'ws';
 import express from 'express';
 import http from 'http';
-import { WebSocketConfig, WSMessage, Connection, MessageMiddleware } from '@/utils/types';
+import { WebSocketConfig, WSMessage, Connection, MessageMiddleware } from '../utils/types';
 import { ConnectionManager } from '../service/connectionManager';
 import { AuthService } from '../service/authService';
 import { WSEventEmitter } from '../service/eventEmitter';
 import { WSErrorHandler } from '../utils/errorHandler';
 import { WebSocket as WSType } from 'ws';
+import { MessageHandler } from '../service/messageHandler';
+import { chatModel } from '../models/chatModel';
 
 export class WebSocketServer {
   private wss: WSServer;
+  private messageHandler: MessageHandler;
   private connectionManager: ConnectionManager;
   private authService: AuthService;
   private eventEmitter: WSEventEmitter;
@@ -19,11 +22,11 @@ export class WebSocketServer {
   private rateLimitStore: Map<string, number[]> = new Map();
   private errorhandler: WSErrorHandler;
 
-  constructor(server: http.Server, config: WebSocketConfig) {
+  constructor(server: http.Server, config: WebSocketConfig, chatModelInstance: typeof chatModel) {
     this.config = {
       heartbeatInterval: 60_000,
       inactivityTimeout: 300_000,
-      maxConnectionsPerUser: 5,
+      maxConnectionsPerUser: 1,
       ...config,
     };
 
@@ -34,7 +37,7 @@ export class WebSocketServer {
       this.config.maxConnectionsPerUser
     );
     this.authService = new AuthService(this.config.jwtSecret);
-
+    this.messageHandler = new MessageHandler(this.connectionManager, this.eventEmitter, chatModel);
     this.errorhandler = new WSErrorHandler(this.connectionManager, this.eventEmitter);
 
     this.middlewares = [
@@ -125,19 +128,15 @@ export class WebSocketServer {
             status: 'online',
           });
 
-          socket.on('message', (data) => {
+          socket.on('message', async (data) => {
             this.connectionManager.updateLastActivity(connection.id);
-            this.processMessage(data, connection as any).catch((err: Error) => {
-              console.error(`Message processing error:`, err);
-              try {
-                socket.send(JSON.stringify({
-                  type: 'error',
-                  error: 'Message processing failed',
-                }));
-              } catch (sendError) {
-                console.error(`Error sending error message:`, sendError);
-              }
-            });
+            try {
+              const message = this.parseMessage(data);
+              await this.runMiddlewarePipeline(message, connection as any);
+              await this.messageHandler.processMessage(message, connection);
+            } catch (error) {
+              this.errorhandler.handleMessageProcessingError(error as Error, data, connection.id);
+            }
           });
 
           socket.on('close', () => this.handleDisconnection(connection as any));
@@ -153,41 +152,18 @@ export class WebSocketServer {
     });
   }
 
-  private async processMessage(data: any, connection: Connection): Promise<void> {
-    let message: WSMessage;
-
-    try {
-      message = this.parseMessage(data);
-      await this.runMiddlewarePipeline(message, connection);
-      this.eventEmitter.emit('message:received', { message, connection });
-    } catch (err) {
-      const error = err as Error;
-      console.error(`Message processing failed: ${error.message}`);
-
-      try {
-        connection.socket.send(JSON.stringify({
-          type: 'error',
-          error: error.message || 'Message processing failed',
-        }));
-      } catch (sendError) {
-        this.errorhandler.handleMessageProcessingError(sendError as Error, data, connection.id);
-        console.error(`Error sending error response: ${(sendError as Error).message}`);
-      }
-
-      if (error.message === 'Binary messages not supported' ||
-        error.message === 'Invalid message format') {
-        connection.socket.close(1003, error.message);
-      }
-    }
-  }
-
   private parseMessage(data: any): WSMessage {
-    if (typeof data !== 'string') {
-      throw new Error('Binary messages not supported');
-    }
+    let messageString: string;
 
+    if (typeof data === 'string') {
+      messageString = data;
+    } else if (data instanceof Buffer || data instanceof ArrayBuffer) {
+      messageString = data.toString();
+    } else {
+      throw new Error('Unsupported message format');
+    }
     try {
-      const parsed = JSON.parse(data);
+      const parsed = JSON.parse(messageString);
       if (!parsed.type || typeof parsed.type !== 'string') {
         throw new Error('Invalid message format');
       }
@@ -199,7 +175,6 @@ export class WebSocketServer {
       throw error;
     }
   }
-
   private async runMiddlewarePipeline(message: WSMessage, connection: Connection): Promise<void> {
     const runner = async (index: number): Promise<void> => {
       if (index >= this.middlewares.length) return;
@@ -226,6 +201,9 @@ export class WebSocketServer {
     try {
       if (!message.type) {
         return next(new Error('Message type is required'));
+      }
+      if (message.payload && typeof message.payload !== 'object') {
+        return next(new Error('Message payload must be an object'));
       }
       next();
     } catch (error) {
@@ -286,7 +264,6 @@ export class WebSocketServer {
 
       clearInterval(this.heartbeatInterval);
 
-      // Close all connections gracefully
       this.connectionManager.getAllConnections().forEach(conn => {
         try {
           conn.socket.close(1001, 'Server shutting down');
@@ -336,8 +313,10 @@ export function setupWebSocketServer(
   app: express.Application,
   config: WebSocketConfig
 ): http.Server {
+  app.use(express.urlencoded());
+  app.use(express.json());
   const server = http.createServer(app);
-  const wsServer = new WebSocketServer(server, config);
+  const wsServer = new WebSocketServer(server, config, chatModel);
 
   wsServer.use((message, conn, next) => {
     try {

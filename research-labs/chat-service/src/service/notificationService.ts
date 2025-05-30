@@ -1,6 +1,7 @@
 import { ConnectionManager } from './connectionManager';
 import { WSEventEmitter } from './eventEmitter';
 import { v4 as uuidv4 } from 'uuid';
+import { chatModel } from '../models/chatModel';
 
 export enum NotificationType {
   MESSAGE = 'message',
@@ -14,10 +15,10 @@ export interface Notification {
   id: string;
   type: NotificationType;
   recipientId: string;
-  senderId?: string;
   content: any;
-  isRead: boolean;
-  createdAt: Date;
+  created_at: Date;
+  read_status: boolean;
+  senderId?: string;
 }
 
 export class NotificationService {
@@ -33,7 +34,6 @@ export class NotificationService {
     this.eventEmitter.on('conversation:message', (data) => {
       const { conversationId, message, excludeUserId } = data;
 
-      // get conversation participants from your database
       this.getConversationParticipants(conversationId)
         .then(participants => {
           for (const userId of participants) {
@@ -48,28 +48,39 @@ export class NotificationService {
     });
   }
 
-  sendNotification(
+  async sendNotification(
     recipientId: string,
     type: NotificationType,
     content: any,
     senderId?: string
-  ): void {
+  ): Promise<void> {
     const notification: Notification = {
       id: uuidv4(),
       type,
       recipientId,
       senderId,
       content,
-      isRead: false,
-      createdAt: new Date()
+      read_status: false,
+      created_at: new Date()
     };
 
-    // save to database
+    try {
+      await chatModel.createNotification({
+        message: JSON.stringify({
+          type,
+          content,
+          senderId
+        }),
+        user_id: recipientId,
+      });
 
-    this.connectionManager.sendToUser(recipientId, {
-      type: 'notification',
-      notification
-    });
+      this.connectionManager.sendToUser(recipientId, {
+        type: 'notification',
+        notification
+      });
+    } catch (error) {
+      console.error('Error saving notification:', error);
+    }
   }
 
   createMessageNotification(recipientId: string, senderId: string, message: any): void {
@@ -92,7 +103,6 @@ export class NotificationService {
       NotificationType.FRIEND_REQUEST,
       {
         senderId,
-        // get sender name from database
         senderName: `User ${senderId}`
       },
       senderId
@@ -112,7 +122,6 @@ export class NotificationService {
         groupId,
         groupName,
         senderId,
-        // get sender name from database
         senderName: `User ${senderId}`
       },
       senderId
@@ -129,27 +138,41 @@ export class NotificationService {
     );
   }
 
-  markNotificationAsRead(notificationId: string, userId: string): Promise<boolean> {
-    // update in database
+  async markNotificationAsRead(notificationId: string, userId: string): Promise<boolean> {
+    try {
+      const result = await chatModel.updateNotification(notificationId, {
+        read_status: true
+      });
 
-    // Notify user's connections about read status update
-    this.connectionManager.sendToUser(userId, {
-      type: 'notification_read',
-      notificationId
-    });
+      if (!result) return false;
 
-    return Promise.resolve(true);
+      this.connectionManager.sendToUser(userId, {
+        type: 'notification_read',
+        notificationId
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      return false;
+    }
   }
 
-  markAllNotificationsAsRead(userId: string): Promise<boolean> {
-    // update in database
+  async markAllNotificationsAsRead(userId: string): Promise<boolean> {
+    try {
+      const result = await chatModel.markAllNotificationsAsRead(userId);
 
-    // Notify user's connections about read status update
-    this.connectionManager.sendToUser(userId, {
-      type: 'all_notifications_read'
-    });
+      if (!result) return false;
 
-    return Promise.resolve(true);
+      this.connectionManager.sendToUser(userId, {
+        type: 'all_notifications_read'
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      return false;
+    }
   }
 
   private truncateMessage(content: string): string {
@@ -159,7 +182,33 @@ export class NotificationService {
   }
 
   private async getConversationParticipants(conversationId: string): Promise<string[]> {
-    // query your database.
-    return Promise.resolve(['user1', 'user2', 'user3']);
+    try {
+      const participants = await chatModel.getConversationParticipants(conversationId);
+      return participants.map(p => p.user_id);
+    } catch (error) {
+      console.error('Error getting conversation participants:', error);
+      return [];
+    }
+  }
+
+  async getUserNotifications(userId: string, limit: number = 50, offset: number = 0): Promise<Notification[]> {
+    try {
+      const dbNotifications = await chatModel.getUserNotifications(userId, limit, offset);
+      return dbNotifications.map(dbNotif => {
+        const content = JSON.parse(dbNotif.message);
+        return {
+          id: dbNotif.id,
+          type: content.type,
+          recipientId: dbNotif.user_id,
+          content: content.content,
+          created_at: dbNotif.created_at,
+          read_status: dbNotif.read_status,
+          senderId: content.senderId
+        };
+      });
+    } catch (error) {
+      console.error('Error getting user notifications:', error);
+      return [];
+    }
   }
 }

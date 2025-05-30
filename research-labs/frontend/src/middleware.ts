@@ -84,19 +84,19 @@ export async function middleware(request: NextRequest) {
 
       const requestHeaders = new Headers(request.headers)
 
-const response  = NextResponse.next({
+      const response = NextResponse.next({
         request: {
           headers: requestHeaders
         }
       })
-  response.cookies.set('userId', payload.userId as string, {
-  httpOnly: false, // so that Next.js pages (and client code, if needed) can read it
-  sameSite: 'lax',
-  path: '/',
-  maxAge: 60 * 60, // 1 hour
-})
+      response.cookies.set('userId', payload.userId as string, {
+        httpOnly: false, // so that Next.js pages (and client code, if needed) can read it
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60, // 1 hour
+      })
 
-return response
+      return response
 
     } catch (jwtError) {
       console.warn(`[JWT] Local verification failed:`, jwtError)

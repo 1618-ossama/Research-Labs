@@ -1,14 +1,32 @@
 import express from 'express';
 import { setupWebSocketServer, WebSocketServer } from './websocket';
+import { createChatRouter } from './routes/chatRoutes';
+import cookieParser from 'cookie-parser';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string;
+        role: string;
+      };
+    }
+  }
+}
 
 const app = express();
 
 const server = setupWebSocketServer(app, {
-  jwtSecret: process.env.JWT_SECRET || 'default-secret-for-development',
-  inactivityTimeout: 180_000, // 3 mins
+  jwtSecret: 'access',
+  inactivityTimeout: 180_000,
 });
 
 const wsServer = app.get('wsServer') as WebSocketServer;
+
+app.use(cookieParser());
+app.use(express.urlencoded());
+app.use(express.json());
+app.use('/api/chat', createChatRouter());
 
 wsServer.use((msg, conn, next) => {
   try {
