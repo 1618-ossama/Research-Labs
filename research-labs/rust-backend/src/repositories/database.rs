@@ -1,6 +1,8 @@
 use crate::errors;
 
-use crate::models::publication::{Group, Publication, PublicationFile};
+use crate::models::publication::{
+    Conference, CreateConference, Group, Publication, PublicationFile,
+};
 use errors::Result;
 use uuid::Uuid;
 
@@ -41,4 +43,13 @@ pub trait Database {
     async fn get_groups_by_user_id(&self, user_id: Uuid) -> Result<Vec<Group>>;
     async fn get_group(&self, group_id: Uuid) -> Result<Group>;
     async fn add_user_to_group(&self, leader_id: Uuid, group_id: Uuid) -> Result<()>;
+    async fn get_all_conferences(&self) -> Result<Vec<Conference>>;
+    async fn get_conference_by_id(&self, id: Uuid) -> Result<Conference>;
+    async fn create_conference(&self, data: CreateConference) -> Result<Uuid>;
+    async fn update_conference(&self, id: Uuid, data: CreateConference) -> Result<()>;
+    async fn delete_conference(&self, id: Uuid) -> Result<()>;
+    async fn get_publications_by_conference_id(
+        &self,
+        conference_id: Uuid,
+    ) -> Result<Vec<Publication>>;
 }

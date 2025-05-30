@@ -1,8 +1,11 @@
 use crate::errors::*;
-use crate::models::publication::{Group, Publication, PublicationFile};
+use crate::models::publication::{
+    Conference, CreateConference, Group, Publication, PublicationFile,
+};
 use sqlx::postgres::Postgres;
-use sqlx::{query, Pool};
+use sqlx::{query, Pool, Transaction};
 
+use time::{OffsetDateTime, PrimitiveDateTime};
 use uuid::Uuid;
 
 use super::database::Database;
@@ -21,48 +24,92 @@ impl PostgresDatabase {
         PostgresDatabase { pool }
     }
 }
-impl Database for PostgresDatabase {
-    async fn get_publication(&self, publication_id: Uuid) -> Result<Publication> {
-        let record = sqlx::query!("SELECT * FROM publications WHERE id = $1", publication_id)
-            .fetch_one(&self.pool)
-            .await?;
+use sqlx::query_as;
 
-        let publication = Publication {
-            id: record.id,
-            title: record.title,
-            journal: record.journal,
-            status: record.status,
-            submitter_id: record.submitter_id,
-            submiited_at: record.submitted_at.to_string(),
-        };
+impl PostgresDatabase {
+    pub async fn get_publication(&self, publication_id: Uuid) -> Result<Publication> {
+        let publication = sqlx::query_as!(
+        Publication,
+        r#"
+        SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at
+        FROM publications
+        WHERE id = $1
+        "#,
+        publication_id
+    )
+    .fetch_one(&self.pool)
+    .await?;
 
         Ok(publication)
     }
 
-    // delete pub
-    async fn delete_publication(&self, publication_id: Uuid) -> Result<()> {
+    pub async fn get_publications(&self) -> Result<Vec<Publication>> {
+        let publications = sqlx::query_as!(
+        Publication,
+        r#"
+        SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at
+        FROM publications
+        "#
+    )
+    .fetch_all(&self.pool)
+    .await?;
+
+        Ok(publications)
+    }
+    pub async fn get_files_by_publication(
+        &self,
+        publication_id: Uuid,
+    ) -> Result<Vec<PublicationFile>> {
+        let files = sqlx::query_as!(
+            PublicationFile,
+            "SELECT id, file_type, file_path, publication_id
+         FROM publication_files WHERE publication_id = $1",
+            publication_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(files)
+    }
+    // PUBLICATION FILES
+    pub async fn add_file(
+        &self,
+        id: Uuid,
+        file_type: String,
+        file_path: String,
+        publication_id: Uuid,
+    ) -> Result<()> {
+        sqlx::query!(
+            "INSERT INTO publication_files (id, file_type, file_path, publication_id)
+         VALUES ($1, $2, $3, $4)",
+            id,
+            file_type,
+            file_path,
+            publication_id
+        )
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    pub async fn delete_publication(&self, publication_id: Uuid) -> Result<()> {
         let _ = query!("Delete from publications where id=$1", publication_id)
             .execute(&self.pool)
             .await?;
         return Ok(());
     }
 
-    async fn get_publications(&self) -> Result<Vec<Publication>> {
-        let res = query!("Select * from publications")
-            .map(|record| Publication {
-                id: record.id,
-                title: record.title,
-                journal: record.journal,
-                status: record.status,
-                submitter_id: record.submitter_id,
-                submiited_at: record.submitted_at.to_string(),
-            })
-            .fetch_all(&self.pool)
-            .await?;
-        return Ok(res);
-    }
-
-    async fn add_publication(
+    // async fn get_files_by_publication(&self, publication_id: Uuid) -> Result<Vec<PublicationFile>> {
+    //     let files = sqlx::query_as!(
+    //         PublicationFile,
+    //         "SELECT id, file_type, file_path, publication_id
+    //      FROM publication_files WHERE publication_id = $1",
+    //         publication_id
+    //     )
+    //     .fetch_all(&self.pool)
+    //     .await?;
+    //     Ok(files)
+    // }
+    pub async fn add_publication(
         &self,
         title: String,
         journal: String,
@@ -84,115 +131,132 @@ impl Database for PostgresDatabase {
         println!("Inserted Problem:{:?}", title);
         Ok(())
     }
-
-    async fn get_publications_by_user(
-        &self,
-        user_id: Uuid,
-    ) -> Result<Vec<crate::models::publication::Publication>> {
-        let res = query!("Select * from publications where submitter_id=$1", user_id)
-            .map(|record| Publication {
-                id: record.id,
-                title: record.title,
-                journal: record.journal,
-                status: record.status,
-                submitter_id: record.submitter_id,
-                submiited_at: record.submitted_at.to_string(),
-            })
-            .fetch_all(&self.pool)
-            .await?;
-        return Ok(res);
-    }
-    // PUBLICATION FILES
-    async fn add_file(
-        &self,
-        id: Uuid,
-        file_type: String,
-        file_path: String,
-        publication_id: Uuid,
-    ) -> Result<()> {
-        sqlx::query!(
-            "INSERT INTO publication_files (id, file_type, file_path, publication_id)
-         VALUES ($1, $2, $3, $4)",
-            id,
-            file_type,
-            file_path,
-            publication_id
-        )
-        .execute(&self.pool)
-        .await?;
-        Ok(())
-    }
-
-    async fn get_files_by_publication(&self, publication_id: Uuid) -> Result<Vec<PublicationFile>> {
-        let files = sqlx::query_as!(
-            PublicationFile,
-            "SELECT id, file_type, file_path, publication_id
-         FROM publication_files WHERE publication_id = $1",
-            publication_id
-        )
-        .fetch_all(&self.pool)
-        .await?;
-        Ok(files)
-    }
-
-    // GROUPS
-    async fn add_group(
-        &self,
-        id: Uuid,
-        title: String,
-        description: String,
-        status: String,
-        leader_id: Uuid,
-    ) -> Result<()> {
-        sqlx::query!(
-            "INSERT INTO groups (id, title, description, status, leader_id)
-         VALUES ($1, $2, $3, $4, $5)",
-            id,
-            title,
-            description,
-            status,
-            leader_id
-        )
-        .execute(&self.pool)
-        .await?;
-        Ok(())
-    }
-
-    async fn get_groups_by_user_id(&self, user_id: Uuid) -> Result<Vec<Group>> {
-        let groups = sqlx::query_as!(
-            Group,
-            "SELECT g.id, g.title, g.description, g.status, g.created_at, g.leader_id
-         FROM groups g
-         JOIN group_user gu ON gu.group_id= g.id
-         WHERE gu.user_id = $1",
+    pub async fn get_publications_by_user(&self, user_id: Uuid) -> Result<Vec<Publication>> {
+        let publications = query_as!(
+            Publication,
+            r#"
+            SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at
+            FROM publications
+            WHERE submitter_id = $1
+            "#,
             user_id
         )
         .fetch_all(&self.pool)
         .await?;
-        Ok(groups)
+        Ok(publications)
+    }
+    pub async fn get_publications_by_conference_id(
+        &self,
+        conference_id: Uuid,
+    ) -> Result<Vec<Publication>> {
+        let publications = sqlx::query_as!(
+            Publication,
+            r#"
+        SELECT p.id, p.title, p.journal, p.doi, p.status, p.visibility,
+               p.submitter_id, p.conference_id, p.submitted_at
+        FROM publications p
+        INNER JOIN conference_publications cp ON p.id = cp.publication_id
+        WHERE cp.conference_id = $1
+        "#,
+            conference_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(publications)
     }
 
-    async fn get_group(&self, group_id: Uuid) -> Result<Group> {
-        let group = sqlx::query_as!(
-            Group,
-            "SELECT id, title, description, status, created_at, leader_id
-         FROM groups WHERE id = $1",
-            group_id
+    pub async fn get_all_conferences(&self) -> Result<Vec<Conference>> {
+        let conferences = sqlx::query_as!(
+            Conference,
+            r#"
+        SELECT id, name, description, location, start_date, end_date
+        FROM conferences
+        "#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(conferences)
+    }
+
+    pub async fn get_conference_by_id(&self, id: Uuid) -> Result<Conference> {
+        let conf = sqlx::query_as!(
+            Conference,
+            r#"
+        SELECT id, name, description, location, start_date, end_date
+        FROM conferences
+        WHERE id = $1
+        "#,
+            id
         )
         .fetch_one(&self.pool)
         .await?;
-        Ok(group)
+
+        // Return conference with no publications loaded
+        Ok(conf)
     }
 
-    // GROUP-USER
-    async fn add_user_to_group(&self, leader_id: Uuid, group_id: Uuid) -> Result<()> {
+    pub async fn create_conference(&self, data: CreateConference) -> Result<Uuid> {
+        let conference_id = Uuid::new_v4();
+
         sqlx::query!(
-            "INSERT INTO group_user (user_id, group_id) VALUES ($1, $2)",
-            leader_id,
-            group_id
+            r#"
+        INSERT INTO conferences (id, name, description, location, start_date, end_date)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        "#,
+            conference_id,
+            data.name,
+            data.description,
+            data.location,
+            data.start_date,
+            data.end_date
         )
         .execute(&self.pool)
         .await?;
+
+        Ok(conference_id)
+    }
+    pub async fn get_publications_by_conference(
+        &self,
+        conference_id: Uuid,
+    ) -> Result<Vec<Publication>> {
+        // Assuming you have a join table `conference_publications` linking publications to conferences
+        // Adjust the query if you store `conference_id` directly in `publications` table instead
+
+        let publications = sqlx::query_as!(
+            Publication,
+            r#"
+            SELECT p.id, p.title, p.journal, p.doi, p.status, p.visibility, p.submitted_at, p.conference_id, p.submitter_id
+            FROM publications p
+            INNER JOIN conference_publications cp ON p.id = cp.publication_id
+            WHERE cp.conference_id = $1
+            "#,
+            conference_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        println!("{:#?}", publications);
+        Ok(publications)
+    }
+    pub async fn link_publication_to_conference(
+        &self,
+        conference_id: Uuid,
+        publication_id: Uuid,
+    ) -> Result<()> {
+        sqlx::query!(
+            r#"
+        INSERT INTO conference_publications (conference_id, publication_id)
+        VALUES ($1, $2)
+        ON CONFLICT DO NOTHING
+        "#,
+            conference_id,
+            publication_id
+        )
+        .execute(&self.pool)
+        .await?;
+
         Ok(())
     }
 }

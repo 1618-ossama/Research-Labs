@@ -82,6 +82,11 @@ CREATE TABLE speaker (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE conference_publications (
+    conference_id UUID NOT NULL REFERENCES conferences(id) ON DELETE CASCADE,
+    publication_id UUID NOT NULL REFERENCES publications(id) ON DELETE CASCADE,
+    PRIMARY KEY (conference_id, publication_id)
+);
 
 CREATE TABLE conversations (
     id UUID PRIMARY KEY,

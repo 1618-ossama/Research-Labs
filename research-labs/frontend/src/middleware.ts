@@ -96,6 +96,7 @@ export async function middleware(request: NextRequest) {
         maxAge: 60 * 60, // 1 hour
       })
 
+
       return response
 
     } catch (jwtError) {

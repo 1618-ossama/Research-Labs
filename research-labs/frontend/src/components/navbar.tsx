@@ -12,6 +12,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEffect } from "react";
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+}
 import { useScrollVisibility } from "@/hooks/use-scroll-visibility";
 
 type navItemsType = {
@@ -33,11 +40,34 @@ const navItem = (links: navItemsType[]) =>
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { visible } = useScrollVisibility(100);
+  const [role, setRole] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRole(getCookie("userRole"));     // Add cookie for role if not already there
+    setUserId(getCookie("userId"));
+  }, []);
 
   const navItems: navItemsType[] = [
-    { name: "Home", href: "/" },
-    { name: "publications", href: "/publications" },
-  ];
+      { name: "Home", href: "/" },
+      { name: "Publications", href: "/publications" },
+      { name: "Conferences", href: "/conferences" },
+    ];
+
+  console.log("=====");
+  console.log(role);
+  console.log(userId);
+  console.log("=====");
+    if (role === "ADMIN") {
+
+      navItems.push({ name: "Dashboard", href: "/admin/dashboard" });
+      navItems.push({ name: "Manage Users", href: "/admin/users" });
+    } else if (role === "RESEARCHER") {
+      navItems.push({ name: "My Profile", href: `/profile` });
+      navItems.push({ name: "New Submission", href: "/submission" });
+    } else if (role === "leader") {
+      navItems.push({ name: "Team Overview", href: "/leader/team" });
+    }
 
   return (
     <header

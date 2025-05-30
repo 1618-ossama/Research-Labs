@@ -25,8 +25,8 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import Link from "next/link"
 
 const navigationItems = [
-  { name: "Dashboard", href: "/dashboard", icon: Users },
-  { name: "Publications", href: "/publications", icon: Users },
+  { name: "Home", href: "/", icon: Home},
+  { name: "Publications", href: "/publications", icon: Home},
   { name: "Profile", href: "/profile", icon: Home },
   { name: "Settings", href: "/Settings", icon: CalendarDays },
 ]
@@ -61,7 +61,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
                 <div className="flex items-center gap-2">
                   <Home className="h-6 w-6 text-primary" />
                   {isExpanded && (
-                    <span className="text-xl font-bold whitespace-nowrap">HotelPro</span>
+                    <span className="text-xl font-bold whitespace-nowrap">ResearchLab</span>
                   )}
                 </div>
                 {isExpanded && isMobile && (
