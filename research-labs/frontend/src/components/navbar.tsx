@@ -113,23 +113,26 @@ export default function Header() {
               <DropdownMenuItem>French</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Sign In</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href="/login">Login</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/register">Register</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
 
-          </DropdownMenu>
+  {!userId && (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <User className="h-5 w-5" />
+          <span className="sr-only">Sign In</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href="/login">Login</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/register">Register</Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )}
+
           <Button
             variant="ghost"
             size="icon"
