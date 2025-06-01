@@ -28,7 +28,7 @@ export const isAuthenticated: RequestHandler = (req: Request, res: Response, nex
       userId: payload.userId,
       role: payload.role || 'GUEST'
     };
-    console.log('middleware env secret key');
+    console.log(req.user);
 
     next();
   } catch (error) {

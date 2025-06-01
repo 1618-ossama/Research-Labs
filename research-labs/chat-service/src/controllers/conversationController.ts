@@ -4,7 +4,9 @@ import { Conversation, ConversationParticipant } from '../utils/types';
 
 export const createConversation = async (req: Request, res: Response) => {
   try {
-    const { group_id = null, conversation_type, participantIds } = req.body;
+    console.log(111111);
+
+    const { group_id = null, conversation_type = 'DIRECT', participantIds } = req.body;
     const userId = req.user?.userId;
 
     if (!userId) {

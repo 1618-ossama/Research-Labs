@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -9,67 +9,143 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Toast as toast } from "@/components/ui/use-toast";
-import { UploadCloudIcon } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
+import { User } from "@/lib/chat"
+import FileUploadField from "../auth/FileUploadField"
+import useFileUpload from "@/hooks/useFileUpload"
 
 const profileFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
+  username: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
   }),
-  title: z.string().min(2, {
-    message: "Title must be at least 2 characters.",
+  first_name: z.string().min(2, {
+    message: "First name must be at least 2 characters.",
   }),
-  affiliation: z.string().min(2, {
+  last_name: z.string().min(2, {
+    message: "Last name must be at least 2 characters.",
+  }),
+  affiliation: z.string({
     message: "Affiliation must be at least 2 characters.",
   }),
-  location: z.string().min(2, {
-    message: "Location must be at least 2 characters.",
-  }),
-  website: z
-    .string()
-    .url({
-      message: "Please enter a valid URL.",
-    })
-    .optional()
-    .or(z.literal("")),
   bio: z.string().max(500, {
     message: "Bio must not exceed 500 characters.",
   }),
-  interests: z.string(),
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
-const defaultValues: Partial<ProfileFormValues> = {
-  name: "pfe",
-  title: "pfe",
-  affiliation: "pfe",
-  location: "rabat",
-  website: "https://pfe.edu",
-  bio: "Researching",
-  interests: "Machine Learning, Systems Biology",
-}
-
-export default function ProfileSettings() {
+export default function ProfileSettings({ userId }: { userId: string }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [userData, setUserData] = useState<User | null>(null)
+  const [localAvatar, setLocalAvatar] = useState<string | null>(null)
+
+  const {
+    isLoading: isImageLoading,
+    error: imageError,
+    handleFileChange: handleImageChange,
+    clearFile: clearImage,
+  } = useFileUpload({
+    type: 'image',
+    maxSize: 5 * 1024 * 1024,
+    onError: (error) => toast({
+      title: "Image upload error",
+      description: error,
+      variant: "destructive",
+    }),
+  })
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
+    defaultValues: {
+      username: "",
+      first_name: "",
+      last_name: "",
+      affiliation: "",
+      bio: "",
+    }
   })
 
-  function onSubmit(data: ProfileFormValues) {
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+          method: 'GET',
+          credentials: 'include',
+        })
+        if (!response.ok) throw new Error('Failed to fetch user data')
+        const fdata = await response.json()
+        const data: User = fdata.data;
+
+        setUserData(data)
+
+        form.reset({
+          username: data.username || "",
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          affiliation: data.affiliation || "",
+          bio: data.bio || "",
+        })
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load user data",
+          variant: "destructive",
+        })
+      }
+    }
+
+    fetchUserData()
+  }, [userId, form])
+
+  const handleClearImage = () => {
+    clearImage()
+    setLocalAvatar(null)
+  }
+
+  const handleLocalImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageChange(e)
+    if (e.target.files?.[0]) {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setLocalAvatar(event.target.result as string)
+        }
+      }
+      reader.readAsDataURL(e.target.files[0])
+    }
+  }
+
+  async function onSubmit(data: ProfileFormValues) {
     setIsLoading(true)
 
-    // same problem
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) throw new Error('Failed to update profile')
+
+      const updatedUser = await response.json()
+      setUserData(updatedUser)
+
       toast({
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
       })
-    }, 1000)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -83,19 +159,19 @@ export default function ProfileSettings() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src="/placeholder.svg?height=300&width=300" alt="Profile picture" />
-              <AvatarFallback>AJ</AvatarFallback>
-            </Avatar>
-
             <div className="flex flex-col gap-2">
-              <Button variant="outline" className="w-full">
-                <UploadCloudIcon className="h-4 w-4 mr-2" />
-                Upload New Image
-              </Button>
-              <Button variant="outline" className="w-full text-destructive hover:text-destructive">
-                Remove
-              </Button>
+              <FileUploadField
+                type="image"
+                previewUrl={localAvatar || null}
+                onClear={handleClearImage}
+                onChange={handleLocalImageChange}
+                error={imageError}
+                isLoading={isImageLoading}
+                label="Upload new image"
+                accept="image/jpeg,image/png,image/webp"
+                maxSizeMB={5}
+              />
+
             </div>
           </div>
         </CardContent>
@@ -113,10 +189,10 @@ export default function ProfileSettings() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="name"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -128,14 +204,13 @@ export default function ProfileSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="title"
+                  name="first_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Title</FormLabel>
+                      <FormLabel>First Name</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
-                      <FormDescription>Your academic or professional title.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -143,49 +218,33 @@ export default function ProfileSettings() {
 
                 <FormField
                   control={form.control}
-                  name="affiliation"
+                  name="last_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Affiliation</FormLabel>
+                      <FormLabel>Last Name</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
-                      <FormDescription>Your university, institution, or organization.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Website</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="https://" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="affiliation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Affiliation</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>Your university, institution, or organization.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -201,21 +260,6 @@ export default function ProfileSettings() {
                       />
                     </FormControl>
                     <FormDescription>{field.value?.length || 0}/500 characters</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="interests"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Research Interests</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Separate interests with commas" />
-                    </FormControl>
-                    <FormDescription>Enter your research interests separated by commas.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

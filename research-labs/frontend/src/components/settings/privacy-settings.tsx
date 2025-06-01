@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Toast as toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { LockIcon, EyeIcon, UsersIcon } from "lucide-react"
 
 export default function PrivacySettings() {
@@ -211,7 +211,7 @@ export default function PrivacySettings() {
           <div className="flex items-center justify-between">
             <Label htmlFor="showOnlineStatus" className="flex-1">
               Show online status
-              <p className="text-sm font-normal text-muted-foreground">Allow others to see when you're online</p>
+              <p className="text-sm font-normal text-muted-foreground">Allow others to see when you are online</p>
             </Label>
             <Switch
               id="showOnlineStatus"

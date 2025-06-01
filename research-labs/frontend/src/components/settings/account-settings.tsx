@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Toast as toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast"
 import { AlertCircleIcon } from "lucide-react"
+import { User } from "@/lib/chat"
 
 const accountFormSchema = z
   .object({
@@ -22,9 +23,6 @@ const accountFormSchema = z
     }),
     newPassword: z
       .string()
-      .min(8, {
-        message: "Password must be at least 8 characters.",
-      })
       .optional(),
     confirmPassword: z.string().optional(),
   })
@@ -55,27 +53,78 @@ const accountFormSchema = z
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
-const defaultValues: Partial<AccountFormValues> = {
-  email: "pfe.test@gmail.com",
-  currentPassword: "",
-  newPassword: "",
-  confirmPassword: "",
-}
-
-export default function AccountSettings() {
+export default function AccountSettings({ userId }: { userId: string }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [userData, setUserData] = useState<User | null>(null)
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
-    defaultValues,
+    defaultValues: {
+      email: "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    }
   })
 
-  function onSubmit(data: AccountFormValues) {
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+          method: 'GET',
+          credentials: 'include',
+        })
+        if (!response.ok) throw new Error('Failed to fetch user data')
+        const fdata = await response.json()
+        const data: User = fdata.data;
+
+        setUserData(data)
+        form.reset({
+          email: data.email || "",
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        })
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load user data",
+          variant: "destructive",
+        })
+      }
+    }
+
+    fetchUserData()
+  }, [userId, form])
+
+  async function onSubmit(data: AccountFormValues) {
     setIsLoading(true)
 
-    // toast isn't working properly
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const payload = {
+        email: data.email,
+        ...(data.newPassword ? {
+          password_hash: data.newPassword
+        } : {})
+      }
+
+      const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to update account')
+      }
+
+      const updatedUser = await response.json()
+      setUserData(updatedUser)
+
       toast({
         title: "Account updated",
         description: "Your account information has been updated successfully.",
@@ -87,7 +136,43 @@ export default function AccountSettings() {
         newPassword: "",
         confirmPassword: "",
       })
-    }, 1000)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update account",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}/notify-delete`, {
+        method: 'PUT',
+        credentials: 'include',
+      })
+
+      if (!response.ok) throw new Error('Failed to delete account')
+
+      toast({
+        title: "Account deleted",
+        description: "Your admin has been successfully notified.",
+      })
+
+      window.location.href = '/'
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete account",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -191,7 +276,13 @@ export default function AccountSettings() {
                 <p className="text-sm text-muted-foreground mt-1">
                   Permanently delete your account and all of your content. This action cannot be undone.
                 </p>
-                <Button variant="destructive" size="sm" className="mt-4">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="mt-4"
+                  onClick={handleDeleteAccount}
+                  disabled={isLoading}
+                >
                   Delete Account
                 </Button>
               </div>

@@ -54,7 +54,7 @@ const verifyToken = (token: string, type: 'access' | 'refresh' = 'access'): Toke
 
 const setAuthCookies = (res: Response, accessToken: string, refreshToken: string): void => {
   res.cookie("AccessTokenCookie", accessToken, {
-    httpOnly: true,
+    // httpOnly: true,
     // secure: true, 
     maxAge: parseInt(config.jwtExpiresInAccess) * 60 * 60 * 1000,
   } as CookieOptions);

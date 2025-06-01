@@ -1,17 +1,17 @@
-import type { Metadata } from "next"
+'use client'
+
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AccountSettings from "@/components/settings/account-settings"
 import ProfileSettings from "@/components/settings/profile-settings"
-import NotificationSettings from "@/components/settings/notification-settings"
 import PrivacySettings from "@/components/settings/privacy-settings"
-
-export const metadata: Metadata = {
-  title: "Settings",
-  description: "Manage your account settings and preferences.",
-}
+import { Button } from "@/components/ui/button"
+import { useParams } from 'next/navigation';
 
 export default function SettingsPage() {
+  const params = useParams();
+  const userid = params.userid;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -20,7 +20,7 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">Manage your account settings and preferences.</p>
         </div>
         <Button asChild variant="outline" className="mt-4 md:mt-0">
-          <Link href="/profile/current-user">Back to Profile</Link>
+          <Link href={`/profile/${userid}`}>Back to Profile </Link>
         </Button>
       </div>
 
@@ -32,11 +32,11 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="account">
-          <AccountSettings />
+          <AccountSettings userId={userid as string} />
         </TabsContent>
 
         <TabsContent value="profile">
-          <ProfileSettings />
+          <ProfileSettings userId={userid as string} />
         </TabsContent>
 
         <TabsContent value="privacy">
@@ -46,14 +46,3 @@ export default function SettingsPage() {
     </div>
   )
 }
-
-import { Button } from "@/components/ui/button"
-
-/*
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-
-        <TabsContent value="notifications">
-          <NotificationSettings />
-        </TabsContent>
-
-*/

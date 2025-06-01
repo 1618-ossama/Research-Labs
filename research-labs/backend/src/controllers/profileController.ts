@@ -198,6 +198,7 @@ export default {
         success: true,
         message: "Account marked for deletion and logged out successfully"
       });
+      //add admin notification
     } catch (error) {
       next(error);
     }
