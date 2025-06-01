@@ -42,7 +42,7 @@ export default function Header() {
   const { visible } = useScrollVisibility(100);
   const [role, setRole] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-
+// let token = verifyToken(getCookie("AccessTokenCookie"));
   useEffect(() => {
     setRole(getCookie("userRole"));     // Add cookie for role if not already there
     setUserId(getCookie("userId"));
@@ -54,20 +54,26 @@ export default function Header() {
       { name: "Conferences", href: "/conferences" },
     ];
 
-  console.log("=====");
-  console.log(role);
-  console.log(userId);
-  console.log("=====");
-    if (role === "ADMIN") {
+      // const { payload } = await jwtVerify(getCookie("AccessTokenCookie"), JWT_SECRET, {
+      //   algorithms: ['HS256']
+      // })
 
-      navItems.push({ name: "Dashboard", href: "/admin/dashboard" });
-      navItems.push({ name: "Manage Users", href: "/admin/users" });
-    } else if (role === "RESEARCHER") {
+  // console.log("=====");
+  // console.log(payload.);
+  // console.log(userId);
+  // console.log("=====");
+
+  if (role === "RESEARCHER" || role === "ADMIN") {
       navItems.push({ name: "My Profile", href: `/profile` });
       navItems.push({ name: "New Submission", href: "/submission" });
     } else if (role === "leader") {
       navItems.push({ name: "Team Overview", href: "/leader/team" });
     }
+
+    if (role === "ADMIN") {
+
+      navItems.push({ name: "Admin", href: "/admin" });
+    } 
 
   return (
     <header

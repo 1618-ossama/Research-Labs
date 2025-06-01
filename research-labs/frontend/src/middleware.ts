@@ -17,7 +17,7 @@ const ADMIN_ONLY_PATHS = [
 
 const rateLimit = new Map<string, number[]>()
 const RATE_LIMIT_WINDOW = 60 * 1000
-const RATE_LIMIT_MAX = 10
+const RATE_LIMIT_MAX = 1000
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'access'
@@ -94,6 +94,13 @@ export async function middleware(request: NextRequest) {
         sameSite: 'lax',
         path: '/',
         maxAge: 60 * 60, // 1 hour
+      })
+
+      response.cookies.set('userRole', role ?? '', {
+        httpOnly: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60,
       })
 
 

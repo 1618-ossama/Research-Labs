@@ -3,9 +3,7 @@ import {
   PublicationsList,
 } from "@/components/publication/publications-list";
 import { Button } from "@/components/ui/button";
-
 import Link from "next/link";
-
 import { cookies } from 'next/headers'
 
 export default async function PublicationsPage() {
@@ -26,6 +24,7 @@ export default async function PublicationsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-10">
+
       {/* <h1 className="text-3xl font-bold mb-6">Publications</h1> */}
 
       {/* <p>User ID: {userId ?? 'Not logged in'}</p> */}

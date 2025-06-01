@@ -19,12 +19,52 @@ pub async fn add_publication(
         .add_publication(
             form.title.clone(),
             form.journal.clone(),
+            form.doi.clone(),
             form.status.clone(),
+            form.visibility.clone(),
             form.submitter_id,
+            form.conference_id,
         )
         .await
     {
         Ok(_) => HttpResponse::Created().finish(),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+pub async fn update_publication_handler(
+    db: web::Data<PostgresDatabase>,
+    path: web::Path<Uuid>,
+    form: web::Json<UpdatePublicationInput>,
+) -> HttpResponse {
+    let id = path.into_inner();
+
+    // Validate status if present
+    if let Some(ref status) = form.status {
+        let valid_status = ["DRAFT", "APPROVED", "WAITING", "DELETED"];
+        if !valid_status.contains(&status.as_str()) {
+            return HttpResponse::BadRequest().finish();
+        }
+    }
+    // Validate visibility if present
+    if let Some(ref visibility) = form.visibility {
+        let valid_visibility = ["PUBLIC", "PRIVATE"];
+        if !valid_visibility.contains(&visibility.as_str()) {
+            return HttpResponse::BadRequest().finish();
+        }
+    }
+
+    let update = UpdatePublication {
+        title: form.title.clone(),
+        journal: form.journal.clone(),
+        doi: form.doi.clone(),
+        status: form.status.clone(),
+        visibility: form.visibility.clone(),
+        conference_id: form.conference_id,
+    };
+
+    match db.update_publication(id, update).await {
+        Ok(_) => HttpResponse::NoContent().finish(),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
@@ -41,19 +81,6 @@ pub async fn delete_publication(
     }
 }
 
-/// Delete a publication by ID
-// pub async fn update_status_publication(
-//     db: web::Data<PostgresDatabase>,
-//     id: web::Path<Uuid>,
-//     status: web::Path<String>,
-// ) -> HttpResponse {
-//     println!("Update status for {} to {}", id.clone(), status);
-//     match db.update_publication(id.into_inner()).await {
-//         Ok(publi) => HttpResponse::Ok().json(publi),
-//         Err(_) => HttpResponse::NotFound().finish(),
-//     }
-// }
-//
 pub async fn get_publication(db: web::Data<PostgresDatabase>, id: web::Path<Uuid>) -> HttpResponse {
     match db.get_publication(id.into_inner()).await {
         Ok(publi) => HttpResponse::Ok().json(publi),
@@ -80,87 +107,6 @@ pub async fn get_publications_by_user(
     }
 }
 
-use futures::StreamExt;
-use serde_json::json; // For .next() on the Multipart stream
-pub async fn upload_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
-    while let Some(field) = payload.next().await {
-        let mut field = field?;
-        while let Some(chunk) = field.next().await {
-            let _ = chunk?;
-        }
-    }
-    let dummy_filename = format!("{}.txt", Uuid::new_v4());
-    let dummy_file_path = format!("/public/uploads/{}", dummy_filename);
-
-    Ok(HttpResponse::Ok().json(json!({ "filePath": dummy_file_path })))
-}
-
-/// Add file to a publication
-pub async fn add_file(
-    db: web::Data<PostgresDatabase>,
-    file: web::Json<PublicationFileInput>,
-    req: HttpRequest,
-) -> HttpResponse {
-    println!("Incoming request: {:?}", req);
-    println!("Cookies: {:?}", req.cookies());
-
-    let user_id = match req.cookie("userId") {
-        Some(cookie) => match Uuid::parse_str(cookie.value()) {
-            Ok(uid) => {
-                println!("Parsed userId from cookie: {}", uid);
-                uid
-            }
-            Err(e) => {
-                println!(
-                    "Invalid userId cookie value: {}, error: {:?}",
-                    cookie.value(),
-                    e
-                );
-                return HttpResponse::Unauthorized().body("Invalid userId cookie");
-            }
-        },
-        None => {
-            println!("Missing userId cookie");
-            return HttpResponse::Unauthorized().body("Missing userId cookie");
-        }
-    };
-
-    let publication = match db.get_publication(file.publication_id).await {
-        Ok(pub_) => {
-            println!("Found publication with submitter_id: {}", pub_.submitter_id);
-            pub_
-        }
-        Err(e) => {
-            println!("Error fetching publication: {:?}", e);
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
-
-    if publication.submitter_id != user_id {
-        println!("User ID does not match publication submitter");
-        return HttpResponse::Unauthorized().body("You do not own this publication");
-    }
-
-    match db
-        .add_file(
-            file.id,
-            file.file_type.clone(),
-            file.file_path.clone(),
-            file.publication_id,
-        )
-        .await
-    {
-        Ok(_) => {
-            println!("File added successfully");
-            HttpResponse::Created().finish()
-        }
-        Err(e) => {
-            println!("Error adding file: {:?}", e);
-            HttpResponse::InternalServerError().finish()
-        }
-    }
-}
-
 pub async fn get_groups_by_user_id(
     db: web::Data<PostgresDatabase>,
     user_id: web::Path<Uuid>,
@@ -170,16 +116,6 @@ pub async fn get_groups_by_user_id(
     //     Ok(groups) => HttpResponse::Ok().json(groups),
     //     Err(_) => HttpResponse::InternalServerError().finish(),
     // }
-}
-/// Get files for a publication
-pub async fn get_files_by_publication(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-) -> HttpResponse {
-    match db.get_files_by_publication(id.into_inner()).await {
-        Ok(files) => HttpResponse::Ok().json(files),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
 }
 
 /// Add a group
@@ -225,71 +161,6 @@ pub async fn add_user_to_group(
     // }
 }
 
-pub async fn get_all_conferences(db: web::Data<PostgresDatabase>) -> HttpResponse {
-    match db.get_all_conferences().await {
-        Ok(list) => HttpResponse::Ok().json(list),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
-}
-
-pub async fn get_conference_by_id(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-) -> HttpResponse {
-    match db.get_conference_by_id(id.into_inner()).await {
-        Ok(conf) => HttpResponse::Ok().json(conf),
-        Err(_) => HttpResponse::NotFound().finish(),
-    }
-}
-
-pub async fn create_conference(
-    db: web::Data<PostgresDatabase>,
-    payload: web::Json<CreateConference>,
-) -> HttpResponse {
-    match db.create_conference(payload.into_inner()).await {
-        Ok(id) => HttpResponse::Created().json(id),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
-}
-pub async fn get_conference_pubs(
-    db: web::Data<PostgresDatabase>,
-    path: web::Path<Uuid>,
-) -> impl Responder {
-    let conference_id = path.into_inner();
-    println!("conf: {}", conference_id);
-
-    match db.get_publications_by_conference(conference_id).await {
-        Ok(publications) => HttpResponse::Ok().json(publications),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
-}
-
-pub async fn update_conference(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-    payload: web::Json<CreateConference>,
-) -> HttpResponse {
-    return HttpResponse::NoContent().finish();
-    // match db
-    //     .update_conference(id.into_inner(), payload.into_inner())
-    //     .await
-    // {
-    //     Ok(_) => HttpResponse::Ok().finish(),
-    //     Err(_) => HttpResponse::NotFound().finish(),
-    // }
-}
-
-pub async fn delete_conference(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-) -> HttpResponse {
-    return HttpResponse::NoContent().finish();
-    // match db.delete_conference(id.into_inner()).await {
-    //     Ok(_) => HttpResponse::Ok().finish(),
-    //     Err(_) => HttpResponse::NotFound().finish(),
-    // }
-}
-
 pub async fn link_publication(
     db: web::Data<PostgresDatabase>,
     payload: web::Json<LinkPayload>,
@@ -302,6 +173,5 @@ pub async fn link_publication(
             return HttpResponse::InternalServerError().finish();
         }
     }
-
     HttpResponse::Ok().json("Linked successfully.")
 }

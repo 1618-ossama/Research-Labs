@@ -4,6 +4,10 @@ use dotenv::dotenv;
 
 use repositories::postgres_db::PostgresDatabase;
 use routes::route_config;
+use services::{
+    metrics::{self, get_metrics},
+    upload::serve_upload_file,
+};
 use sqlx::PgPool;
 mod handler;
 mod routes;
@@ -12,6 +16,7 @@ mod repositories;
 use actix_web::{web::Data, App, HttpServer};
 use std::env;
 pub mod errors;
+pub mod services;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -34,6 +39,8 @@ async fn main() -> std::io::Result<()> {
             .allow_any_header()
             .supports_credentials();
         App::new()
+            .service(serve_upload_file)
+            .service(get_metrics)
             .configure(route_config)
             .app_data(Data::new(db_pool.clone()))
             .wrap(cors)

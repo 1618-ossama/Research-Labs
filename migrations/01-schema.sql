@@ -27,25 +27,29 @@ CREATE TABLE conferences (
     description TEXT NOT NULL,
     location VARCHAR(255) NOT NULL,
     start_date TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_date TIMESTAMP NOT NULL
+
 );
 
 CREATE TABLE publications (
     id UUID PRIMARY KEY,
     title VARCHAR(500) NOT NULL,
+    abstract TEXT NOT NULL,
     journal TEXT NOT NULL,
-    doi VARCHAR(60) DEFAULT '0',
-    status VARCHAR(50) CHECK (status IN ('DRAFT', 'APPROVED', 'WAITING')) NOT NULL DEFAULT 'DRAFT',
+    doi VARCHAR(60) default '0',
+    status VARCHAR(50) CHECK (status IN ('DRAFT', 'APPROVED', 'WAITING', 'DELETED')) NOT NULL DEFAULT 'DRAFT',
     visibility VARCHAR(50) CHECK (visibility IN ('PUBLIC', 'PRIVATE')) NOT NULL DEFAULT 'PRIVATE',
+    submitter_id UUID NOT NULL REFERENCES users(id),
     submitter_id UUID REFERENCES users(id) ON DELETE SET NULL,
     conference_id UUID REFERENCES conferences(id) ON DELETE SET NULL,
-    submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE publication_files (
     id UUID PRIMARY KEY,
     file_type VARCHAR(50) NOT NULL,
-    file_path VARCHAR(50) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
     publication_id UUID NOT NULL REFERENCES publications(id) ON DELETE CASCADE
 );
 

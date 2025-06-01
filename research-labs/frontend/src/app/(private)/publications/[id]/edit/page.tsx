@@ -1,422 +1,236 @@
-"use client"
+"use client";
 
-import type React from "react"
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import Link from "next/link";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { FileUploader } from "@/components/file-uploader"
-import { ImageUploader } from "@/components/image-uploader"
-import { UserNav } from "@/components/user-nav"
-import { SearchBar } from "@/components/search-bar"
-import { RichTextEditor } from "@/components/rich-text-editor"
-import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-
-interface EditPublicationPageProps {
-  params: {
-    id: string
-  }
+interface Publication {
+  id: string;
+  title: string;
+  journal: string;
+  doi: string;
+  status: string;
+  visibility: string;
+  submitter_id: string;
+  conference_id: string | null;
+  submitted_at: string;
 }
 
-export default function EditPublicationPage({ params }: EditPublicationPageProps) {
-  const { id } = params
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    title: "",
-    abstract: "",
-    content: "",
-  })
-  const [coverImageUrl, setCoverImageUrl] = useState<string>("")
-  const [newCoverImage, setNewCoverImage] = useState<File | null>(null)
-  const [existingFiles, setExistingFiles] = useState<{ name: string; size: string; type: string; url: string }[]>([])
-  const [newFiles, setNewFiles] = useState<File[]>([])
-  const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState("")
+const VALID_STATUSES = ["DRAFT", "APPROVED", "WAITING", "DELETED"];
+const VALID_VISIBILITIES = ["PUBLIC", "PRIVATE"];
 
-  // Simulate fetching publication data
+export default function EditPublicationPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const publicationId = params.id;
+
+  const [publication, setPublication] = useState<Publication | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form fields state
+  const [title, setTitle] = useState("");
+  const [journal, setJournal] = useState("");
+  const [doi, setDoi] = useState("");
+  const [status, setStatus] = useState("DRAFT");
+  const [visibility, setVisibility] = useState("PRIVATE");
+  const [conferenceId, setConferenceId] = useState<string | "">( "");
+
+  // Fetch publication data on mount
   useEffect(() => {
-    // In a real app, you would fetch the publication data from your backend
-    setTimeout(() => {
-      setFormData({
-        title: "Advances in Machine Learning for Natural Language Processing",
-        abstract: "This paper explores recent developments in applying machine learning techniques to natural language processing tasks, with a focus on transformer architectures and their applications in various domains.",
-        content: `
-          <h2>Introduction</h2>
-          <p>Natural Language Processing (NLP) has seen remarkable progress in recent years, largely due to advances in machine learning techniques, particularly deep learning. This paper provides a comprehensive review of the latest developments in the field, focusing on transformer-based architectures that have revolutionized how machines understand and generate human language.</p>
-          
-          <h2>Background</h2>
-          <p>Traditional NLP approaches relied heavily on statistical methods and hand-crafted features. The advent of deep learning, particularly recurrent neural networks (RNNs) and later transformer models, has shifted the paradigm toward end-to-end learning systems that can automatically extract relevant features from raw text data.</p>
-        `,
-      })
-      setCoverImageUrl("/placeholder.svg?height=400&width=800")
-      setExistingFiles([
-        { name: "Full Paper (PDF)", size: "2.4 MB", type: "pdf", url: "#" },
-        { name: "Supplementary Materials", size: "1.8 MB", type: "zip", url: "#" },
-        { name: "Dataset", size: "5.2 MB", type: "csv", url: "#" },
-      ])
-      setTags(["Machine Learning", "Natural Language Processing", "Transformers", "Deep Learning", "AI"])
-      setIsLoading(false)
-    }, 500)
-  }, [id])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleContentChange = (content: string) => {
-    setFormData((prev) => ({ ...prev, content }))
-  }
-
-  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && tagInput.trim() !== '') {
-      e.preventDefault()
-      if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()])
+    async function fetchPublication() {
+      try {
+        const res = await fetch(`http://localhost:3009/api/publications/${publicationId}`);
+        if (!res.ok) throw new Error("Failed to fetch publication");
+        const data: Publication = await res.json();
+        setPublication(data);
+        setTitle(data.title);
+        setJournal(data.journal);
+        setDoi(data.doi);
+        setStatus(data.status);
+        setVisibility(data.visibility);
+        setConferenceId(data.conference_id || "");
+      } catch (error) {
+        toast.error("Failed to load publication");
+      } finally {
+        setLoading(false);
       }
-      setTagInput('')
+    }
+    fetchPublication();
+  }, [publicationId]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    if (!journal.trim()) {
+      toast.error("Journal is required");
+      return;
+    }
+    if (!VALID_STATUSES.includes(status)) {
+      toast.error("Invalid status");
+      return;
+    }
+    if (!VALID_VISIBILITIES.includes(visibility)) {
+      toast.error("Invalid visibility");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const res = await fetch(`http://localhost:3009/api/publications/${publicationId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          journal,
+          doi,
+          status,
+          visibility,
+          conference_id: conferenceId || null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update publication");
+
+      toast.success("Publication updated successfully");
+      router.push(`/publications/${publicationId}`);
+      router.refresh();
+    } catch (error) {
+      toast.error("Failed to update publication");
+      console.error(error);
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    // In a real app, you would upload the files and submit the form data to your backend
-    console.log("Form data:", formData)
-    console.log("New cover image:", newCoverImage)
-    console.log("Existing files:", existingFiles)
-    console.log("New files:", newFiles)
-    console.log("Tags:", tags)
-
-    // Simulate API call
-    setTimeout(() => {\
-      setIsSubmitting(false)  tags)
-
-    // Simulate API call
-    setTimeout(() => 
-      setIsSubmitting(false)
-      router.push(`/publications/${id}`), 1000)
-  }
-
-  const handleDelete = async () => {
-    // In a real app, you would send a delete request to your backend
-    console.log("Deleting publication:", id)
-
-    // Simulate API call
-    setTimeout(() => {
-      router.push("/")
-    }, 500)
-  }
-
-  const handleRemoveExistingFile = (index: number) => {
-    const updatedFiles = [...existingFiles]
-    updatedFiles.splice(index, 1)
-    setExistingFiles(updatedFiles)
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-10">
-        <div className="container mx-auto px-4 text-center">
-          <p>Loading publication...</p>
-        </div>
-      </div>
-    )
-  }
+  if (loading) return <p className="text-center py-10">Loading publication...</p>;
+  if (!publication) return <p className="text-center py-10 text-red-500">Publication not found</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-10 border-b bg-white">
-        <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-blue-600">ResearchConnect</span>
-            </Link>
-          </div>
-          <div className="hidden flex-1 px-4 md:flex md:max-w-md lg:max-w-lg">
-            <SearchBar />
-          </div>
-          <div className="flex items-center gap-4">
-            <UserNav />
-          </div>
-        </div>
-      </header>
+    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+      <Link href={`/publications/${publicationId}`} className="text-blue-600 hover:underline">
+        ← Back to publication details
+      </Link>
 
-      <main className="container mx-auto px-4 py-8 md:px-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Edit Publication</h1>
-          <div className="flex items-center gap-2">
-            <Link href={`/publications/${id}`}>
-              <Button variant="outline">Cancel</Button>
-            </Link>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Delete Publication</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the publication and all associated data.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Publication Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleChange}
-                      placeholder="Enter publication title"
-                      className="text-lg"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="abstract">Abstract</Label>
-                    <Textarea
-                      id="abstract"
-                      name="abstract"
-                      value={formData.abstract}
-                      onChange={handleChange}
-                      placeholder="Provide a brief summary of your publication"
-                      className="min-h-[100px]"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Tags</Label>
-                    <div className="flex flex-wrap gap-2 rounded-md border p-2">
-                      {tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="gap-1 px-2 py-1">
-                          {tag}
-                          <button type="button" onClick={() => handleRemoveTag(tag)}>
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                      <Input
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleAddTag}
-                        placeholder="Add tags..."
-                        className="flex-1 border-0 p-0 shadow-none focus-visible:ring-0"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Press Enter to add a tag</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Cover Image</Label>
-                    <ImageUploader
-                      onImageSelected={(file) => setNewCoverImage(file)}
-                      previewUrl={newCoverImage ? URL.createObjectURL(newCoverImage) : coverImageUrl}
-                    />
-                  </div>
-
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <Label>Content</Label>
-                    <RichTextEditor initialValue={formData.content} onChange={handleContentChange} />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Attachments</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Existing Files</Label>
-                    {existingFiles.length > 0 ? (
-                      <div className="space-y-2">
-                        {existingFiles.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between rounded-md border bg-gray-50 p-3">
-                            <div className="flex items-center gap-3">
-                              <div>
-                                <p className="font-medium">{file.name}</p>
-                                <p className="text-sm text-muted-foreground">{file.size}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="sm" className="text-blue-600" asChild>
-                                <a href={file.url} download>Download</a>
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleRemoveExistingFile(index)}>
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No existing attachments</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Add New Files</Label>
-                    <FileUploader onFilesSelected={(selectedFiles) => setNewFiles(selectedFiles)} files={newFiles} />
-                  </div>
-                </CardContent>
-              </Card>
+      <Card className="border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl font-semibold">Edit Publication</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
+                required
+              />
             </div>
 
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Publication Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="publication-type">Publication Type</Label>
-                    <select
-                      id="publication-type"
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      defaultValue="article"
-                    >
-                      <option value="article">Article</option>
-                      <option value="conference">Conference Paper</option>
-                      <option value="preprint">Preprint</option>
-                      <option value="thesis">Thesis</option>
-                      <option value="book">Book</option>
-                      <option value="book_chapter">Book Chapter</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="visibility">Visibility</Label>
-                    <select
-                      id="visibility"
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      defaultValue="public"
-                    >
-                      <option value="public">Public</option>
-                      <option value="private">Private</option>
-                      <option value="restricted">Restricted</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="license">License</Label>
-                    <select
-                      id="license"
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      defaultValue="cc_by"
-                    >
-                      <option value="cc_by">CC BY 4.0</option>
-                      <option value="cc_by_sa">CC BY-SA 4.0</option>
-                      <option value="cc_by_nc">CC BY-NC 4.0</option>
-                      <option value="cc_by_nc_sa">CC BY-NC-SA 4.0</option>
-                      <option value="cc_by_nd">CC BY-ND 4.0</option>
-                      <option value="cc_by_nc_nd">CC BY-NC-ND 4.0</option>
-                    </select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Co-Authors</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between rounded-md border p-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-gray-200" />
-                        <div>
-                          <p className="font-medium">Dr. Michael Chen</p>
-                          <p className="text-xs text-muted-foreground">University of California, Berkeley</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="text-red-500">
-                        Remove
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between rounded-md border p-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-gray-200" />
-                        <div>
-                          <p className="font-medium">Dr. Emily Rodriguez</p>
-                          <p className="text-xs text-muted-foreground">MIT</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="text-red-500">
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full">
-                    + Add More Co-Authors
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Save Changes</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm">
-                    Your changes will be reviewed before the updated publication becomes publicly visible.
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <div>
+              <label htmlFor="journal" className="block text-sm font-medium text-gray-700">
+                Journal <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="journal"
+                value={journal}
+                onChange={(e) => setJournal(e.target.value)}
+                rows={3}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
+                required
+              />
             </div>
-          </div>
-        </form>
-      </main>
+
+            <div>
+              <label htmlFor="doi" className="block text-sm font-medium text-gray-700">
+                DOI
+              </label>
+              <input
+                id="doi"
+                type="text"
+                value={doi}
+                onChange={(e) => setDoi(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
+                maxLength={60}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                Status <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
+                required
+              >
+                {VALID_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="visibility" className="block text-sm font-medium text-gray-700">
+                Visibility <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="visibility"
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
+                required
+              >
+                {VALID_VISIBILITIES.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="conference_id" className="block text-sm font-medium text-gray-700">
+                Conference ID
+              </label>
+              <input
+                id="conference_id"
+                type="text"
+                value={conferenceId}
+                onChange={(e) => setConferenceId(e.target.value)}
+                placeholder="UUID or leave empty"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
+              />
+            </div>
+
+            <div className="flex justify-end gap-4">
+              <Link
+                href={`/publications/${publicationId}`}
+                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </Link>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }

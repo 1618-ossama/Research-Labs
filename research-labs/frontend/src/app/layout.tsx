@@ -15,7 +15,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
 
         <Toaster />
-        {/* <Navbar /> */}
         {children}
       </body>
     </html>

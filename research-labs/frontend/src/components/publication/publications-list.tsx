@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 
-export type Status = "DRAFT" | "APPROVED" | "WAITING";
+export type Status = "DRAFT" | "APPROVED" | "WAITING" | "DELETED";
 
 function parseDateArray(dateArray: number[]): string {
   const [year, dayOfYear, hour, minute, second] = dateArray;
@@ -47,12 +47,15 @@ const statusBadge = (status: Status) => {
       return <Badge className="bg-emerald-100 text-emerald-700">Approved</Badge>;
     case "WAITING":
       return <Badge className="bg-blue-100 text-blue-700">Waiting</Badge>;
+    case "DELETED":
+      return <Badge className="bg-red-100 text-red-700">Deleted</Badge>;
   }
 };
 
 export const PublicationsList: React.FC<PublicationsListProps> = ({ data }) => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showDeleted, setShowDeleted] = useState(false);
 
   const normalizedData = data.map((pub) => ({
     ...pub,
@@ -70,7 +73,12 @@ export const PublicationsList: React.FC<PublicationsListProps> = ({ data }) => {
         pub.submitter_id.toLowerCase().includes(searchText) ||
         pub.submitterName?.toLowerCase().includes(searchText);
 
-      const matchesStatus = statusFilter === "all" || pub.status === statusFilter;
+      const matchesStatus =
+        showDeleted
+          ? true
+          : statusFilter === "all"
+            ? pub.status !== "DELETED"
+            : pub.status === statusFilter;
 
       return matchesSearch && matchesStatus;
     })
@@ -80,6 +88,7 @@ export const PublicationsList: React.FC<PublicationsListProps> = ({ data }) => {
     <div className="space-y-4">
       {/* Filter Bar */}
       <div className="flex flex-wrap items-end gap-4">
+
         <div className="w-full md:w-1/2">
           <Label htmlFor="search">Search</Label>
           <Input
@@ -103,8 +112,23 @@ export const PublicationsList: React.FC<PublicationsListProps> = ({ data }) => {
               <SelectItem value="APPROVED">Approved</SelectItem>
               <SelectItem value="WAITING">Waiting</SelectItem>
             </SelectContent>
+
+
           </Select>
+
+
         </div>
+
+          <div className="w-full md:w-auto flex items-center gap-2 mt-2 md:mt-6">
+            <input
+              type="checkbox"
+              id="show-deleted"
+              checked={showDeleted}
+              onChange={(e) => setShowDeleted(e.target.checked)}
+              className="accent-red-500"
+            />
+            <Label htmlFor="show-deleted" className="text-sm">Show Deleted</Label>
+          </div>
       </div>
 
       {/* Table */}

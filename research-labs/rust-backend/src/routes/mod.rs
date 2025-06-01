@@ -1,6 +1,10 @@
 use actix_web::web;
 
-use crate::handler::publication_handler::*;
+use crate::handler::{
+    conference_handler::*,
+    file_handler::{add_file, get_files_by_publication, upload_file},
+    publication_handler::*,
+};
 
 pub fn route_config(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -9,6 +13,10 @@ pub fn route_config(cfg: &mut web::ServiceConfig) {
             .route("/publications", web::post().to(add_publication))
             .route("/publications", web::get().to(get_publications))
             .route("/publications/{id}", web::get().to(get_publication))
+            .route(
+                "/publications/{id}",
+                web::put().to(update_publication_handler),
+            )
             .route("/publications/{id}", web::delete().to(delete_publication))
             .route("/upload", web::post().to(upload_file))
             // .route(
