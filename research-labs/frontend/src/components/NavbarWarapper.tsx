@@ -7,6 +7,7 @@ export default function HeaderWrapper() {
   const userId = cookieStore.get("userId")?.value || null;
   const role = cookieStore.get("userRole")?.value || null;
   console.log("usususussu");
+
   console.log(role);
   console.log("usususussu");
 

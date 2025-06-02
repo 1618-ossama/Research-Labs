@@ -8,6 +8,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { PencilIcon } from 'lucide-react';
 import {
   Building2,
   Link2,
@@ -126,6 +127,16 @@ export default async function ProfilePage() {
   return (
     <div className="container max-w-7xl mx-auto px-4 py-8">
       <div className="flex flex-col gap-6">
+        {/* Header with Edit Button */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Profile</h1>
+          <Button asChild variant="outline">
+            <Link href="/profile/edit" className="gap-2">
+              <PencilIcon className="h-4 w-4" />
+              Edit Profile
+            </Link>
+          </Button>
+        </div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -342,4 +353,3 @@ export default async function ProfilePage() {
       </div>
     </div>
   )
-}

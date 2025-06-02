@@ -1,180 +1,216 @@
 import Image from "next/image";
+import { BookOpen, MessageSquare, Users, FileText, GraduationCap, Heart, Globe, BarChart2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-type fillerType = {
+type FeatureCardType = {
   title: string;
   description: string;
-  icon?: string;
-}
+  icon: React.ReactNode;
+  color: string;
+};
 
+// Research-inspired color palette
+const colors = {
+  primary: "#2C3E50", // Dark blue - academic/serious
+  secondary: "#3498DB", // Bright blue - technology/innovation
+  accent: "#E74C3C", // Red - attention/importance
+  lightBg: "#F8F9FA", // Light gray - clean/professional
+  highlight: "#F1C40F", // Gold - excellence/achievement
+};
 
-const filler1: fillerType[] = [
+const coreFeatures: FeatureCardType[] = [
   {
     title: "Bridge Between Labs and Researchers",
-    description:
-      "Our platform connects independent researchers and academic labs, enabling collaboration and knowledge sharing across institutions.",
+    description: "Connect independent researchers with academic labs for seamless collaboration across institutions.",
+    icon: <Globe className="h-6 w-6" />,
+    color: colors.secondary
   },
   {
-    title: "Lab Profiles and Research Streams",
-    description:
-      "Each lab can showcase their ongoing projects, team members, and publications, making it easier to attract collaborators and visibility.",
+    title: "Comprehensive Lab Profiles",
+    description: "Showcase ongoing projects, team members, and publications to attract collaborators and visibility.",
+    icon: <Users className="h-6 w-6" />,
+    color: colors.primary
   },
   {
     title: "Centralized Research Management",
-    description:
-      "Labs can oversee member activity, supervise document submissions, and manage research output from one unified dashboard.",
+    description: "Oversee member activity, document submissions, and research output from a unified dashboard.",
+    icon: <BarChart2 className="h-6 w-6" />,
+    color: colors.accent
   },
 ];
 
-const filler2: fillerType[] = [
+const platformServices: FeatureCardType[] = [
   {
-    title: "User Activity Logs",
-    description:
-      "Track user interactions, research history, and behavior patterns to personalize the experience and enhance insights.",
-    icon: "🧾",
+    title: "User Activity Analytics",
+    description: "Track interactions and research history to personalize the experience and enhance insights.",
+    icon: <BookOpen className="h-6 w-6" />,
+    color: colors.primary
   },
   {
-    title: "Interactive Discussion",
-    description:
-      "Real-time messaging and topic-based conversations to collaborate, share insights, and engage with the research community.",
-    icon: "💬",
+    title: "Interactive Discussions",
+    description: "Real-time messaging and topic-based conversations with the research community.",
+    icon: <MessageSquare className="h-6 w-6" />,
+    color: colors.secondary
   },
   {
     title: "Tag & Topic Following",
-    description:
-      "Stay updated by following specific subjects, research areas, or keywords to receive curated content and alerts.",
-    icon: "🏷️",
+    description: "Follow specific subjects to receive curated content and alerts in your personalized feed.",
+    icon: <FileText className="h-6 w-6" />,
+    color: colors.accent
   },
   {
-    title: "Research Publishing & Access",
-    description:
-      "Upload your own studies or browse and download peer-reviewed documents shared by the research network.",
-    icon: "📄",
+    title: "Research Publishing",
+    description: "Upload studies or browse peer-reviewed documents shared across the network.",
+    icon: <FileText className="h-6 w-6" />,
+    color: colors.primary
   },
   {
-    title: "Mentorship & Supervision",
-    description:
-      "Connect with academic supervisors for guidance, feedback, and structured oversight throughout your research journey.",
-    icon: "🎓",
+    title: "Mentorship Network",
+    description: "Connect with academic supervisors for guidance throughout your research journey.",
+    icon: <GraduationCap className="h-6 w-6" />,
+    color: colors.secondary
   },
   {
-    title: "Liked Subjects",
-    description:
-      "Keep track of your favorite topics and revisit relevant research with ease through your personalized dashboard.",
-    icon: "❤️",
+    title: "Personalized Library",
+    description: "Save and organize your favorite research papers and topics for easy access.",
+    icon: <Heart className="h-6 w-6" />,
+    color: colors.accent
   },
 ];
 
-const mapper = (filler: fillerType[], variant: "style1" | "style2") => {
-  return filler.map((content, index) => {
-    if (variant === "style1") {
-      return (
-        <div
-          key={index}
-          className="space-y-2 border-l-4 border-[#7b3f00] pl-4"
-        >
-          <h3 className="font-serif text-2xl font-bold text-[#3a2a1d]">
-            {content.title}
-          </h3>
-          <p className="text-[#5c4033]">{content.description}</p>
-        </div>
-      );
-    } else if (variant === "style2") {
-      return (
-        <div
-          key={index}
-          className="flex flex-col space-y-3 rounded-lg border border-[#d3c5a9] bg-white p-6 shadow-sm"
-        >
-          <div className="text-4xl">{content.icon}</div>
-          <h3 className="font-serif text-xl font-bold text-[#3a2a1d]">
-            {content.title}
-          </h3>
-          <p className="text-[#5c4033]">{content.description}</p>
-        </div>
-      );
-    }
-  });
-};
+const stats = [
+  { value: "25+", label: "Years of Research Experience" },
+  { value: "150+", label: "Published Papers" },
+  { value: "45", label: "Research Fellows" },
+  { value: "12", label: "Active Grants" },
+];
 
-export default function HomeAdd() {
+const FeatureCard = ({ title, description, icon, color }: FeatureCardType) => (
+  <div className="flex flex-col space-y-4 rounded-xl bg-white p-6 shadow-md transition-all hover:shadow-lg">
+    <div className="flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: `${color}20` }}>
+      <span style={{ color }}>{icon}</span>
+    </div>
+    <h3 className="text-xl font-bold" style={{ color: colors.primary }}>{title}</h3>
+    <p className="text-gray-600">{description}</p>
+  </div>
+);
+
+export default function HomePage() {
   return (
-    <>
-      <section id="about" className="w-full py-12 md:py-24 lg:py-32 bg-white border-b border-[#d3c5a9]">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="font-serif text-3xl font-bold tracking-tighter text-[#3a2a1d] sm:text-4xl md:text-5xl">
-                App Focus
-              </h2>
-              <div className="mx-auto h-1 w-24 bg-[#7b3f00]"></div>
-              <p className="max-w-[900px] text-[#5c4033] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed pt-4">
-                Transform how your lab shares knowledge with our app –
-                a dynamic social platform designed exclusively for publishing, discussing,
-                and advancing research. Connect with peers, share breakthroughs,
-                and crowdsource insights across disciplines in real time.
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="relative w-full py-20 md:py-32 bg-gradient-to-br from-primary/5 to-secondary/5">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-24">
+            <div className="flex flex-col justify-center space-y-6">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                <span className="block" style={{ color: colors.primary }}>Advancing Research</span>
+                <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Through Collaboration
+                </span>
+              </h1>
+              <p className="text-lg text-gray-600 md:text-xl">
+                A dynamic platform designed for publishing, discussing, and advancing research.
+                Connect with peers, share breakthroughs, and crowdsource insights across disciplines.
               </p>
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <Button className="px-8 py-6 text-lg rounded-full" style={{ backgroundColor: colors.accent }}>
+                  Join the Network
+                </Button>
+                <Button variant="outline" className="px-8 py-6 text-lg rounded-full" style={{ color: colors.primary, borderColor: colors.primary }}>
+                  Explore Research
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
-            <div className="relative h-[300px] w-full overflow-hidden rounded-lg border-4 border-[#d3c5a9] shadow-lg sm:h-[400px]">
+            <div className="relative aspect-video overflow-hidden rounded-xl shadow-2xl">
               <Image
-                src="/placeholder.svg?height=400&width=600"
+                src="/research-collaboration.jpg"
+                alt="Researchers collaborating"
                 fill
-                alt="Research in Progress"
                 className="object-cover"
+                priority
               />
             </div>
-            <div className="flex flex-col justify-center space-y-6">
-              {mapper(filler1, "style1")}
-            </div>
           </div>
         </div>
       </section>
 
-      <section id="methodology" className="w-full py-12 md:py-24 lg:py-32 bg-[#f8f5f0] border-b border-[#d3c5a9]">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="font-serif text-3xl font-bold tracking-tighter text-[#3a2a1d] sm:text-4xl md:text-5xl">
-                App Services
-              </h2>
-              <div className="mx-auto h-1 w-24 bg-[#7b3f00]"></div>
-              <p className="max-w-[900px] text-[#5c4033] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed pt-4">
-                Our approach to research is characterized by methodological rigor,
-                ethical considerations, and a commitment to transparency.
-              </p>
-            </div>
+      {/* Core Features Section */}
+      <section className="w-full py-20 bg-white">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="flex flex-col items-center space-y-6 text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: colors.primary }}>
+              Our Platform Focus
+            </h2>
+            <div className="w-24 h-1 rounded-full" style={{ backgroundColor: colors.accent }} />
+            <p className="max-w-3xl text-gray-600 md:text-lg">
+              Transforming how researchers connect, collaborate, and share knowledge across institutions
+              and disciplines.
+            </p>
           </div>
-
-          <div className="mx-auto grid max-w-5xl gap-6 py-12 md:grid-cols-2 lg:grid-cols-3">
-            {mapper(filler2, "style2")}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {coreFeatures.map((feature, index) => (
+              <FeatureCard key={index} {...feature} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/*Update with each render*/}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-[#f0e6d6] border-b border-[#d3c5a9]">
-        <div className="container px-4 md:px-6">
+      {/* Platform Services */}
+      <section className="w-full py-20" style={{ backgroundColor: colors.lightBg }}>
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="flex flex-col items-center space-y-6 text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: colors.primary }}>
+              Platform Services
+            </h2>
+            <div className="w-24 h-1 rounded-full" style={{ backgroundColor: colors.accent }} />
+            <p className="max-w-3xl text-gray-600 md:text-lg">
+              Comprehensive tools designed to support every stage of the research lifecycle.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {platformServices.map((service, index) => (
+              <FeatureCard key={index} {...service} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="w-full py-20 bg-white">
+        <div className="container px-4 md:px-6 mx-auto">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-[#7b3f00]">25+</div>
-              <div className="mt-2 font-serif text-xl text-[#3a2a1d]">Years of Research</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-[#7b3f00]">150+</div>
-              <div className="mt-2 font-serif text-xl text-[#3a2a1d]">Publications</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-[#7b3f00]">45</div>
-              <div className="mt-2 font-serif text-xl text-[#3a2a1d]">Research Fellows</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-[#7b3f00]">12</div>
-              <div className="mt-2 font-serif text-xl text-[#3a2a1d]">Research Grants</div>
-            </div>
+            {stats.map((stat, index) => (
+              <div key={index} className="flex flex-col items-center text-center p-6 rounded-xl" style={{ backgroundColor: colors.lightBg }}>
+                <div className="text-4xl font-bold mb-2" style={{ color: colors.accent }}>{stat.value}</div>
+                <div className="text-lg font-medium" style={{ color: colors.primary }}>{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-    </>
-  )
+      {/* CTA Section */}
+      <section className="w-full py-20" style={{ backgroundColor: colors.primary }}>
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Ready to Transform Your Research Workflow?
+            </h2>
+            <p className="max-w-2xl text-gray-200 md:text-lg">
+              Join hundreds of researchers and labs already collaborating on our platform.
+            </p>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <Button className="px-8 py-6 text-lg rounded-full bg-white" style={{ color: colors.primary }}>
+                Get Started
+              </Button>
+              <Button variant="outline" className="px-8 py-6 text-lg rounded-full border-white text-white hover:bg-white/10">
+                Learn More
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

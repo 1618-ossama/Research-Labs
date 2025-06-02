@@ -4,9 +4,9 @@ import { jwtVerify } from 'jose'
 
 const PROTECTED_PATHS = [
   '/private',
-  '/dashboard',
+  // '/dashboard',
   '/profile',
-  '/publications',
+  // '/publications',
   '/settings'
 ]
 const ADMIN_ONLY_PATHS = [
