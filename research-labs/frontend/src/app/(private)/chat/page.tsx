@@ -611,18 +611,20 @@ export default function ChatInterface() {
         newMessagePayload.message,
       )
 
-      setMessages(prevMessages => {
-        const filteredMessages = prevMessages.filter(msg =>
-          !(msg.pending &&
-            msg.message === newMessagePayload.message &&
-            msg.sender_id === newMessagePayload.sender_id &&
-            Math.abs(new Date(msg.created_at).getTime() - new Date(newMessagePayload.created_at).getTime()) < 5000)
-        )
-        const updatedMessages = [...filteredMessages, newMessagePayload].sort((a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        )
-        return updatedMessages
-      })
+      if (newMessagePayload.conversation_id === activeConversationRef.current) {
+        setMessages(prevMessages => {
+          const filteredMessages = prevMessages.filter(msg =>
+            !(msg.pending &&
+              msg.message === newMessagePayload.message &&
+              msg.sender_id === newMessagePayload.sender_id &&
+              Math.abs(new Date(msg.created_at).getTime() - new Date(newMessagePayload.created_at).getTime()) < 5000)
+          )
+          const updatedMessages = [...filteredMessages, newMessagePayload].sort((a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          )
+          return updatedMessages
+        })
+      }
 
       const currentUserValue = currentUserRef.current
       const activeConversationValue = activeConversationRef.current
@@ -1014,7 +1016,7 @@ export default function ChatInterface() {
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans">
-      <div className="w-full md:w-90 bg-white border-r border-gray-200 flex flex-col">
+      <div className="md:w-60 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-semibold text-gray-800">Chat</h1>
