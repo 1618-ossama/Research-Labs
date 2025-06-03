@@ -29,7 +29,8 @@ process.on("uncaughtException", (err: Error) => {
 const app: Express = express();
 const OptionsCors: CorsOptions = {
   origin: (origin, callback) => {
-    const allowed = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    const allowed = ['http://localhost:3000', 'http://127.0.0.1:3000'
+      , 'http://127.0.0.1:3007', 'http://localhost:3007'];
 
     // Allow requests without origin (e.g., from server or curl)
     if (!origin || allowed.includes(origin)) {

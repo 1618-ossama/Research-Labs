@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {  MapPinIcon, BuildingIcon, } from "lucide-react";
+import { MapPinIcon, BuildingIcon, } from "lucide-react";
 import PublicationCard from "@/components/profile/publication-card";
 import ProfileHeader from "@/components/profile/profile-header";
 
@@ -60,12 +60,12 @@ export async function getPublications(
     throw new Error(`Failed to load publications: ${errText}`);
   }
 
-const json: RawPublication[] = await res.json();
+  const json: RawPublication[] = await res.json();
   console.log(json);
   return json;
 }
 export default async function ProfilePage() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
   const token = cookieStore.get("AccessTokenCookie")?.value;
 

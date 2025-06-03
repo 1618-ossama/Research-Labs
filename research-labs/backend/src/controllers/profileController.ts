@@ -5,6 +5,55 @@ import * as errorHandler from "../utils/errorHandler";
 import { clearAuthCookie } from "../middleware/authMiddleware";
 
 export default {
+  getUsernameById: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return next(new errorHandler.ValidationError("User ID is required"));
+      }
+
+      const username = await prisma.getUsernameById(id);
+
+      if (!username) {
+        return next(new errorHandler.NotFoundError(`User with ID ${id} not found`));
+      }
+
+      res.status(200).json({
+        success: true,
+        data: {
+          username
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  getIdByUsername: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { username } = req.params;
+
+      if (!username) {
+        return next(new errorHandler.ValidationError("Username is required"));
+      }
+
+      const id = await prisma.getIdByUsername(username);
+
+      if (!id) {
+        return next(new errorHandler.NotFoundError(`User with username ${username} not found`));
+      }
+
+      res.status(200).json({
+        success: true,
+        data: {
+          id
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   getUserById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;

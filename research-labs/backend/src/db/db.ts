@@ -94,6 +94,30 @@ async function createUser(user_data: User): Promise<string> {
   });
 }
 
+async function getUsernameById(id: string): Promise<string | null> {
+  return safeDbOperation(async () => {
+    const user = await prisma.users.findUnique({
+      where: {
+        id
+      },
+      select: { username: true }
+    });
+    return user?.username as string;
+  });
+}
+
+async function getIdByUsername(username: string): Promise<string | null> {
+  return safeDbOperation(async () => {
+    const user = await prisma.users.findUnique({
+      where: {
+        username
+      },
+      select: { id: true }
+    });
+    return user?.id as string;
+  });
+}
+
 async function getUserById(id: string): Promise<User | null> {
   return safeDbOperation(async () => {
     const user = await prisma.users.findUnique({
@@ -207,6 +231,8 @@ export {
   createUser,
   getUserById,
   getUserByEmail,
+  getUsernameById,
+  getIdByUsername,
   updateUser,
   deleteUser,
   getAllUsers,

@@ -18,6 +18,8 @@ profileRouter.get("/", (req, res) => {
   });
 });
 
+profileRouter.get("/users/username/:id", profileController.getUsernameById);
+profileRouter.get("/users/id/:username", profileController.getIdByUsername);
 
 profileRouter.get("/users/:id", profileController.getUserById);
 profileRouter.put("/users/:id", validate(updateUserSchema), profileController.updateUser);

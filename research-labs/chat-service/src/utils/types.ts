@@ -40,6 +40,7 @@ export type Message = {
   status: 'SENT' | 'DELIVERED' | 'READ' | 'ARCHIVED';
   sender_id: string;
   conversation_id: string;
+  updated_at?: Date;
 };
 
 export type Notification = {
