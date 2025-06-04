@@ -16,28 +16,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Conference } from "@/types/conference";
+import { Publication } from "@/types/publication";
 
-interface Publication {
-  id: string;
-  title: string;
-  journal: string;
-  doi: string;
-  status: string;
-  visibility: string;
-  submitter_id: string;
-  conference_id: string | null;
-  submitted_at: string;
-}
-
-interface Conference {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  start_date: number[];
-  end_date: number[];
-  publications: Publication[];
-}
 
 export default function ConferencePage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -56,7 +37,7 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
     async function fetchData() {
       try {
         setLoading(true);
-        
+
         const [confRes, pubsRes, allPubsRes] = await Promise.all([
           fetch(`http://localhost:3009/api/conferences/${conferenceId}`),
           fetch(`http://localhost:3009/api/conferences/${conferenceId}/publications`),
@@ -98,11 +79,11 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conference_id: conference.id,
-          publication_ids: [selectedPub.value],  
-          user_id: "the-user-uuid",  
+          publication_ids: [selectedPub.value],
+          user_id: "the-user-uuid",
         }),
       });
-      
+
       if (!res.ok) throw new Error("Failed to add publication");
 
       const newPub = allPublications.find((p) => p.id === selectedPub.value);
@@ -126,15 +107,15 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
   const formatDateRange = (startArr: number[], endArr: number[]) => {
     const [startYear, startDay] = startArr;
     const [endYear, endDay] = endArr;
-    
+
     const startDate = new Date(startYear, 0);
     startDate.setDate(startDay);
-    
+
     const endDate = new Date(endYear, 0);
     endDate.setDate(endDay);
 
-    const options: Intl.DateTimeFormatOptions = { 
-      month: 'short', 
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'short',
       day: 'numeric',
       year: startDate.getFullYear() !== endDate.getFullYear() ? 'numeric' : undefined
     };
@@ -152,12 +133,12 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
 
   // Filter publications based on search and filters
   const filteredPublications = conference?.publications.filter((pub) => {
-    const matchesSearch = pub.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         pub.journal.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = pub.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pub.journal.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter.length === 0 || statusFilter.includes(pub.status);
     const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(pub.visibility);
-    
+
     return matchesSearch && matchesStatus && matchesVisibility;
   }) || [];
 
@@ -212,7 +193,7 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Conference Details</h2>
               <p className="text-gray-600">{conference.description}</p>
-              
+
               <div className="flex items-start gap-4 text-sm">
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="h-4 w-4 flex-shrink-0" />
@@ -224,7 +205,7 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <h3 className="font-medium mb-2">Statistics</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -247,7 +228,7 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
       <section className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className="text-2xl font-semibold">Publications</h2>
-          
+
           <div className="flex items-center gap-4 w-full sm:w-auto">
             <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -258,7 +239,7 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex gap-2">
@@ -310,8 +291,8 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
                   <div className="space-y-3">
                     <div className="flex justify-between items-start gap-2">
                       <h3 className="font-bold text-lg line-clamp-2">
-                        <Link 
-                          href={`/publications/${pub.id}`} 
+                        <Link
+                          href={`/publications/${pub.id}`}
                           className="hover:underline group-hover:text-blue-600 transition-colors"
                         >
                           {pub.title}
@@ -329,11 +310,11 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
                         </a>
                       )}
                     </div>
-                    
+
                     <p className="text-gray-600 text-sm line-clamp-1">{pub.journal}</p>
-                    
+
                     <div className="flex flex-wrap gap-2">
-                      <Badge 
+                      <Badge
                         variant={pub.status === 'published' ? 'default' : 'secondary'}
                         className="capitalize"
                       >
@@ -343,7 +324,7 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
                         {pub.visibility}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                       <div>
                         Submitted: {new Date(pub.submitted_at).toLocaleDateString()}
@@ -371,9 +352,9 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
                     : "This conference doesn't have any linked publications yet."}
                 </p>
                 {(searchTerm || statusFilter.length > 0 || visibilityFilter.length > 0) && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       setSearchTerm("");
                       setStatusFilter([]);
@@ -396,14 +377,14 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
               <PlusCircle className="h-5 w-5 text-blue-600" />
               Add Publication
             </h3>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">
                     Select a publication from your library to link to this conference
                   </p>
-                  
+
                   <div className="flex gap-3 items-center">
                     <div className="flex-grow">
                       <Select
@@ -444,10 +425,10 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
                       ) : "Add"}
                     </Button>
                   </div>
-                  
+
                   {allPublications.length === 0 && (
                     <div className="text-center py-4 text-sm text-gray-500">
-                      All your publications are already linked to conferences. 
+                      All your publications are already linked to conferences.
                       <Link href="/publications/new" className="ml-2 text-blue-600 hover:underline">
                         Create a new publication
                       </Link>

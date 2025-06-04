@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at\n            FROM publications\n            WHERE submitter_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "journal",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "doi",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "status",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "visibility",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "submitter_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 7,
+        "name": "conference_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 8,
+        "name": "submitted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "cb29f1e477ad3afd2a12ccf5b7bb8a7ac9e7e75664f888f981969f3de4bd407d"
+}

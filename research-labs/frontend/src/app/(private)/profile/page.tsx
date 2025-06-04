@@ -58,12 +58,13 @@ interface Publication {
 }
 
 async function fetchUserProfile(userId: string, token: string): Promise<UserProfile> {
+  console.log(`${process.env.NEXT_PUBLIC_NODE_BACKEND_URL}/api/profiles/users/${userId}`);
   const [profileRes, linksRes] = await Promise.all([
-    fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_NODE_BACKEND_URL}/api/profiles/users/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     }),
-    fetch(`http://127.0.0.1:3009/api/links/user/${userId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_NODE_BACKEND_URL}/api/links/user/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     })
@@ -82,7 +83,7 @@ async function fetchUserProfile(userId: string, token: string): Promise<UserProf
 
 async function fetchUserPublications(userId: string, token: string): Promise<Publication[]> {
   const res = await fetch(
-    `http://127.0.0.1:3009/api/publications/user/${userId}`,
+    `${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications/user/${userId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

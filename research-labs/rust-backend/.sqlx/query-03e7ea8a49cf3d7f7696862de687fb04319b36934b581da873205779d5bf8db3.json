@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE publications\n        SET\n            title = COALESCE($1, title),\n            journal = COALESCE($2, journal),\n            doi = COALESCE($3, doi),\n            status = COALESCE($4, status),\n            visibility = COALESCE($5, visibility),\n            conference_id = COALESCE($6, conference_id),\n            updated_at = NOW()\n        WHERE id = $7\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Text",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "03e7ea8a49cf3d7f7696862de687fb04319b36934b581da873205779d5bf8db3"
+}

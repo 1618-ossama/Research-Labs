@@ -2,31 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link"; 
+import { Publication } from "@/types/publication";
+import { Conference } from "@/types/conference";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin } from "lucide-react";
-
-interface Publication {
-  id: string;
-  title: string;
-  journal: string;
-  doi: string;
-  status: string;
-  visibility: string;
-  submitter_id: string;
-  conference_id: string;
-  submitted_at: string;
-}
-
-interface Conference {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  start_date: string;  // assuming ISO string
-  end_date: string;    // assuming ISO string
-  publications: Publication[];
-}
 
 interface Props {
   params: {
@@ -74,55 +53,55 @@ export default function ConferencePage({ params }: Props) {
   }, [params.id]);
 
   // Add publication handler
-async function addPublication() {
-  if (!newPubId.trim()) {
-    setAddError("Please enter a publication ID.");
-    return;
-  }
-  setAdding(true);
-  setAddError(null);
+  async function addPublication() {
+    if (!newPubId.trim()) {
+      setAddError("Please enter a publication ID.");
+      return;
+    }
+    setAdding(true);
+    setAddError(null);
 
-  try {
+    try {
       console.log("========");
       console.log(params.id);
       console.log("========");
-    const res = await fetch(`http://localhost:3009/api/conference/link-publication`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        conference_id: params.id,
-        publication_ids: [newPubId.trim()],
-      }),
-    });
+      const res = await fetch(`http://localhost:3009/api/conference/link-publication`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conference_id: params.id,
+          publication_ids: [newPubId.trim()],
+        }),
+      });
 
-    if (!res.ok) {
-      const data = await res.json();
-      setAddError(data.error || "Failed to add publication.");
-      setAdding(false);
-      return;
-    }
+      if (!res.ok) {
+        const data = await res.json();
+        setAddError(data.error || "Failed to add publication.");
+        setAdding(false);
+        return;
+      }
 
-    // Backend might return something like success or list of linked publications.
-    // Assuming it returns the linked publications list:
-    const linkedPubs: Publication[] = await res.json();
+      // Backend might return something like success or list of linked publications.
+      // Assuming it returns the linked publications list:
+      const linkedPubs: Publication[] = await res.json();
 
-    // Add the newly linked publication(s) to the state:
-    setConference((conf) =>
-      conf
-        ? {
+      // Add the newly linked publication(s) to the state:
+      setConference((conf) =>
+        conf
+          ? {
             ...conf,
             publications: [...conf.publications, ...linkedPubs],
           }
-        : null,
-    );
+          : null,
+      );
 
-    setNewPubId("");
-  } catch {
-    setAddError("Network error while adding publication.");
-  } finally {
-    setAdding(false);
+      setNewPubId("");
+    } catch {
+      setAddError("Network error while adding publication.");
+    } finally {
+      setAdding(false);
+    }
   }
-}
   // Optional: remove publication locally & on backend
   async function removePublication(pubId: string) {
     if (!conference) return;

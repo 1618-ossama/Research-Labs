@@ -43,7 +43,7 @@ export default function CreateConferenceClient({ userId }: Props) {
     if (!userId) return;
 
     setIsSubmitting(true);
-    
+
     try {
       const toPrimitiveDateTime = (date: string) => {
         const d = new Date(date);
@@ -56,7 +56,7 @@ export default function CreateConferenceClient({ userId }: Props) {
         return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
       };
 
-      const res = await fetch('http://localhost:3009/api/conferences', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/conferences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -75,7 +75,7 @@ export default function CreateConferenceClient({ userId }: Props) {
       const newConference = await res.json();
 
       if (selectedPubs.size > 0) {
-        const linkRes = await fetch('http://127.0.0.1:3009/api/conference/link-publication', {
+        const linkRes = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/conference/link-publication`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -203,12 +203,12 @@ export default function CreateConferenceClient({ userId }: Props) {
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${showPublications ? 'rotate-180' : ''}`} />
               </button>
-              
+
               <div className={`mt-4 space-y-3 transition-all duration-300 overflow-hidden ${showPublications ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0'}`}>
                 <div className="max-h-60 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   {publications.map(pub => (
-                    <label 
-                      key={pub.id} 
+                    <label
+                      key={pub.id}
                       className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/50 transition-colors duration-200 cursor-pointer group"
                     >
                       <div className="relative flex-shrink-0 mt-0.5">
@@ -218,11 +218,10 @@ export default function CreateConferenceClient({ userId }: Props) {
                           onChange={() => togglePublication(pub.id)}
                           className="sr-only"
                         />
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-                          selectedPubs.has(pub.id) 
-                            ? 'bg-blue-500 border-blue-500' 
-                            : 'border-gray-300 group-hover:border-blue-400'
-                        }`}>
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${selectedPubs.has(pub.id)
+                          ? 'bg-blue-500 border-blue-500'
+                          : 'border-gray-300 group-hover:border-blue-400'
+                          }`}>
                           {selectedPubs.has(pub.id) && (
                             <Check className="w-3 h-3 text-white" />
                           )}

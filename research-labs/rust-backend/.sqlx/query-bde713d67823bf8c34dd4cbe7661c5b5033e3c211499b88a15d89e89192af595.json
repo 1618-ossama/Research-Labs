@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT p.id, p.title, p.journal, p.doi, p.status, p.visibility, p.submitted_at, p.conference_id, p.submitter_id\n            FROM publications p\n            INNER JOIN conference_publications cp ON p.id = cp.publication_id\n            WHERE cp.conference_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "journal",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "doi",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "status",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "visibility",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "submitted_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "conference_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 8,
+        "name": "submitter_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "bde713d67823bf8c34dd4cbe7661c5b5033e3c211499b88a15d89e89192af595"
+}

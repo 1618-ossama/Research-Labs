@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE publications SET status = 'DELETED' WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "19610314c8055fd58b4d0a84d3a13b00c3d77498de87616d0ccc8d7eed7f4a2b"
+}

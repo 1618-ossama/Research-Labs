@@ -11,7 +11,8 @@ export default async function PublicationsPage() {
   const userId = cookieStore.get('userId')?.value
   console.log('User ID from cookie:', userId);
 
-  const res = await fetch("http://127.0.0.1:3009/api/publications", {
+  console.log(`backend :${process.env.NEXT_PUBLIC_RUST_BACKEND_URL} `);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications`, {
     cache: "no-store", // Prevents Next.js from caching the request
   });
 

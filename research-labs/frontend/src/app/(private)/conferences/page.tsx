@@ -2,31 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Conference } from '@/types/conference';
+import { Publication } from '@/types/publication';
 
-type Conference = {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  start_date: number[];
-  end_date: number[];
-};
-
-type Publication = {
-  id: string;
-  title: string;
-  journal: string;
-  doi: string;
-  status: string;
-  visibility: string;
-  submitted_at: string;
-  conference_id: string | null;
-};
 
 // Improved date array to Date conversion
 const arrayToDate = (dateArray: number[]): Date => {
   if (!dateArray || dateArray.length < 2) return new Date();
-  
+
   const [year, dayOfYear, hours = 0, minutes = 0, seconds = 0, milliseconds = 0] = dateArray;
   const date = new Date(year, 0); // Start with Jan 1 of the year
   date.setDate(dayOfYear); // Add the day of year (1-365)
@@ -48,16 +31,16 @@ const formatDate = (dateArray: number[]): string => {
 const formatDateRange = (startArray: number[], endArray: number[]): string => {
   const startDate = arrayToDate(startArray);
   const endDate = arrayToDate(endArray);
-  
+
   // If same year and month, show "May 15-22, 2024"
-  if (startDate.getFullYear() === endDate.getFullYear() && 
-      startDate.getMonth() === endDate.getMonth()) {
+  if (startDate.getFullYear() === endDate.getFullYear() &&
+    startDate.getMonth() === endDate.getMonth()) {
     return `${startDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
     })}-${endDate.getDate()}, ${startDate.getFullYear()}`;
   }
-  
+
   // If same year but different months, show "May 15 - Jun 2, 2024"
   if (startDate.getFullYear() === endDate.getFullYear()) {
     return `${startDate.toLocaleDateString('en-US', {
@@ -68,7 +51,7 @@ const formatDateRange = (startArray: number[], endArray: number[]): string => {
       day: 'numeric',
     })}, ${startDate.getFullYear()}`;
   }
-  
+
   // Different years, show full dates "Dec 30, 2023 - Jan 2, 2024"
   return `${startDate.toLocaleDateString('en-US', {
     month: 'short',
@@ -144,10 +127,10 @@ export default function ConferencesPage() {
         <div className="space-y-8">
           {conferences.map((conf) => {
             const isUpcoming = arrayToDate(conf.end_date) > new Date();
-            
+
             return (
-              <div 
-                key={conf.id} 
+              <div
+                key={conf.id}
                 className="transition-all duration-300 hover:shadow-lg rounded-2xl overflow-hidden bg-white shadow-md"
               >
                 <div className="p-6 sm:p-8">
@@ -157,15 +140,14 @@ export default function ConferencesPage() {
                         {conf.name}
                       </h2>
                     </Link>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      isUpcoming ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${isUpcoming ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
                       {isUpcoming ? 'Upcoming' : 'Past'}
                     </span>
                   </div>
-                  
+
                   <p className="mt-3 text-gray-600">{conf.description}</p>
-                  
+
                   <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center">
                       <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,12 +171,12 @@ export default function ConferencesPage() {
                       </svg>
                       Publications
                     </h3>
-                    
+
                     {publicationsByConference[conf.id]?.length ? (
                       <ul className="mt-4 space-y-3">
                         {publicationsByConference[conf.id].map((pub) => (
-                          <li 
-                            key={pub.id} 
+                          <li
+                            key={pub.id}
                             className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
                           >
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -203,16 +185,15 @@ export default function ConferencesPage() {
                                 <p className="text-sm text-gray-600 mt-1">{pub.journal}</p>
                               </div>
                               <div className="mt-2 sm:mt-0 flex items-center space-x-3">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  pub.status === 'published' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : pub.status === 'submitted'
-                                      ? 'bg-yellow-100 text-yellow-800'
-                                      : 'bg-gray-100 text-gray-800'
-                                }`}>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${pub.status === 'published'
+                                  ? 'bg-green-100 text-green-800'
+                                  : pub.status === 'submitted'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                  }`}>
                                   {pub.status}
                                 </span>
-                                <Link 
+                                <Link
                                   href={`publications/${pub.id}`}
                                   className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200"
                                 >
