@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>PDF Summarizer</h2>
+  <input type="text" id="pathInput" placeholder="Enter local PDF path">
+  <button onclick="start()">Summarize</button>
+  <pre id="output"></pre>
+
+  <script>
+    let ws;
+    function start() {
+      const path = document.getElementById("pathInput").value;
+      document.getElementById("output").textContent = "";
+      ws = new WebSocket("ws://localhost:8000/ws/summarize");
+      ws.onopen = () => ws.send(path);
+      ws.onmessage = (event) => {
+        document.getElementById("output").textContent += event.data + "\n\n";
+      };
+    }
+  </script>
+</body>
+</html>

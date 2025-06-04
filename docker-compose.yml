@@ -1,3 +1,4 @@
+version: "3.9"
 
 services:
   postgres:
@@ -12,20 +13,69 @@ services:
       - "5432:5432"
     volumes:
       - ./migrations/:/docker-entrypoint-initdb.d/
-      - pgdata:/var/lib/postgresql/data 
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - researchnet
 
   redis:
     image: redis:latest
     container_name: lab_redis 
     restart: always
-    environment:
-      REDIS_PASSWORD: root
+    command: redis-server --requirepass root
     ports:
       - "6379:6379"
     volumes: 
       - redisdata:/data
-    
+    networks:
+      - researchnet
+
+  rust-backend:
+    build:
+      context: ./research-labs/rust-backend
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres 
+    environment:
+      RUST_HOST: 0.0.0.0
+      RUST_PORT: 3009
+      DATABASE_URL: postgresql://root:root@postgres/dev-db
+    ports:
+      - "3009:3009"
+    networks:
+      - researchnet
+
+  node-backend:
+    build:
+      context: ./research-labs/backend  
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres 
+    environment:
+      DATABASE_URL: postgresql://root:root@postgres/dev-db
+    ports:
+      - "3005:3005"
+    networks:
+      - researchnet
+
+  frontend:
+    build:
+      context: ./research-labs/frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - rust-backend
+      - node-backend
+    ports:
+      - "3000:3000"  # Next.js default port
+    environment:
+      NEXT_PUBLIC_RUST_BACKEND_URL: http://rust-backend:3009
+      NEXT_PUBLIC_NODE_BACKEND_URL: http://node-backend:3005
+    networks:
+      - researchnet
+
 volumes:
   pgdata: {}  
   redisdata: {}
 
+networks:
+  researchnet:
+    driver: bridge
