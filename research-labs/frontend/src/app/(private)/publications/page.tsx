@@ -5,9 +5,10 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cookies } from 'next/headers'
+import { redirect } from "next/navigation";
 
 export default async function PublicationsPage() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const userId = cookieStore.get('userId')?.value
   console.log('User ID from cookie:', userId);
 
@@ -16,9 +17,10 @@ export default async function PublicationsPage() {
     cache: "no-store", // Prevents Next.js from caching the request
   });
 
+
   if (!res.ok) {
     console.error('Failed to fetch publications:', res.statusText);
-    throw new Error("Failed to fetch publications");
+    redirect("/?error=failed_to_fetch_publications");
   }
 
   const data: Publication[] = await res.json();

@@ -1,9 +1,9 @@
-import Header from "./Header";
+import Header from "./navbar";
 import { cookies } from "next/headers";
 
-export default function HeaderWrapper() {
+export default async function HeaderWrapper() {
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value || null;
   const role = cookieStore.get("userRole")?.value || null;
   console.log("usususussu");

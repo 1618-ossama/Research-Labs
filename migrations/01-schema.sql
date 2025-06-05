@@ -35,13 +35,14 @@ CREATE TABLE conferences (
 CREATE TABLE publications (
     id UUID PRIMARY KEY,
     title VARCHAR(500) NOT NULL,
-    abstract TEXT NOT NULL,
+    abstract TEXT ,
     journal TEXT NOT NULL,
     doi VARCHAR(60) default '0',
     status VARCHAR(50) CHECK (status IN ('DRAFT', 'APPROVED', 'WAITING', 'DELETED')) NOT NULL DEFAULT 'DRAFT',
     visibility VARCHAR(50) CHECK (visibility IN ('PUBLIC', 'PRIVATE')) NOT NULL DEFAULT 'PRIVATE',
     submitter_id UUID REFERENCES users(id) ON DELETE SET NULL,
     conference_id UUID REFERENCES conferences(id) ON DELETE SET NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

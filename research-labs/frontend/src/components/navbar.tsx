@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Globe, Menu, Search, User, X, BookOpen, Presentation, FileEdit, Users, Shield } from "lucide-react";
+import { Globe, Menu, Search, User, X, BookOpen, Presentation, FileEdit, Users, Shield, MessageCircleMore } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,7 +39,7 @@ type navItemsType = {
 const navItem = (links: navItemsType[]) =>
   links.map((link) => (
     <Link
-      key={link.name}
+      key={`${link.name}-${link.href}`}
       href={link.href}
       className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary px-3 py-2 rounded-lg hover:bg-accent/10"
     >
@@ -63,7 +63,7 @@ export default function Header() {
   const baseNavItems: navItemsType[] = [
     { name: "Publications", href: "/publications", icon: <BookOpen size={16} /> },
     { name: "Conferences", href: "/conferences", icon: <Presentation size={16} /> },
-    { name: "New Submission", href: "/submission", icon: <FileEdit size={16} /> },
+    { name: "Chat", href: "/chat", icon: <MessageCircleMore size={16} /> },
   ];
 
   const researcherItems: navItemsType[] = [

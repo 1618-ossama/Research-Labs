@@ -46,6 +46,20 @@ services:
     networks:
       - researchnet
 
+  node-chat:
+    build:
+      context: ./research-labs/chat-service 
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres 
+    environment:
+      DATABASE_URL: postgresql://root:root@postgres/dev-db
+      JWT_SECRET: access
+    ports:
+      - "3007:3007"
+    networks:
+      - researchnet
+
   frontend:
     build:
       context: ./research-labs/frontend
