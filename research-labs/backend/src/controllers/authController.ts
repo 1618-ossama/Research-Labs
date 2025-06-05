@@ -61,20 +61,15 @@ const login = async (req: Request, res: Response, next: NextFunction): Promise<v
     }
 
     const user = await prisma.verifyUserCredentials(identifier, password);
+    console.log(user);
+
     if (user.status !== 'ACTIVE') {
-      res.status(400).json({
+      res.status(401).json({
         status: "failed",
-        data: {
-          userId: user.id,
-          username: user.username,
-          role: user.role,
-          status: user.status,
-          message: "Login unsuccessful",
-        },
+        message: "Account is inactive",
       });
       return;
     }
-
 
     const { accessToken, refreshToken } = generateAuthTokens(user);
     setAuthCookies(res, accessToken, refreshToken);

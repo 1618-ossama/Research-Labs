@@ -40,7 +40,6 @@ CREATE TABLE publications (
     doi VARCHAR(60) default '0',
     status VARCHAR(50) CHECK (status IN ('DRAFT', 'APPROVED', 'WAITING', 'DELETED')) NOT NULL DEFAULT 'DRAFT',
     visibility VARCHAR(50) CHECK (visibility IN ('PUBLIC', 'PRIVATE')) NOT NULL DEFAULT 'PRIVATE',
-    submitter_id UUID NOT NULL REFERENCES users(id),
     submitter_id UUID REFERENCES users(id) ON DELETE SET NULL,
     conference_id UUID REFERENCES conferences(id) ON DELETE SET NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -192,7 +192,7 @@ async function verifyUserCredentials(identifier: string, password: string): Prom
     });
 
     if (!user) {
-      throw new errorHandler.NotFoundError('User not found');
+      throw new errorHandler.NotFoundError('User ');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);

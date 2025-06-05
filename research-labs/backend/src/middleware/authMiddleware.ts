@@ -68,7 +68,7 @@ const setAuthCookies = (res: Response, accessToken: string, refreshToken: string
 
 const clearAuthCookie = (res: Response): void => {
   res.clearCookie("AccessTokenCookie", {
-    httpOnly: true,
+    //httpOnly: true,
     // secure: true,
   });
   res.clearCookie("RefreshTokenCookie", {
