@@ -2,11 +2,19 @@ use actix_multipart::Multipart;
 use actix_web::{HttpRequest, HttpResponse};
 use futures::{StreamExt, TryStreamExt};
 use serde_json::json;
+use std::env;
 use std::io::Write;
 use std::{fs::File, path::Path};
 use uuid::Uuid;
 
 use actix_web::{web, Error};
+
+fn get_upload_dir() -> &'static str {
+    match env::var("UPLOAD_DIR") {
+        Ok(val) => Box::leak(val.into_boxed_str()),
+        Err(_) => "/home/noredine/public/uploads",
+    }
+}
 
 use crate::models::PublicationFileInput;
 use crate::repositories::postgres_db::PostgresDatabase;
@@ -42,7 +50,8 @@ pub async fn upload_file(mut payload: Multipart) -> Result<HttpResponse, Error> 
         }
 
         // Store the file
-        let filepath = format!("/home/noredine/public/uploads/{}", filename);
+        let filepath = format!("{}/{}", get_upload_dir(), filename);
+        println!("fp0000: {}", filepath);
         let mut f = File::create(&filepath)?;
         while let Some(chunk) = field.next().await {
             let data = chunk?;

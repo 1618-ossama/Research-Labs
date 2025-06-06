@@ -30,7 +30,7 @@ interface Conference {
 }
 
 const fetchConferences = async (): Promise<Conference[]> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/conferences`);
+  const res = await fetch(`http://127.0.0.1:3009/api/conferences`);
   if (!res.ok) {
     throw new Error("Failed to fetch conferences");
   }
@@ -110,7 +110,7 @@ const SubmitPublicationForm = ({ userId }: Props) => {
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications`, {
+      const res = await fetch(`http://127.0.0.1:3009/api/publications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

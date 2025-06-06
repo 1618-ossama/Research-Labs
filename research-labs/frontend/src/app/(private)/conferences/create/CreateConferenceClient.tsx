@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Calendar, MapPin, FileText, Users, ChevronDown, Plus, Check } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+
 type Props = {
   userId: string | null;
 };
@@ -38,6 +40,7 @@ export default function CreateConferenceClient({ userId }: Props) {
     });
   };
 
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
@@ -56,7 +59,7 @@ export default function CreateConferenceClient({ userId }: Props) {
         return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/conferences`, {
+      const res = await fetch(`http://127.0.0.1:3009/api/conferences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,8 +77,9 @@ export default function CreateConferenceClient({ userId }: Props) {
 
       const newConference = await res.json();
 
+
       if (selectedPubs.size > 0) {
-        const linkRes = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/conference/link-publication`, {
+        const linkRes = await fetch(`http://127.0.0.1:3009/api/conference/link-publication`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -90,7 +94,9 @@ export default function CreateConferenceClient({ userId }: Props) {
         }
       }
 
-      alert('Conference created successfully!');
+      router.push(`/conferences/${newConference}`);
+      // alert('Conference created successfully!');
+
     } catch (error) {
       console.error('Error creating conference:', error);
       alert('Failed to create conference. Please try again.');

@@ -63,7 +63,7 @@ export default function FileList({ files }: { files: File[] }) {
     <>
       {files.map((file) => {
         const filename = file.file_path.split("/").pop();
-        const fileUrl = `${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/uploads/${filename}`;
+        const fileUrl = `http://127.0.0.1:3009/api/uploads/${filename}`;
 
         return (
           <div key={file.id} className="flex flex-col gap-2 p-3 rounded-lg border hover:bg-muted/50 transition-colors">

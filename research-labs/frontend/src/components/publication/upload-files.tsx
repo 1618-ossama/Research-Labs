@@ -37,7 +37,7 @@ export default function UploadFiles({ publicationId }: UploadFilesProps) {
         const uploadForm = new FormData();
         uploadForm.append("file", file);
 
-        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/upload`, {
+        const uploadRes = await fetch(`http://127.0.0.1:3009/api/upload`, {
           method: "POST",
           body: uploadForm,
         });
@@ -49,7 +49,7 @@ export default function UploadFiles({ publicationId }: UploadFilesProps) {
         // Step 2: Send metadata to Rust backend
         const fileType = file.type.split("/")[1] || "UNKNOWN";
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publication-files`, {
+        const res = await fetch(`http://127.0.0.1:3009/api/publication-files`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

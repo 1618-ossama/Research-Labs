@@ -25,6 +25,7 @@ services:
     depends_on:
       - postgres 
     environment:
+      UPLOAD_DIR: /app/uploads
       RUST_HOST: 0.0.0.0
       RUST_PORT: 3009
       DATABASE_URL: postgresql://root:root@postgres/dev-db
@@ -32,6 +33,8 @@ services:
       - "3009:3009"
     networks:
       - researchnet
+    volumes: 
+      - ./uploads:/app/uploads  
 
   node-backend:
     build:
@@ -40,6 +43,7 @@ services:
     depends_on:
       - postgres 
     environment:
+      UPLOAD_DIR: /app/uploads
       DATABASE_URL: postgresql://root:root@postgres/dev-db
     ports:
       - "3005:3005"
@@ -70,6 +74,7 @@ services:
     ports:
       - "3000:3000"  # Next.js default port
     environment:
+      UPLOAD_DIR: /app/uploads
       NEXT_PUBLIC_RUST_BACKEND_URL: http://rust-backend:3009
       NEXT_PUBLIC_NODE_BACKEND_URL: http://node-backend:3005
     networks:
