@@ -42,6 +42,7 @@ export const registrationSchema = z.object({
     .string()
     .optional(),
   profileImage: z.any().optional(),
+  photo_url: z.any().optional(),
   document: z.any().optional(),
 });
 
@@ -131,6 +132,10 @@ export const updateUserSchema = z.object({
     .string()
     .optional(),
   bio: z
+    .string()
+    .optional(),
+
+  photo_url: z
     .string()
     .optional(),
 });

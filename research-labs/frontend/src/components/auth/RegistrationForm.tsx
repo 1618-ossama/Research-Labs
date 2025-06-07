@@ -101,12 +101,25 @@ export function RegistrationForm() {
     try {
       setSubmitError(null);
 
+      const profileForm = new FormData();
+      profileForm.append("file", values.profileImage);
+
+      const uploadRes = await fetch(`http://127.0.0.1:3009/api/upload`, {
+        method: "POST",
+        body: profileForm,
+      });
+
+      if (!uploadRes.ok) throw new Error("Image upload failed");
+
+      const { filePath: profileImagePath } = await uploadRes.json();
+
       const userData = {
         username: formData?.username,
         email: formData?.email,
         password_hash: values.password,
         first_name: values.first_name,
         last_name: values.last_name,
+        photo_url: profileImagePath,
         role: values.role,
         phone: values.phone || undefined,
         affiliation: values.affiliation || undefined,

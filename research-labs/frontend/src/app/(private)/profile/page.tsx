@@ -197,7 +197,7 @@ export default async function ProfilePage() {
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={user.photo_url || ""} />
+                    <AvatarImage src={`http://127.0.0.1:3009/api/uploads/${user.photo_url}`} />
                     <AvatarFallback>
                       {user.first_name?.[0]}{user.last_name?.[0]}
                     </AvatarFallback>

@@ -73,6 +73,8 @@ async function safeDbOperation<T>(operation: () => Promise<T>): Promise<T> {
 }
 
 async function createUser(user_data: User): Promise<string> {
+
+  console.log("Register payload:", user_data);
   return safeDbOperation(async () => {
     const required_field = ['username', 'email', 'password_hash', 'role'] as const;
     required_field.forEach((element) => {
@@ -80,6 +82,7 @@ async function createUser(user_data: User): Promise<string> {
         throw new errorHandler.ValidationError('Missing required fields', [element]);
       }
     });
+
 
     const hashedPassword = await bcrypt.hash(user_data.password_hash, config.saltRounds);
     const newUser = await prisma.users.create({
