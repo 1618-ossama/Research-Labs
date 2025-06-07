@@ -48,8 +48,11 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
         const confData = await confRes.json();
 
         let pubs: Publication[] = [];
+
+        console.log(pubsRes);
         if (pubsRes.ok) {
           pubs = await pubsRes.json();
+          console.log(pubs);
         }
 
         let allPubs: Publication[] = [];

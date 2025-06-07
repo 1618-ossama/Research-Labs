@@ -26,6 +26,8 @@ import { cn } from "@/lib/utils"
 
 // Make sure these components exist and are properly exported in their files
 import PublicationCard from "@/components/profile/publication-card"
+import { Conference } from "@/types/conference"
+import { ConferenceCard } from "@/components/conferences/conferences-card"
 
 interface UserProfile {
   id: string
@@ -55,6 +57,50 @@ interface Publication {
   status: "DRAFT" | "APPROVED" | "WAITING" | "DELETED"
   visibility: "PUBLIC" | "PRIVATE"
   submitted_at: string
+}
+type ConferenceRaw = {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  start_date: number[]; // [year, month, day, hour, minute, second]
+  end_date: number[];
+};
+
+type Conference = Omit<ConferenceRaw, 'start_date' | 'end_date'> & {
+  start_date: Date;
+  end_date: Date;
+};
+
+async function fetchUserConferences(userId: string, token: string): Promise<Conference[]> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/conferences/user/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    return [];
+  }
+
+  const data: ConferenceRaw[] = await res.json();
+
+  // Convert date arrays to Date objects
+  const conferences = data.map((conf) => {
+    const [year, month, day, hour, minute, second] = conf.start_date;
+    const [eyear, emonth, eday, ehour, eminute, esecond] = conf.end_date;
+
+    return {
+      ...conf,
+      start_date: new Date(year, month - 1, day, hour, minute, second), // JS months are 0-based
+      end_date: new Date(eyear, emonth - 1, eday, ehour, eminute, esecond),
+    };
+  });
+
+  console.log("=======");
+  console.log(conferences);
+  console.log("=======");
+
+  return conferences;
 }
 
 async function fetchUserProfile(userId: string, token: string): Promise<UserProfile> {
@@ -104,11 +150,15 @@ export default async function ProfilePage() {
 
   if (!userId || !token) redirect('/auth/login')
 
-  const [user, publications] = await Promise.all([
+  const [user, publications, conferences] = await Promise.all([
     fetchUserProfile(userId, token),
-    fetchUserPublications(userId, token)
+    fetchUserPublications(userId, token),
+    fetchUserConferences(userId, token)
   ])
 
+  console.log("=======");
+  console.log(conferences);
+  console.log("=======");
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -132,7 +182,7 @@ export default async function ProfilePage() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Profile</h1>
           <Button asChild variant="outline">
-            <Link href="/profile/edit" className="gap-2">
+            <Link href="/profile/edit" className="flex items-center gap-2">
               <PencilIcon className="h-4 w-4" />
               Edit Profile
             </Link>
@@ -156,9 +206,7 @@ export default async function ProfilePage() {
                     <h3 className="font-semibold text-lg">
                       {user.first_name} {user.last_name}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      @{user.username}
-                    </p>
+                    <p className="text-sm text-muted-foreground">@{user.username}</p>
                   </div>
                 </div>
 
@@ -172,9 +220,7 @@ export default async function ProfilePage() {
 
                   <div className="flex items-center gap-3">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm">
-                      Joined {formatDate(user.created_at)}
-                    </p>
+                    <p className="text-sm">Joined {formatDate(user.created_at)}</p>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -208,7 +254,7 @@ export default async function ProfilePage() {
                             rel="noopener noreferrer"
                             className={cn(
                               buttonVariants({ variant: "outline", size: "sm" }),
-                              "h-8 px-3 text-xs gap-2"
+                              "h-8 px-3 text-xs gap-2 flex items-center"
                             )}
                           >
                             {getIconForLinkType(link.type)}
@@ -228,28 +274,24 @@ export default async function ProfilePage() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col items-center p-3 bg-muted/50 rounded-lg">
+                  <Link href="#publications" className="flex flex-col items-center p-3 bg-muted/50 rounded-lg hover:bg-muted/80 transition-colors">
+                    <span className="text-2xl font-bold">{publications.length}</span>
+                    <span className="text-xs text-muted-foreground">Publications</span>
+                  </Link>
+                  <Link href="#conferences" className="flex flex-col items-center p-3 bg-muted/50 rounded-lg hover:bg-muted/80 transition-colors">
                     <span className="text-2xl font-bold">
-                      {publications.length}
+                      {conferences.length}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      Publications
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center p-3 bg-muted/50 rounded-lg">
-                    <span className="text-2xl font-bold">0</span>
-                    <span className="text-xs text-muted-foreground">
-                      Projects
-                    </span>
-                  </div>
+                    <span className="text-xs text-muted-foreground">Conferences</span>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content */}
+          {/* Right Main Content */}
           <div className="lg:col-span-3">
-            <Tabs defaultValue="publications">
+            <Tabs defaultValue="publications" id="tabs">
               <TabsList className="w-full justify-start rounded-lg bg-transparent p-0 h-auto border-b">
                 <TabsTrigger
                   value="publications"
@@ -263,15 +305,20 @@ export default async function ProfilePage() {
                     </Badge>
                   </div>
                 </TabsTrigger>
+
                 <TabsTrigger
-                  value="projects"
+                  value="conferences"
                   className="relative px-4 py-3 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                 >
                   <div className="flex items-center gap-2">
-                    <LayoutGrid className="h-4 w-4" />
-                    Projects
+                    <Calendar className="h-4 w-4" />
+                    Conferences
+                    <Badge variant="secondary" className="ml-1">
+                      {conferences.length}
+                    </Badge>
                   </div>
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="collaborators"
                   className="relative px-4 py-3 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none"
@@ -288,26 +335,19 @@ export default async function ProfilePage() {
                   <div className="space-y-4">
                     {publications.length > 0 ? (
                       publications.map((publication) => (
-                        <PublicationCard
-                          key={publication.id}
-                          publication={publication}
-                        />
+                        <PublicationCard key={publication.id} publication={publication} />
                       ))
                     ) : (
                       <Card className="border-0 shadow-sm">
                         <CardContent className="p-8 text-center">
                           <div className="mx-auto max-w-md space-y-2">
                             <FileText className="h-10 w-10 mx-auto text-muted-foreground" />
-                            <CardTitle className="text-lg">
-                              No publications yet
-                            </CardTitle>
+                            <CardTitle className="text-lg">No publications yet</CardTitle>
                             <CardDescription>
                               Share your research by adding your first publication
                             </CardDescription>
                             <Button asChild className="mt-4">
-                              <Link href="/publications/create">
-                                Add Publication
-                              </Link>
+                              <Link href="/publications/create">Add Publication</Link>
                             </Button>
                           </div>
                         </CardContent>
@@ -316,20 +356,32 @@ export default async function ProfilePage() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="projects">
-                  <Card className="border-0 shadow-sm">
-                    <CardContent className="p-8 text-center">
-                      <div className="mx-auto max-w-md space-y-2">
-                        <LayoutGrid className="h-10 w-10 mx-auto text-muted-foreground" />
-                        <CardTitle className="text-lg">
-                          Projects coming soon
-                        </CardTitle>
-                        <CardDescription>
-                          Organize your research into projects and collaborate with others
-                        </CardDescription>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <TabsContent value="conferences">
+                  <div className="space-y-4">
+                    {conferences.length > 0 ? (
+                      conferences.map((conference) => (
+                        <ConferenceCard
+                          key={conference.id}
+                          conference={conference}
+                        />
+                      ))
+                    ) : (
+                      <Card className="border-0 shadow-sm">
+                        <CardContent className="p-8 text-center">
+                          <div className="mx-auto max-w-md space-y-2">
+                            <Calendar className="h-10 w-10 mx-auto text-muted-foreground" />
+                            <CardTitle className="text-lg">No conferences yet</CardTitle>
+                            <CardDescription>
+                              You have no conferences added yet.
+                            </CardDescription>
+                            <Button asChild className="mt-4">
+                              <Link href="/conferences/create">Add Conference</Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="collaborators">
@@ -337,9 +389,7 @@ export default async function ProfilePage() {
                     <CardContent className="p-8 text-center">
                       <div className="mx-auto max-w-md space-y-2">
                         <Users className="h-10 w-10 mx-auto text-muted-foreground" />
-                        <CardTitle className="text-lg">
-                          Collaborators coming soon
-                        </CardTitle>
+                        <CardTitle className="text-lg">Collaborators coming soon</CardTitle>
                         <CardDescription>
                           Connect with other researchers and build your network
                         </CardDescription>
@@ -353,4 +403,4 @@ export default async function ProfilePage() {
         </div>
       </div>
     </div>
-  )
+  );

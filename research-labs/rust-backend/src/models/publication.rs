@@ -1,15 +1,22 @@
 use serde::{Deserialize, Deserializer, Serialize};
 use sqlx::types::time::OffsetDateTime;
 
-#[derive(Serialize, Deserialize, Debug)]
+use sqlx::FromRow;
+#[derive(Serialize, Deserialize, Debug, FromRow)]
 pub struct Publication {
     pub id: Uuid,
     pub title: String,
+
+    #[serde(rename = "abstract")]
+    #[sqlx(rename = "abstract")]
+    pub abstract_: Option<String>,
+
     pub journal: String,
     pub doi: Option<String>,
     pub status: String,
     pub visibility: String,
-    pub submitter_id: Uuid,
+
+    pub submitter_id: Option<Uuid>,
     pub conference_id: Option<Uuid>,
     pub submitted_at: OffsetDateTime,
 }
@@ -19,7 +26,54 @@ pub struct LinkPayload {
     pub publication_ids: Vec<Uuid>,
     pub user_id: String,
 }
-use sqlx::FromRow;
+
+// use chrono::{DateTime, Utc};
+#[derive(Deserialize, FromRow)]
+pub struct UpdatePublication {
+    pub title: Option<String>,
+    pub journal: Option<String>,
+    #[serde(rename = "abstract")]
+    #[sqlx(rename = "abstract")]
+    pub abstract_: String,
+    pub doi: Option<String>,
+    pub status: Option<String>, // "DRAFT", "APPROVED", "WAITING", "DELETED"
+    pub visibility: Option<String>, // "PUBLIC", "PRIVATE"
+    pub conference_id: Option<Uuid>,
+}
+
+#[derive(Deserialize, FromRow)]
+pub struct UpdatePublicationInput {
+    pub title: Option<String>,
+    pub journal: Option<String>,
+    #[serde(rename = "abstract")]
+    #[sqlx(rename = "abstract")]
+    pub abstract_: String,
+    pub doi: Option<String>,
+    pub status: Option<String>,
+    pub visibility: Option<String>,
+    pub conference_id: Option<Uuid>,
+}
+#[derive(Deserialize, FromRow)]
+pub struct PublicationInput {
+    pub title: String,
+    pub journal: String,
+    #[serde(rename = "abstract")]
+    #[sqlx(rename = "abstract")]
+    pub abstract_: String,
+    pub doi: Option<String>,
+    pub status: Option<String>,
+    pub visibility: Option<String>,
+    pub submitter_id: Uuid,
+    pub conference_id: Option<Uuid>,
+}
+
+#[derive(Deserialize)]
+pub struct PublicationFileInput {
+    pub id: Uuid,
+    pub file_type: String,
+    pub file_path: String,
+    pub publication_id: Uuid,
+}
 use time::PrimitiveDateTime;
 use uuid::Uuid;
 

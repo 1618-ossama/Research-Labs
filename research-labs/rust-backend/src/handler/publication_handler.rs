@@ -1,6 +1,9 @@
 use crate::{
     models::{
-        publication::{CreateConference, LinkPayload},
+        publication::{
+            CreateConference, LinkPayload, PublicationInput, UpdatePublication,
+            UpdatePublicationInput,
+        },
         *,
     },
     repositories::{database::Database, postgres_db::PostgresDatabase},
@@ -19,6 +22,7 @@ pub async fn add_publication(
         .add_publication(
             form.title.clone(),
             form.journal.clone(),
+            form.abstract_.clone(),
             form.doi.clone(),
             form.status.clone(),
             form.visibility.clone(),
@@ -57,6 +61,7 @@ pub async fn update_publication_handler(
     let update = UpdatePublication {
         title: form.title.clone(),
         journal: form.journal.clone(),
+        abstract_: form.abstract_.clone(),
         doi: form.doi.clone(),
         status: form.status.clone(),
         visibility: form.visibility.clone(),

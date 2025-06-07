@@ -38,6 +38,10 @@ pub fn route_config(cfg: &mut web::ServiceConfig) {
             .route("/groups/add-user", web::post().to(add_user_to_group))
             .route("/conferences", web::get().to(get_all_conferences))
             .route("/conferences/{id}", web::get().to(get_conference_by_id))
+            .route(
+                "/conferences/user/{id}",
+                web::get().to(get_conferences_by_user),
+            )
             .route("/conferences", web::post().to(create_conference))
             .route("/conferences/{id}", web::put().to(update_conference))
             .route(

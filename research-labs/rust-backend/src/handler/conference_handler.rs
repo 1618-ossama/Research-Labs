@@ -67,3 +67,13 @@ pub async fn delete_conference(
     //     Err(_) => HttpResponse::NotFound().finish(),
     // }
 }
+
+pub async fn get_conferences_by_user(
+    db: web::Data<PostgresDatabase>,
+    user_id: web::Path<Uuid>,
+) -> HttpResponse {
+    match db.get_conferences_by_user(user_id.into_inner()).await {
+        Ok(conf) => HttpResponse::Ok().json(conf),
+        Err(_) => HttpResponse::NotFound().finish(),
+    }
+}

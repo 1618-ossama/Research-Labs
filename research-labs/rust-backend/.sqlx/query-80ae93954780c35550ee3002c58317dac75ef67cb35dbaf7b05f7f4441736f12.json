@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT DISTINCT c.id, c.name, c.description, c.location, c.start_date, c.end_date\n        FROM conferences c\n        INNER JOIN conference_publications cp ON cp.conference_id = c.id\n        INNER JOIN publications p ON p.id = cp.publication_id\n        WHERE p.submitter_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "location",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "start_date",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 5,
+        "name": "end_date",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "80ae93954780c35550ee3002c58317dac75ef67cb35dbaf7b05f7f4441736f12"
+}

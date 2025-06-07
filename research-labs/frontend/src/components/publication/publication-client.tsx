@@ -30,6 +30,7 @@ interface Publication {
   submitter_id: string;
   conference_id: string;
   submitted_at: string;
+  abstract: string;
 }
 
 interface DoiMetadata {
@@ -185,6 +186,9 @@ export default function PublicationClient({
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl font-semibold">{publication.title}</CardTitle>
+          {publication.abstract && (
+            <p className="text-muted-foreground mt-2 whitespace-pre-line">{publication.abstract}</p>
+          )}
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">

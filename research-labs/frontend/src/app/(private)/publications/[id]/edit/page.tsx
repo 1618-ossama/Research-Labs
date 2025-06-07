@@ -10,6 +10,7 @@ import Link from "next/link";
 interface Publication {
   id: string;
   title: string;
+  abstract: string;
   journal: string;
   doi: string;
   status: string;
@@ -17,6 +18,11 @@ interface Publication {
   submitter_id: string;
   conference_id: string | null;
   submitted_at: string;
+}
+
+interface Conference {
+  id: string;
+  name: string;
 }
 
 const VALID_STATUSES = ["DRAFT", "APPROVED", "WAITING", "DELETED"];
@@ -27,67 +33,70 @@ export default function EditPublicationPage({ params }: { params: { id: string }
   const publicationId = params.id;
 
   const [publication, setPublication] = useState<Publication | null>(null);
+  const [conferences, setConferences] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form fields state
+  // Form state
   const [title, setTitle] = useState("");
+  const [abstract, setAbstract] = useState("");
   const [journal, setJournal] = useState("");
   const [doi, setDoi] = useState("");
   const [status, setStatus] = useState("DRAFT");
   const [visibility, setVisibility] = useState("PRIVATE");
-  const [conferenceId, setConferenceId] = useState<string | "">( "");
+  const [conferenceId, setConferenceId] = useState<string | "">("");
 
-  // Fetch publication data on mount
+  // Fetch publication
   useEffect(() => {
-    async function fetchPublication() {
+    async function fetchData() {
       try {
-        const res = await fetch(`http://localhost:3009/api/publications/${publicationId}`);
-        if (!res.ok) throw new Error("Failed to fetch publication");
-        const data: Publication = await res.json();
-        setPublication(data);
-        setTitle(data.title);
-        setJournal(data.journal);
-        setDoi(data.doi);
-        setStatus(data.status);
-        setVisibility(data.visibility);
-        setConferenceId(data.conference_id || "");
+        const [pubRes, confRes] = await Promise.all([
+          fetch(`http://localhost:3009/api/publications/${publicationId}`),
+          fetch(`http://localhost:3009/api/conferences`),
+        ]);
+
+        if (!pubRes.ok || !confRes.ok) throw new Error("Failed to fetch data");
+
+        const publication: Publication = await pubRes.json();
+        const conferences: Conference[] = await confRes.json();
+
+        setPublication(publication);
+        setConferences(conferences);
+
+        setTitle(publication.title);
+        setAbstract(publication.abstract ?? "");
+        setJournal(publication.journal);
+        setDoi(publication.doi);
+        setStatus(publication.status);
+        setVisibility(publication.visibility);
+        setConferenceId(publication.conference_id ?? "");
       } catch (error) {
-        toast.error("Failed to load publication");
+        toast.error("Failed to load publication or conferences");
+        console.error(error);
       } finally {
         setLoading(false);
       }
     }
-    fetchPublication();
+
+    fetchData();
   }, [publicationId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Title is required");
-      return;
-    }
-    if (!journal.trim()) {
-      toast.error("Journal is required");
-      return;
-    }
-    if (!VALID_STATUSES.includes(status)) {
-      toast.error("Invalid status");
-      return;
-    }
-    if (!VALID_VISIBILITIES.includes(visibility)) {
-      toast.error("Invalid visibility");
-      return;
-    }
+
+    if (!title.trim()) return toast.error("Title is required");
+    if (!journal.trim()) return toast.error("Journal is required");
+    if (!VALID_STATUSES.includes(status)) return toast.error("Invalid status");
+    if (!VALID_VISIBILITIES.includes(visibility)) return toast.error("Invalid visibility");
 
     setSubmitting(true);
-
     try {
       const res = await fetch(`http://localhost:3009/api/publications/${publicationId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
+          abstract,
           journal,
           doi,
           status,
@@ -95,6 +104,7 @@ export default function EditPublicationPage({ params }: { params: { id: string }
           conference_id: conferenceId || null,
         }),
       });
+
       if (!res.ok) throw new Error("Failed to update publication");
 
       toast.success("Publication updated successfully");
@@ -108,11 +118,11 @@ export default function EditPublicationPage({ params }: { params: { id: string }
     }
   }
 
-  if (loading) return <p className="text-center py-10">Loading publication...</p>;
+  if (loading) return <p className="text-center py-10">Loading...</p>;
   if (!publication) return <p className="text-center py-10 text-red-500">Publication not found</p>;
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
       <Link href={`/publications/${publicationId}`} className="text-blue-600 hover:underline">
         ← Back to publication details
       </Link>
@@ -132,8 +142,21 @@ export default function EditPublicationPage({ params }: { params: { id: string }
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
                 required
+                className="mt-1 block w-full rounded-md border px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="abstract" className="block text-sm font-medium text-gray-700">
+                Abstract
+              </label>
+              <textarea
+                id="abstract"
+                value={abstract}
+                onChange={(e) => setAbstract(e.target.value)}
+                rows={4}
+                className="mt-1 block w-full rounded-md border px-3 py-2"
               />
             </div>
 
@@ -146,8 +169,8 @@ export default function EditPublicationPage({ params }: { params: { id: string }
                 value={journal}
                 onChange={(e) => setJournal(e.target.value)}
                 rows={3}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
                 required
+                className="mt-1 block w-full rounded-md border px-3 py-2"
               />
             </div>
 
@@ -160,8 +183,7 @@ export default function EditPublicationPage({ params }: { params: { id: string }
                 type="text"
                 value={doi}
                 onChange={(e) => setDoi(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
-                maxLength={60}
+                className="mt-1 block w-full rounded-md border px-3 py-2"
               />
             </div>
 
@@ -173,8 +195,8 @@ export default function EditPublicationPage({ params }: { params: { id: string }
                 id="status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
                 required
+                className="mt-1 block w-full rounded-md border px-3 py-2"
               >
                 {VALID_STATUSES.map((s) => (
                   <option key={s} value={s}>
@@ -192,8 +214,8 @@ export default function EditPublicationPage({ params }: { params: { id: string }
                 id="visibility"
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
                 required
+                className="mt-1 block w-full rounded-md border px-3 py-2"
               >
                 {VALID_VISIBILITIES.map((v) => (
                   <option key={v} value={v}>
@@ -204,23 +226,28 @@ export default function EditPublicationPage({ params }: { params: { id: string }
             </div>
 
             <div>
-              <label htmlFor="conference_id" className="block text-sm font-medium text-gray-700">
-                Conference ID
+              <label htmlFor="conference" className="block text-sm font-medium text-gray-700">
+                Conference
               </label>
-              <input
-                id="conference_id"
-                type="text"
+              <select
+                id="conference"
                 value={conferenceId}
                 onChange={(e) => setConferenceId(e.target.value)}
-                placeholder="UUID or leave empty"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-300"
-              />
+                className="mt-1 block w-full rounded-md border px-3 py-2"
+              >
+                <option value="">None</option>
+                {conferences.map((conf) => (
+                  <option key={conf.id} value={conf.id}>
+                    {conf.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex justify-end gap-4">
               <Link
                 href={`/publications/${publicationId}`}
-                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium"
               >
                 Cancel
               </Link>

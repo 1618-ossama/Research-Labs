@@ -81,6 +81,9 @@ async function fetchUserProfile(userId: string, token: string): Promise<UserProf
 }
 
 async function fetchUserPublications(userId: string, token: string): Promise<Publication[]> {
+  console.log("hheheheheh");
+  console.log(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications/user/${userId}`);
+  console.log("hheheheheh");
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications/user/${userId}`,
     {
@@ -98,7 +101,7 @@ async function fetchUserPublications(userId: string, token: string): Promise<Pub
 
 interface ProfilePageProps {
   params: {
-    username: string
+    userid: string
   }
 }
 export default async function ProfilePage({ params }: ProfilePageProps) {
@@ -106,9 +109,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const token = cookieStore.get("AccessTokenCookie")?.value
 
-  let userId = params.username;
+  let userId = params.userid;
 
-  if (!userId || !token) redirect('/auth/login')
+  // if (!userId || !token) redirect('/auth/login')
 
   const [user, publications] = await Promise.all([
     fetchUserProfile(userId, token),

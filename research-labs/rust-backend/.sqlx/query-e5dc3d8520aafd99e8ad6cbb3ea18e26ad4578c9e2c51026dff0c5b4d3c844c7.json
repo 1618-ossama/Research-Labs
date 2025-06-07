@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at\n        FROM publications\n        WHERE id = $1\n        ",
+  "query": "\n            SELECT id, title, abstract AS \"abstract_\", journal, doi, status, visibility, submitter_id, conference_id, submitted_at::timestamptz AS \"submitted_at!\"\n            FROM publications\n            WHERE submitter_id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -15,37 +15,42 @@
       },
       {
         "ordinal": 2,
-        "name": "journal",
+        "name": "abstract_",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
+        "name": "journal",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
         "name": "doi",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "status",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "visibility",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "submitter_id",
         "type_info": "Uuid"
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "conference_id",
         "type_info": "Uuid"
       },
       {
-        "ordinal": 8,
-        "name": "submitted_at",
+        "ordinal": 9,
+        "name": "submitted_at!",
         "type_info": "Timestamptz"
       }
     ],
@@ -57,14 +62,15 @@
     "nullable": [
       false,
       false,
+      true,
       false,
       true,
       false,
       false,
-      false,
       true,
-      false
+      true,
+      null
     ]
   },
-  "hash": "9f54f40d1b171f51d38aa91598c8fa3708b562202fe30a57bbb1e8ac565999dd"
+  "hash": "e5dc3d8520aafd99e8ad6cbb3ea18e26ad4578c9e2c51026dff0c5b4d3c844c7"
 }

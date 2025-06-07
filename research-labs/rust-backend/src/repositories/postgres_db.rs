@@ -1,17 +1,13 @@
 use crate::errors::*;
 use crate::models::metrics::Metrics;
 use crate::models::publication::{
-    Conference, CreateConference, Group, Publication, PublicationFile,
+    Conference, CreateConference, Group, Publication, PublicationFile, UpdatePublication,
 };
-use crate::models::UpdatePublication;
-use futures::future::ok;
 use sqlx::postgres::Postgres;
-use sqlx::{query, Pool, Transaction};
+use sqlx::{query, Pool};
 
-use time::{OffsetDateTime, PrimitiveDateTime};
 use uuid::Uuid;
 
-use super::database::Database;
 pub struct PostgresDatabase {
     pub pool: Pool<Postgres>,
 }
@@ -34,7 +30,7 @@ impl PostgresDatabase {
         let publication = sqlx::query_as!(
         Publication,
         r#"
-        SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at
+        SELECT id, title, abstract as "abstract_", journal, doi, status, visibility, submitter_id, conference_id, submitted_at::timestamptz AS "submitted_at!"
         FROM publications
         WHERE id = $1
         "#,
@@ -50,7 +46,7 @@ impl PostgresDatabase {
         let publications = sqlx::query_as!(
         Publication,
         r#"
-        SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at
+        SELECT id, title, abstract AS "abstract_", journal, doi, status, visibility, submitter_id, conference_id, submitted_at::timestamptz AS "submitted_at!"
         FROM publications
         "#
     )
@@ -120,6 +116,7 @@ impl PostgresDatabase {
         &self,
         title: String,
         journal: String,
+        abstract_: String,
         doi: Option<String>,
         status: Option<String>,
         visibility: Option<String>,
@@ -136,13 +133,14 @@ impl PostgresDatabase {
         sqlx::query!(
             r#"
         INSERT INTO publications (
-            id, title, journal, doi, status, visibility,
+            id, title, abstract, journal, doi, status, visibility,
             submitter_id, conference_id
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         "#,
             id,
             title,
+            abstract_,
             journal,
             doi,
             status,
@@ -192,7 +190,7 @@ impl PostgresDatabase {
         let publications = query_as!(
             Publication,
             r#"
-            SELECT id, title, journal, doi, status, visibility, submitter_id, conference_id, submitted_at
+            SELECT id, title, abstract AS "abstract_", journal, doi, status, visibility, submitter_id, conference_id, submitted_at::timestamptz AS "submitted_at!"
             FROM publications
             WHERE submitter_id = $1
             "#,
@@ -201,6 +199,23 @@ impl PostgresDatabase {
         .fetch_all(&self.pool)
         .await?;
         Ok(publications)
+    }
+
+    pub async fn get_conferences_by_user(&self, user_id: Uuid) -> Result<Vec<Conference>> {
+        let conferences = query_as!(
+            Conference,
+            r#"
+        SELECT DISTINCT c.id, c.name, c.description, c.location, c.start_date, c.end_date
+        FROM conferences c
+        INNER JOIN conference_publications cp ON cp.conference_id = c.id
+        INNER JOIN publications p ON p.id = cp.publication_id
+        WHERE p.submitter_id = $1
+        "#,
+            user_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(conferences)
     }
 
     pub async fn get_all_conferences(&self) -> Result<Vec<Conference>> {
@@ -258,19 +273,17 @@ impl PostgresDatabase {
         &self,
         conference_id: Uuid,
     ) -> Result<Vec<Publication>> {
-        // Assuming you have a join table `conference_publications` linking publications to conferences
-        // Adjust the query if you store `conference_id` directly in `publications` table instead
-
-        let publications = sqlx::query_as!(
-            Publication,
+        let publications = sqlx::query_as::<_, Publication>(
             r#"
-            SELECT p.id, p.title, p.journal, p.doi, p.status, p.visibility, p.submitted_at, p.conference_id, p.submitter_id
-            FROM publications p
-            INNER JOIN conference_publications cp ON p.id = cp.publication_id
-            WHERE cp.conference_id = $1
-            "#,
-            conference_id
+    SELECT p.id, p.title, p.abstract, p.journal, p.doi,
+           p.status, p.visibility, p.submitted_at::timestamptz AS submitted_at,
+           p.conference_id, p.submitter_id
+    FROM publications p
+    INNER JOIN conference_publications cp ON p.id = cp.publication_id
+    WHERE cp.conference_id = $1
+    "#,
         )
+        .bind(conference_id)
         .fetch_all(&self.pool)
         .await?;
 

@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { FiExternalLink, FiPlus } from "react-icons/fi";
 import { Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Props {
   userId: string;
@@ -31,23 +32,20 @@ interface Conference {
 
 const fetchConferences = async (): Promise<Conference[]> => {
   const res = await fetch(`http://127.0.0.1:3009/api/conferences`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch conferences");
-  }
-  return await res.json();
+  if (!res.ok) throw new Error("Failed to fetch conferences");
+  return res.json();
 };
 
 const fetchDOIMetadata = async (doi: string) => {
   try {
     const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`);
     if (!res.ok) return null;
-
     const data = await res.json();
     const item = data.message;
-
     return {
       title: item.title?.[0] || "",
       journal: item["container-title"]?.[0] || "",
+      abstract: item.abstract || "",
     };
   } catch {
     return null;
@@ -59,6 +57,7 @@ const SubmitPublicationForm = ({ userId }: Props) => {
     doi: "",
     title: "",
     journal: "",
+    abstract: "",
     status: "DRAFT" as Status,
     visibility: "PRIVATE" as Visibility,
     conferenceId: "" as string | null,
@@ -84,6 +83,7 @@ const SubmitPublicationForm = ({ userId }: Props) => {
     if (!formData.doi.trim()) return;
     setDoiLoading(true);
     setError(null);
+
     const meta = await fetchDOIMetadata(formData.doi.trim());
     setDoiLoading(false);
 
@@ -92,6 +92,7 @@ const SubmitPublicationForm = ({ userId }: Props) => {
         ...prev,
         title: meta.title,
         journal: meta.journal,
+        abstract: meta.abstract.replace(/<\/?jats:[^>]+>/g, ""), // Clean XML tags if any
       }));
     } else {
       setError("Could not fetch metadata for this DOI.");
@@ -103,8 +104,8 @@ const SubmitPublicationForm = ({ userId }: Props) => {
     setLoading(true);
     setError(null);
 
-    if (!formData.title.trim() || !formData.journal.trim()) {
-      setError("Title and Journal are required.");
+    if (!formData.title.trim() || !formData.journal.trim() || !formData.abstract.trim()) {
+      setError("Title, Journal, and Abstract are required.");
       setLoading(false);
       return;
     }
@@ -116,6 +117,7 @@ const SubmitPublicationForm = ({ userId }: Props) => {
         body: JSON.stringify({
           title: formData.title.trim(),
           journal: formData.journal.trim(),
+          abstract: formData.abstract.trim(),
           doi: formData.doi.trim() || "0",
           status: formData.status,
           visibility: formData.visibility,
@@ -149,7 +151,7 @@ const SubmitPublicationForm = ({ userId }: Props) => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* DOI Input */}
+          {/* DOI */}
           <div className="space-y-2">
             <Label htmlFor="doi">DOI</Label>
             <div className="flex gap-2">
@@ -169,28 +171,62 @@ const SubmitPublicationForm = ({ userId }: Props) => {
                 variant="outline"
                 size="icon"
               >
-                {doiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FiExternalLink className="h-4 w-4" />}
+                {doiLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FiExternalLink className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">Auto-fill metadata from DOI</p>
           </div>
 
-          {/* Title and Journal */}
+          {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
-            <Input id="title" value={formData.title} onChange={(e) => handleChange("title", e.target.value)} required disabled={loading} />
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              required
+              disabled={loading}
+            />
           </div>
 
+          {/* Journal */}
           <div className="space-y-2">
             <Label htmlFor="journal">Journal *</Label>
-            <Input id="journal" value={formData.journal} onChange={(e) => handleChange("journal", e.target.value)} required disabled={loading} />
+            <Input
+              id="journal"
+              value={formData.journal}
+              onChange={(e) => handleChange("journal", e.target.value)}
+              required
+              disabled={loading}
+            />
           </div>
 
-          {/* Status & Visibility */}
+          {/* Abstract */}
+          <div className="space-y-2">
+            <Label htmlFor="abstract">Abstract *</Label>
+            <Textarea
+              id="abstract"
+              rows={5}
+              value={formData.abstract}
+              onChange={(e) => handleChange("abstract", e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+
+          {/* Status and Visibility */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(v: Status) => handleChange("status", v)} disabled={loading}>
+              <Select
+                value={formData.status}
+                onValueChange={(v: Status) => handleChange("status", v)}
+                disabled={loading}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -204,7 +240,11 @@ const SubmitPublicationForm = ({ userId }: Props) => {
 
             <div className="space-y-2">
               <Label>Visibility</Label>
-              <Select value={formData.visibility} onValueChange={(v: Visibility) => handleChange("visibility", v)} disabled={loading}>
+              <Select
+                value={formData.visibility}
+                onValueChange={(v: Visibility) => handleChange("visibility", v)}
+                disabled={loading}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
@@ -240,10 +280,14 @@ const SubmitPublicationForm = ({ userId }: Props) => {
 
           {/* Submit */}
           <Button type="submit" className="w-full mt-4" disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>
-              <FiPlus className="mr-2 h-4 w-4" />
-              Submit Publication
-            </>}
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <FiPlus className="mr-2 h-4 w-4" />
+                Submit Publication
+              </>
+            )}
           </Button>
         </form>
       </Card>
