@@ -1,24 +1,25 @@
+use std::{sync::Arc, time::Duration};
+
 use crate::{
     models::{
         publication::{
-            CreateConference, LinkPayload, PublicationInput, UpdatePublication,
-            UpdatePublicationInput,
+            LinkPayload, Publication, PublicationInput, UpdatePublication, UpdatePublicationInput,
         },
         *,
     },
-    repositories::{database::Database, postgres_db::PostgresDatabase},
+    repositories::postgres_db::PostgresDatabase,
 };
-use actix_multipart::Multipart;
-use actix_web::{web, Error, HttpResponse};
-use actix_web::{HttpRequest, Responder};
+use actix_web::{web, HttpResponse};
+use redis::Commands;
 use uuid::Uuid;
 
 /// Add a publication
 pub async fn add_publication(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     form: web::Json<PublicationInput>,
 ) -> HttpResponse {
-    match db
+    match state
+        .db_pool
         .add_publication(
             form.title.clone(),
             form.journal.clone(),
@@ -31,13 +32,19 @@ pub async fn add_publication(
         )
         .await
     {
-        Ok(_) => HttpResponse::Created().finish(),
+        Ok(_) => {
+            if let Ok(mut redis_conn) = state.redis_client.get_connection() {
+                let _: redis::RedisResult<()> = redis_conn.del("publications_cache");
+            }
+
+            return HttpResponse::Created().finish();
+        }
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
 pub async fn update_publication_handler(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     path: web::Path<Uuid>,
     form: web::Json<UpdatePublicationInput>,
 ) -> HttpResponse {
@@ -68,35 +75,66 @@ pub async fn update_publication_handler(
         conference_id: form.conference_id,
     };
 
-    match db.update_publication(id, update).await {
+    match state.db_pool.update_publication(id, update).await {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
 /// Delete a publication by ID
-pub async fn delete_publication(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-) -> HttpResponse {
+pub async fn delete_publication(state: web::Data<AppState>, id: web::Path<Uuid>) -> HttpResponse {
     println!("Delete request for publication with the id: {}", id.clone());
-    match db.delete_publication(id.into_inner()).await {
+    match state.db_pool.delete_publication(id.into_inner()).await {
         Ok(publi) => HttpResponse::Ok().json(publi),
         Err(_) => HttpResponse::NotFound().finish(),
     }
 }
 
-pub async fn get_publication(db: web::Data<PostgresDatabase>, id: web::Path<Uuid>) -> HttpResponse {
-    match db.get_publication(id.into_inner()).await {
+pub async fn get_publication(state: web::Data<AppState>, id: web::Path<Uuid>) -> HttpResponse {
+    println!("get pub");
+    match state.db_pool.get_publication(id.into_inner()).await {
         Ok(publi) => HttpResponse::Ok().json(publi),
         Err(_) => HttpResponse::NotFound().finish(),
     }
 }
+#[derive(Clone)]
+pub struct AppState {
+    pub redis_client: redis::Client,
+    pub db_pool: Arc<PostgresDatabase>,
+}
 
-/// Get all publications
-pub async fn get_publications(db: web::Data<PostgresDatabase>) -> HttpResponse {
-    match db.get_publications().await {
-        Ok(publications) => HttpResponse::Ok().json(publications),
+pub async fn get_publications(state: web::Data<AppState>) -> HttpResponse {
+    let mut redis_conn = match state.redis_client.get_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
+            eprintln!("❌ Redis connection error: {:?}", e);
+
+            return match state.db_pool.get_publications().await {
+                Ok(publications) => HttpResponse::Ok().json(publications),
+                Err(_) => HttpResponse::InternalServerError().finish(),
+            };
+        }
+        Err(_) => return HttpResponse::InternalServerError().body("Redis error"),
+    };
+
+    let cached: redis::RedisResult<Option<String>> = redis_conn.get("publications_cache");
+
+    if let Ok(Some(json_str)) = cached {
+        if let Ok(publications) = serde_json::from_str::<Vec<Publication>>(&json_str) {
+            println!("return cached value");
+            return HttpResponse::Ok().json(publications);
+        }
+    }
+
+    match state.db_pool.get_publications().await {
+        Ok(publications) => {
+            if let Ok(json) = serde_json::to_string(&publications) {
+                let _: Result<(), _> = redis_conn.set_ex("publications_cache", json, 300);
+                // 300s = 5 mens
+            }
+
+            HttpResponse::Ok().json(publications)
+        }
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
@@ -112,66 +150,13 @@ pub async fn get_publications_by_user(
     }
 }
 
-pub async fn get_groups_by_user_id(
-    db: web::Data<PostgresDatabase>,
-    user_id: web::Path<Uuid>,
-) -> HttpResponse {
-    return HttpResponse::NoContent().finish();
-    // match db.get_groups_by_user_id(user_id.into_inner()).await {
-    //     Ok(groups) => HttpResponse::Ok().json(groups),
-    //     Err(_) => HttpResponse::InternalServerError().finish(),
-    // }
-}
-
-/// Add a group
-pub async fn add_group(
-    db: web::Data<PostgresDatabase>,
-    group: web::Json<GroupInput>,
-) -> HttpResponse {
-    return HttpResponse::NoContent().finish();
-    // match db
-    //     .add_group(
-    //         group.id,
-    //         group.title.clone(),
-    //         group.description.clone(),
-    //         group.status.clone(),
-    //         group.leader_id,
-    //     )
-    //     .await
-    // {
-    //     Ok(_) => HttpResponse::Created().finish(),
-    //     Err(_) => HttpResponse::InternalServerError().finish(),
-    // }
-}
-
-/// Get a group by ID
-pub async fn get_group(db: web::Data<PostgresDatabase>, id: web::Path<Uuid>) -> HttpResponse {
-    return HttpResponse::NoContent().finish();
-
-    // match db.get_group(id.into_inner()).await {
-    //     Ok(group) => HttpResponse::Ok().json(group),
-    //     Err(_) => HttpResponse::NotFound().finish(),
-    // }
-}
-
-/// Add user to group
-pub async fn add_user_to_group(
-    db: web::Data<PostgresDatabase>,
-    body: web::Json<AddUserToGroupInput>,
-) -> HttpResponse {
-    return HttpResponse::NoContent().finish();
-    // match db.add_user_to_group(body.leader_id, body.group_id).await {
-    //     Ok(_) => HttpResponse::Created().finish(),
-    //     Err(_) => HttpResponse::InternalServerError().finish(),
-    // }
-}
-
 pub async fn link_publication(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     payload: web::Json<LinkPayload>,
 ) -> HttpResponse {
     for pub_id in &payload.publication_ids {
-        if let Err(_) = db
+        if let Err(_) = state
+            .db_pool
             .link_publication_to_conference(payload.conference_id, *pub_id)
             .await
         {

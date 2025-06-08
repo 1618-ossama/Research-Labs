@@ -1,54 +1,79 @@
 use actix_web::{web, HttpResponse, Responder};
+use redis::Commands;
 use uuid::Uuid;
 
-use crate::{models::publication::CreateConference, repositories::postgres_db::PostgresDatabase};
+use crate::{
+    models::publication::{Conference, CreateConference},
+    // repositories::postgres_db::PostgresDatabase,
+};
 
-pub async fn get_all_conferences(db: web::Data<PostgresDatabase>) -> HttpResponse {
-    match db.get_all_conferences().await {
-        Ok(list) => HttpResponse::Ok().json(list),
+use super::publication_handler::AppState;
+
+pub async fn get_all_conferences(state: web::Data<AppState>) -> HttpResponse {
+    let redis_key = "conferences_cache";
+    if let Ok(mut redis_conn) = state.redis_client.get_connection() {
+        if let Ok(Some(cached)) = redis_conn.get::<_, Option<String>>(redis_key) {
+            if let Ok(conferences) = serde_json::from_str::<Vec<Conference>>(&cached) {
+                return HttpResponse::Ok().json(conferences);
+            }
+        }
+    }
+
+    match state.db_pool.get_all_conferences().await {
+        Ok(conferences) => {
+            if let Ok(mut redis_conn) = state.redis_client.get_connection() {
+                let _: redis::RedisResult<()> =
+                    redis_conn.set(redis_key, serde_json::to_string(&conferences).unwrap());
+            }
+
+            HttpResponse::Ok().json(conferences)
+        }
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
-pub async fn get_conference_by_id(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-) -> HttpResponse {
-    match db.get_conference_by_id(id.into_inner()).await {
+pub async fn get_conference_by_id(state: web::Data<AppState>, id: web::Path<Uuid>) -> HttpResponse {
+    print!("get_conference_by_id");
+    match state.db_pool.get_conference_by_id(id.into_inner()).await {
         Ok(conf) => HttpResponse::Ok().json(conf),
         Err(_) => HttpResponse::NotFound().finish(),
     }
 }
 
 pub async fn create_conference(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     payload: web::Json<CreateConference>,
 ) -> HttpResponse {
-    match db.create_conference(payload.into_inner()).await {
+    match state.db_pool.create_conference(payload.into_inner()).await {
         Ok(id) => HttpResponse::Created().json(id),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
+
 pub async fn get_conference_pubs(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     path: web::Path<Uuid>,
 ) -> impl Responder {
     let conference_id = path.into_inner();
     println!("conf: {}", conference_id);
 
-    match db.get_publications_by_conference(conference_id).await {
+    match state
+        .db_pool
+        .get_publications_by_conference(conference_id)
+        .await
+    {
         Ok(publications) => HttpResponse::Ok().json(publications),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
 pub async fn update_conference(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-    payload: web::Json<CreateConference>,
+    _state: web::Data<AppState>,
+    _id: web::Path<Uuid>,
+    _payload: web::Json<CreateConference>,
 ) -> HttpResponse {
     return HttpResponse::NoContent().finish();
-    // match db
+    // match state.db_pool
     //     .update_conference(id.into_inner(), payload.into_inner())
     //     .await
     // {
@@ -57,22 +82,23 @@ pub async fn update_conference(
     // }
 }
 
-pub async fn delete_conference(
-    db: web::Data<PostgresDatabase>,
-    id: web::Path<Uuid>,
-) -> HttpResponse {
+pub async fn delete_conference(state: web::Data<AppState>, id: web::Path<Uuid>) -> HttpResponse {
     return HttpResponse::NoContent().finish();
-    // match db.delete_conference(id.into_inner()).await {
+    // match state.db_pool.delete_conference(id.into_inner()).await {
     //     Ok(_) => HttpResponse::Ok().finish(),
     //     Err(_) => HttpResponse::NotFound().finish(),
     // }
 }
 
 pub async fn get_conferences_by_user(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     user_id: web::Path<Uuid>,
 ) -> HttpResponse {
-    match db.get_conferences_by_user(user_id.into_inner()).await {
+    match state
+        .db_pool
+        .get_conferences_by_user(user_id.into_inner())
+        .await
+    {
         Ok(conf) => HttpResponse::Ok().json(conf),
         Err(_) => HttpResponse::NotFound().finish(),
     }

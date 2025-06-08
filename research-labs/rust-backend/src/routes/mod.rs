@@ -32,10 +32,6 @@ pub fn route_config(cfg: &mut web::ServiceConfig) {
                 "/publication-files/{id}",
                 web::get().to(get_files_by_publication),
             )
-            .route("/groups", web::post().to(add_group))
-            .route("/groups/{id}", web::get().to(get_group))
-            .route("/groups/user/{id}", web::get().to(get_groups_by_user_id))
-            .route("/groups/add-user", web::post().to(add_user_to_group))
             .route("/conferences", web::get().to(get_all_conferences))
             .route("/conferences/{id}", web::get().to(get_conference_by_id))
             .route(
