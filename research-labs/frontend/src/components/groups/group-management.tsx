@@ -74,7 +74,7 @@ export function GroupManagement({ initialGroups, token, userId }: GroupManagemen
 
   const fetchAllGroups = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include"
       })
@@ -99,7 +99,7 @@ export function GroupManagement({ initialGroups, token, userId }: GroupManagemen
 
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +117,7 @@ export function GroupManagement({ initialGroups, token, userId }: GroupManagemen
         setNewGroup({ title: "", description: "" })
         setShowCreateDialog(false)
         // Refresh groups
-        const updatedRes = await fetch(`http://127.0.0.1:3005/api/groups/my-groups`, {
+        const updatedRes = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/my-groups`, {
           headers: { Authorization: `Bearer ${token}` },
           credentials: "include"
         })
@@ -147,7 +147,7 @@ export function GroupManagement({ initialGroups, token, userId }: GroupManagemen
   const joinGroup = async (groupId: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups/${groupId}/join`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/${groupId}/join`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include"
@@ -158,7 +158,7 @@ export function GroupManagement({ initialGroups, token, userId }: GroupManagemen
           title: "Success",
           description: "Successfully joined the group",
         })
-        const updatedRes = await fetch(`http://127.0.0.1:3005/api/groups/my-groups`, {
+        const updatedRes = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/my-groups`, {
           headers: { Authorization: `Bearer ${token}` },
           credentials: "include"
         })
@@ -189,7 +189,7 @@ export function GroupManagement({ initialGroups, token, userId }: GroupManagemen
   const leaveGroup = async (groupId: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups/${groupId}/leave`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/${groupId}/leave`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include"
@@ -418,7 +418,7 @@ export function GroupManagement({ initialGroups, token, userId }: GroupManagemen
                           <Avatar className="h-6 w-6">
                             <AvatarImage
                               src={
-                                member.photo_url ? `http://127.0.0.1:3009/api/uploads/${member.photo_url}` : undefined
+                                member.photo_url ? `http://127.0.0.1:6188/api/uploads/${member.photo_url}` : undefined
                               }
                             />
                             <AvatarFallback className="text-xs">

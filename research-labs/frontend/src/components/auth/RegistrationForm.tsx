@@ -104,7 +104,7 @@ export function RegistrationForm() {
       const profileForm = new FormData();
       profileForm.append("file", values.profileImage);
 
-      const uploadRes = await fetch(`http://127.0.0.1:3009/api/upload`, {
+      const uploadRes = await fetch(`http://127.0.0.1:6188/rust/api/upload`, {
         method: "POST",
         body: profileForm,
       });

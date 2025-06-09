@@ -14,6 +14,7 @@ use actix_web::{http::header::ContentDisposition, http::header::DispositionType}
 #[get("/api/uploads/{filename:.*}")]
 async fn serve_upload_file(path: web::Path<String>) -> Result<NamedFile> {
     let filename = path.into_inner();
+    println!("upload dir: {}", get_upload_dir());
     let safe_path = Path::new(get_upload_dir()).join(&filename);
 
     let canonical_path = match std::fs::canonicalize(&safe_path) {

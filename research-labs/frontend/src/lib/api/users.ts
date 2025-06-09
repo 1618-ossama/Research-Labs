@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:3005/api/profiles";
+const API_BASE_URL = "http://127.0.0.1:6188/nodejs/api/profiles";
 
 export interface ApiUser {
   id: string;

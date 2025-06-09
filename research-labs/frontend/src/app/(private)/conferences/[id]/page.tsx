@@ -39,9 +39,9 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
         setLoading(true);
 
         const [confRes, pubsRes, allPubsRes] = await Promise.all([
-          fetch(`http://localhost:3009/api/conferences/${conferenceId}`),
-          fetch(`http://localhost:3009/api/conferences/${conferenceId}/publications`),
-          fetch(`http://localhost:3009/api/publications?unlinked=true`)
+          fetch(`http://localhost:6188/rust/api/conferences/${conferenceId}`),
+          fetch(`http://localhost:6188/rust/api/conferences/${conferenceId}/publications`),
+          fetch(`http://localhost:6188/rust/api/publications?unlinked=true`)
         ]);
 
         if (!confRes.ok) throw new Error("Conference not found");
@@ -77,7 +77,7 @@ export default function ConferencePage({ params }: { params: Promise<{ id: strin
 
     setAdding(true);
     try {
-      const res = await fetch(`http://localhost:3009/api/conference/link-publication`, {
+      const res = await fetch(`http://localhost:6188/rust/api/conference/link-publication`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

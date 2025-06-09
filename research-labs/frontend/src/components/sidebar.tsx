@@ -52,7 +52,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:3005/api/auth/logout', {
+      const response = await fetch('http://127.0.0.1:6188/nodejs/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       })

@@ -11,11 +11,9 @@ use std::{
 use uuid::Uuid;
 
 use crate::models::publication::PublicationFileInput;
-use crate::repositories::postgres_db::PostgresDatabase;
 
 use super::publication_handler::AppState;
 
-/// Returns the directory where uploaded files should be stored.
 fn get_upload_dir() -> &'static str {
     match env::var("UPLOAD_DIR") {
         Ok(val) => Box::leak(val.into_boxed_str()),
@@ -23,11 +21,6 @@ fn get_upload_dir() -> &'static str {
     }
 }
 
-/// Handles multipart file upload.
-///
-/// # Errors
-/// - Returns `BadRequest` if the file type is disallowed.
-/// - Returns `InternalServerError` if file I/O fails.
 pub async fn upload_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
     let allowed_extensions = ["png", "jpg", "jpeg", "pdf", "txt"];
 
@@ -63,13 +56,8 @@ pub async fn upload_file(mut payload: Multipart) -> Result<HttpResponse, Error> 
     Ok(HttpResponse::BadRequest().body("No file found"))
 }
 
-/// Adds a file reference to a publication.
-///
-/// # Errors
-/// - Returns `Unauthorized` if the user is not authenticated or not the owner.
-/// - Returns `InternalServerError` if a database operation fails.
 pub async fn add_file(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     file: web::Json<PublicationFileInput>,
     req: HttpRequest,
 ) -> HttpResponse {
@@ -81,7 +69,7 @@ pub async fn add_file(
         None => return HttpResponse::Unauthorized().body("Missing userId cookie"),
     };
 
-    let publication = match db.get_publication(file.publication_id).await {
+    let publication = match state.db_pool.get_publication(file.publication_id).await {
         Ok(p) => p,
         Err(_) => return HttpResponse::InternalServerError().finish(),
     };
@@ -92,7 +80,8 @@ pub async fn add_file(
         }
     }
 
-    match db
+    match state
+        .db_pool
         .add_file(
             file.id,
             file.file_type.clone(),
@@ -106,10 +95,6 @@ pub async fn add_file(
     }
 }
 
-/// Retrieves files associated with a publication.
-///
-/// # Errors
-/// - Returns `InternalServerError` if a database query fails.
 pub async fn get_files_by_publication(
     state: web::Data<AppState>,
     id: web::Path<Uuid>,

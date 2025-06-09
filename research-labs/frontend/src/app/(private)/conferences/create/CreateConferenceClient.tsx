@@ -26,7 +26,7 @@ export default function CreateConferenceClient({ userId }: Props) {
   const [showPublications, setShowPublications] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:3009/api/publications')
+    fetch('http://127.0.0.1:6188/rust/api/publications')
       .then(res => res.json())
       .then(data => setPublications(data))
       .catch(err => console.error('Failed to fetch publications:', err));
@@ -59,7 +59,7 @@ export default function CreateConferenceClient({ userId }: Props) {
         return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
       };
 
-      const res = await fetch(`http://127.0.0.1:3009/api/conferences`, {
+      const res = await fetch(`http://127.0.0.1:6188/rust/api/conferences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,7 +79,7 @@ export default function CreateConferenceClient({ userId }: Props) {
 
 
       if (selectedPubs.size > 0) {
-        const linkRes = await fetch(`http://127.0.0.1:3009/api/conference/link-publication`, {
+        const linkRes = await fetch(`http://127.0.0.1:6188/rust/api/conference/link-publication`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

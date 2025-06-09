@@ -27,7 +27,7 @@ export default function ConferencePage({ params }: Props) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const confRes = await fetch(`http://localhost:3009/api/conferences/${params.id}`);
+        const confRes = await fetch(`http://localhost:6188/rust/api/conferences/${params.id}`);
         if (!confRes.ok) {
           setError("Conference not found");
           setLoading(false);
@@ -35,7 +35,7 @@ export default function ConferencePage({ params }: Props) {
         }
         const confData = await confRes.json();
 
-        const pubsRes = await fetch(`http://localhost:3009/api/conferences/${params.id}/publications`);
+        const pubsRes = await fetch(`http://localhost:6188/rust/api/conferences/${params.id}/publications`);
         let pubs: Publication[] = [];
         if (pubsRes.ok) {
           pubs = await pubsRes.json();
@@ -65,7 +65,7 @@ export default function ConferencePage({ params }: Props) {
       console.log("========");
       console.log(params.id);
       console.log("========");
-      const res = await fetch(`http://localhost:3009/api/conference/link-publication`, {
+      const res = await fetch(`http://localhost:6188/rust/api/conference/link-publication`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -107,7 +107,7 @@ export default function ConferencePage({ params }: Props) {
     if (!conference) return;
 
     try {
-      const res = await fetch(`http://localhost:3009/api/conferences/${params.id}/publications/${pubId}`, {
+      const res = await fetch(`http://localhost:6188/api/conferences/${params.id}/publications/${pubId}`, {
         method: "DELETE",
       });
       if (!res.ok) {

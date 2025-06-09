@@ -51,8 +51,8 @@ export default function EditPublicationPage({ params }: { params: { id: string }
     async function fetchData() {
       try {
         const [pubRes, confRes] = await Promise.all([
-          fetch(`http://localhost:3009/api/publications/${publicationId}`),
-          fetch(`http://localhost:3009/api/conferences`),
+          fetch(`http://127.0.0.1:6188/rust/api/publications/${publicationId}`),
+          fetch(`http://127.0.0.1:6188/rust/api/conferences`),
         ]);
 
         if (!pubRes.ok || !confRes.ok) throw new Error("Failed to fetch data");
@@ -91,7 +91,7 @@ export default function EditPublicationPage({ params }: { params: { id: string }
 
     setSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3009/api/publications/${publicationId}`, {
+      const res = await fetch(`http://localhost:6188/rust/api/publications/${publicationId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

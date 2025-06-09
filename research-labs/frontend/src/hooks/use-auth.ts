@@ -33,8 +33,8 @@ export const useAuthForm = (mode: AuthMode) => {
 
     try {
       const endpoint = (mode === "login")
-        ? "http://127.0.0.1:3005/api/auth/login"
-        : "http://127.0.0.1:3005/api/auth/register";
+        ? "http://127.0.0.1:6188/nodejs/api/auth/login"
+        : "http://127.0.0.1:6188/nodejs/api/auth/register";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -61,13 +61,13 @@ export const useAuthForm = (mode: AuthMode) => {
         setUserData(data.user);
       }
 
-      if (mode === "login" ) {
+      if (mode === "login") {
         document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
       } else if (mode === "register") {
         // router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
         router.push("/login")
       }
-        router.push("/profile");
+      router.push("/profile");
 
       return data;
     } catch (err) {

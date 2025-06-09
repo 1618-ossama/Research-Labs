@@ -31,7 +31,7 @@ interface Conference {
 }
 
 const fetchConferences = async (): Promise<Conference[]> => {
-  const res = await fetch(`http://127.0.0.1:3009/api/conferences`);
+  const res = await fetch(`http://127.0.0.1:6188/rust/api/conferences`);
   if (!res.ok) throw new Error("Failed to fetch conferences");
   return res.json();
 };
@@ -111,7 +111,7 @@ const SubmitPublicationForm = ({ userId }: Props) => {
     }
 
     try {
-      const res = await fetch(`http://127.0.0.1:3009/api/publications`, {
+      const res = await fetch(`http://127.0.0.1:6188/rust/api/publications`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

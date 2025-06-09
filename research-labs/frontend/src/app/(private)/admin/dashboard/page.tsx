@@ -66,7 +66,7 @@ export default function MetricsPage() {
   useEffect(() => {
     async function fetchMetrics() {
       try {
-        const res = await fetch(`http://127.0.0.1:3009/api/metrics`);
+        const res = await fetch(`http://127.0.0.1:6188/rust/api/metrics`);
         if (!res.ok) throw new Error("Failed to fetch metrics");
         const data: Metrics = await res.json();
         setMetrics(data);

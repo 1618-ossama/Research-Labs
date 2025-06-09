@@ -12,8 +12,8 @@ export default async function PublicationsPage() {
   const userId = cookieStore.get('userId')?.value
   console.log('User ID from cookie:', userId);
 
-  console.log(`backend :${process.env.NEXT_PUBLIC_RUST_BACKEND_URL} `);
-  const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications`, {
+  console.log(`backend :${process.env.NEXT_PUBLIC_GATEWAY_URL} `);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_RUST_GATEWAY_URL}/rust/api/publications`, {
     cache: "no-store", // Prevents Next.js from caching the request
   });
 

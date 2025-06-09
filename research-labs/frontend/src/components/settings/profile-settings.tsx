@@ -68,7 +68,7 @@ export default function ProfileSettings({ userId }: { userId: string }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+        const response = await fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users/${userId}`, {
           method: 'GET',
           credentials: 'include',
         })
@@ -119,7 +119,7 @@ export default function ProfileSettings({ userId }: { userId: string }) {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+      const response = await fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

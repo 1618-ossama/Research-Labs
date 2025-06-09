@@ -98,7 +98,7 @@ export default function AdminGroupsPage() {
   const fetchAllGroups = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups/admin/all`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/admin/all`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include'
       })
@@ -115,7 +115,7 @@ export default function AdminGroupsPage() {
 
   const fetchAllUsers = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/profiles/users`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include'
       })
@@ -140,7 +140,7 @@ export default function AdminGroupsPage() {
 
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups/${selectedGroup.id}`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/${selectedGroup.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +179,7 @@ export default function AdminGroupsPage() {
   const deleteGroup = async (groupId: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups/${groupId}`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/${groupId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include'
@@ -222,7 +222,7 @@ export default function AdminGroupsPage() {
 
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups/${selectedGroup.id}/members`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/${selectedGroup.id}/members`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -262,7 +262,7 @@ export default function AdminGroupsPage() {
   const removeMemberFromGroup = async (groupId: string, userId: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`http://127.0.0.1:3005/api/groups/${groupId}/members/${userId}`, {
+      const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/${groupId}/members/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include'
@@ -489,7 +489,7 @@ export default function AdminGroupsPage() {
                                 <AvatarImage
                                   src={
                                     member.photo_url
-                                      ? `http://127.0.0.1:3009/api/uploads/${member.photo_url}`
+                                      ? `http://127.0.0.1:6188/rust/api/uploads/${member.photo_url}`
                                       : undefined
                                   }
                                 />

@@ -3,15 +3,15 @@ import { notFound } from "next/navigation";
 import PublicationClient from "@/components/publication/publication-client";
 
 export default async function PublicationPage({ params }: { params: { id: string } }) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
   const userRole = cookieStore.get("userRole")?.value;
 
   const [pubRes, filesRes] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications/${params.id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_RUST_GATEWAY_URL}/rust/api/publications/${params.id}`, {
       cache: "no-store",
     }),
-    fetch(`${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publication-files/${params.id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_RUST_GATEWAY_URL}/rust/api/publication-files/${params.id}`, {
       cache: "no-store",
     }),
   ]);

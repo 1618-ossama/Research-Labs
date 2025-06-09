@@ -43,7 +43,7 @@ export default function UserIdInput({ onConversationCreated }: UserIdInputProps)
         throw new Error('No authentication token found');
       }
 
-      const userResponse = await fetch(`http://127.0.0.1:3005/api/profiles/users/id/${username}`, {
+      const userResponse = await fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users/id/${username}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

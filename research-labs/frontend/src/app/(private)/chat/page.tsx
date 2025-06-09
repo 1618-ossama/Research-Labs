@@ -58,7 +58,7 @@ const getAccessTokenCookie = (token_name = "AccessTokenCookie") => {
 
 const fetchGroupDetails = async (groupId: string) => {
   try {
-    const response = await fetch(`http://127.0.0.1:3005/api/groups/${groupId}`, {
+    const response = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/${groupId}`, {
       headers: {
         'Authorization': `Bearer ${getAccessTokenCookie()}`,
       },
@@ -78,7 +78,7 @@ async function getUsernameByUserId(userid: string) {
   const token = getAccessTokenCookie();
   const id = userid.replace(/^"|"$/g, '');
 
-  const response = await fetch(`http://127.0.0.1:3005/api/profiles/users/username/${id}`, {
+  const response = await fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users/username/${id}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -133,7 +133,7 @@ class ChatAPIService {
   }
 
   async getUser(userid: string) {
-    return fetch(`http://127.0.0.1:3005/api/profiles/users/${userid}`, {
+    return fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users/${userid}`, {
       method: "GET",
       credentials: "include",
     })

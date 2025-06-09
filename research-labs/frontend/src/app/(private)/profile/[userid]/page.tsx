@@ -114,7 +114,7 @@ export default function ProfilePage() {
 
 
   const fetchUserConferences = async (userId: string, token: string): Promise<ConferenceRaw[]> => {
-    const res = await fetch(`http://127.0.0.1:3009/api/conferences/user/${userId}`, {
+    const res = await fetch(`http://127.0.0.1:6188/rust/api/conferences/user/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: 'include'
     })
@@ -142,11 +142,11 @@ export default function ProfilePage() {
 
   const fetchUserProfile = async (userId: string, token: string): Promise<UserProfile> => {
     const [profileRes, linksRes] = await Promise.all([
-      fetch(`http://127.0.0.1:3005/api/profiles/users/${userId}`, {
+      fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include'
       }),
-      fetch(`http://127.0.0.1:3005/api/links/user/${userId}`, {
+      fetch(`http://127.0.0.1:6188/nodejs/api/links/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include'
       }),
@@ -164,7 +164,7 @@ export default function ProfilePage() {
   }
 
   const fetchUserPublications = async (userId: string, token: string): Promise<Publication[]> => {
-    const res = await fetch(`http://127.0.0.1:3009/api/publications/user/${userId}`, {
+    const res = await fetch(`http://127.0.0.1:6188/rust/api/publications/user/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -177,7 +177,7 @@ export default function ProfilePage() {
   }
 
   const fetchUserGroups = async (userId: string, token: string): Promise<Group[]> => {
-    const res = await fetch(`http://127.0.0.1:3005/api/groups/my-groups`, {
+    const res = await fetch(`http://127.0.0.1:6188/nodejs/api/groups/my-groups`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: 'include'
     })
@@ -311,7 +311,7 @@ export default function ProfilePage() {
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={`http://127.0.0.1:3009/api/uploads/${user.photo_url}`} />
+                    <AvatarImage src={`http://127.0.0.1:6188/rust/api/uploads/${user.photo_url}`} />
                     <AvatarFallback>
                       {user.first_name?.[0]}
                       {user.last_name?.[0]}

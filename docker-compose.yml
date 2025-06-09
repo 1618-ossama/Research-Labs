@@ -16,7 +16,14 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - researchnet
-
+  redis:
+    image: redis:7.2.4-alpine  
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
 
   rust-backend:
     build:
@@ -35,6 +42,17 @@ services:
       - researchnet
     volumes: 
       - ./uploads:/app/uploads  
+
+  rust-gateway:
+    build:
+      context: ./research-labs/rust-gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres 
+    ports:
+      - "6188:6188"
+    networks:
+      - researchnet
 
   node-backend:
     build:
@@ -77,6 +95,7 @@ services:
       UPLOAD_DIR: /app/uploads
       NEXT_PUBLIC_RUST_BACKEND_URL: http://rust-backend:3009
       NEXT_PUBLIC_NODE_BACKEND_URL: http://node-backend:3005
+      NEXT_PUBLIC_RUST_GATEWAY_URL: http://rust-gateway:6188
     networks:
       - researchnet
 

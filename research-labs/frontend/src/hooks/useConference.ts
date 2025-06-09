@@ -12,11 +12,11 @@ export function useConference(id: string) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const confRes = await fetch(`http://localhost:3009/api/conferences/${id}`);
+        const confRes = await fetch(`http://localhost:6188/rust/api/conferences/${id}`);
         if (!confRes.ok) throw new Error("Conference not found");
 
         const confData = await confRes.json();
-        const pubsRes = await fetch(`http://localhost:3009/api/conferences/${id}/publications`);
+        const pubsRes = await fetch(`http://localhost:6188/rust/api/conferences/${id}/publications`);
         const pubs: Publication[] = pubsRes.ok ? await pubsRes.json() : [];
 
         setConference({ ...confData, publications: pubs });

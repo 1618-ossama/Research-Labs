@@ -73,7 +73,7 @@ export default function ConferencesPage() {
     async function fetchData() {
       try {
         // Fetch conferences
-        const confRes = await fetch('http://localhost:3009/api/conferences');
+        const confRes = await fetch('http://127.0.0.1:6188/rust/api/conferences');
         if (!confRes.ok) throw new Error('Failed to fetch conferences');
         const confData: Conference[] = await confRes.json();
         setConferences(confData);
@@ -83,7 +83,7 @@ export default function ConferencesPage() {
 
         await Promise.all(
           confData.map(async (conf) => {
-            const pubsRes = await fetch(`http://localhost:3009/api/conferences/${conf.id}/publications`);
+            const pubsRes = await fetch(`http://127.0.0.1:6188/rust/api/conferences/${conf.id}/publications`);
             if (!pubsRes.ok) {
               pubsByConf[conf.id] = [];
               return;

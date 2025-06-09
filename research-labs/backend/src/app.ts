@@ -31,7 +31,7 @@ const app: Express = express();
 const OptionsCors: CorsOptions = {
   origin: (origin, callback) => {
     const allowed = ['http://localhost:3000', 'http://127.0.0.1:3000'
-      , 'http://127.0.0.1:3007', 'http://localhost:3007'];
+      , 'http://127.0.0.1:3007', 'http://localhost:3007', 'http://127.0.0.1:6188', 'http://localhost:6188'];
 
     // Allow requests without origin (e.g., from server or curl)
     if (!origin || allowed.includes(origin)) {
