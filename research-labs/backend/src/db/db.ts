@@ -5,7 +5,7 @@ import { type User } from '../utils/types';
 import errorHandler from '../utils/errorHandler';
 import { v4 as uuidv4 } from 'uuid';
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 const RETRY = 5;
 const DELAY = 5000;
 
@@ -38,7 +38,7 @@ connectDB()
     }
   });
 
-function handlePrismaError(error: unknown): never {
+export function handlePrismaError(error: unknown): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2000':
@@ -63,7 +63,7 @@ function handlePrismaError(error: unknown): never {
   throw new errorHandler.ApplicationError('Unexpected error');
 }
 
-async function safeDbOperation<T>(operation: () => Promise<T>): Promise<T> {
+export async function safeDbOperation<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation();
   } catch (error) {

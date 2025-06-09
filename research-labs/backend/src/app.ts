@@ -9,6 +9,7 @@ import errorMiddleware from "./middleware/errorMiddleware";
 import { rateLimiter } from "./middleware/rateLimiter";
 import errorHandler from "./utils/errorHandler";
 import profileRouter from "./routes/profileRoutes";
+import groupRouter from "./routes/groupRoutes";
 
 process.on("unhandledRejection", (reason: unknown, promise: Promise<unknown>) => {
   console.error("UNHANDLED REJECTION! Logging error to console...");
@@ -51,6 +52,7 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRouter);
 app.use('/api/profiles', profileRouter);
+app.use('/api/groups', groupRouter);
 
 app.use(errorMiddleware);
 

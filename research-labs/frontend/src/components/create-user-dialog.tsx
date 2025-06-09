@@ -78,7 +78,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreateUser }: CreateUse
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] z-60">
         <DialogHeader>
           <DialogTitle>Create New User</DialogTitle>
           <DialogDescription>Add a new user to the system. Fill in the required information below.</DialogDescription>

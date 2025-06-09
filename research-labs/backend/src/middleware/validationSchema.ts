@@ -140,6 +140,53 @@ export const updateUserSchema = z.object({
     .optional(),
 });
 
+export type CreateGroupInput = z.infer<typeof createGroupSchema>;
+export type UpdateGroupInput = z.infer<typeof updateGroupSchema>;
+export type AddMemberInput = z.infer<typeof addMemberSchema>;
+
+export const createGroupSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Group title must be at least 3 characters")
+    .max(100, "Group title cannot exceed 100 characters"),
+  description: z
+    .string()
+    .min(10, "Group description must be at least 10 characters")
+    .max(500, "Group description cannot exceed 500 characters"),
+});
+
+export const updateGroupSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Group title must be at least 3 characters")
+    .max(100, "Group title cannot exceed 100 characters")
+    .optional(),
+  description: z
+    .string()
+    .min(10, "Group description must be at least 10 characters")
+    .max(500, "Group description cannot exceed 500 characters")
+    .optional(),
+  status: z
+    .string()
+    .refine(
+      (val) => ['ONGOINING', 'SUSPENDED', 'FINISHED', 'DELETED'].includes(val),
+      "Invalid status value"
+    )
+    .optional(),
+});
+
+export const addMemberSchema = z.object({
+  userId: z
+    .string()
+    .uuid("Invalid user ID format"),
+});
+
+export const uuidParamSchema = z.object({
+  id: z
+    .string()
+    .uuid("Invalid UUID format"),
+});
+
 export const validate =
   <T extends z.ZodTypeAny>(schema: T) =>
     (req: Request, res: Response, next: NextFunction) => {

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { BookOpen, MessageSquare, Users, FileText, GraduationCap, Heart, Globe, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type FeatureCardType = {
   title: string;
@@ -9,7 +10,6 @@ type FeatureCardType = {
   color: string;
 };
 
-// Research-inspired color palette
 const colors = {
   primary: "#2C3E50", // Dark blue - academic/serious
   secondary: "#3498DB", // Bright blue - technology/innovation
@@ -79,9 +79,9 @@ const platformServices: FeatureCardType[] = [
 ];
 
 const stats = [
-  { value: "25+", label: "Years of Research Experience" },
-  { value: "150+", label: "Published Papers" },
-  { value: "45", label: "Research Fellows" },
+  { value: "01+", label: "Years of Research Experience" },
+  { value: "10+", label: "Published Papers" },
+  { value: "15", label: "Research Fellows" },
   { value: "12", label: "Active Grants" },
 ];
 
@@ -113,18 +113,10 @@ export default function HomePage() {
                 A dynamic platform designed for publishing, discussing, and advancing research.
                 Connect with peers, share breakthroughs, and crowdsource insights across disciplines.
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Button className="px-8 py-6 text-lg rounded-full" style={{ backgroundColor: colors.accent }}>
-                  Join the Network
-                </Button>
-                <Button variant="outline" className="px-8 py-6 text-lg rounded-full" style={{ color: colors.primary, borderColor: colors.primary }}>
-                  Explore Research
-                </Button>
-              </div>
             </div>
             <div className="relative aspect-video overflow-hidden rounded-xl shadow-2xl">
               <Image
-                src="/research-collaboration.jpg"
+                src="/images/collab.jpg"
                 alt="Researchers collaborating"
                 fill
                 className="object-cover"
@@ -201,13 +193,13 @@ export default function HomePage() {
               Join hundreds of researchers and labs already collaborating on our platform.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <Button className="px-8 py-6 text-lg rounded-full bg-white" style={{ color: colors.primary }}>
-                Get Started
-              </Button>
-              <Button variant="outline" className="px-8 py-6 text-lg rounded-full border-white text-white hover:bg-white/10">
-                Learn More
-              </Button>
-            </div>
+              <Button
+                asChild
+                className="px-8 py-6 text-lg rounded-full bg-white"
+                style={{ color: colors.primary }}
+              >
+                <Link href="/register">Get Started</Link>
+              </Button>            </div>
           </div>
         </div>
       </section>

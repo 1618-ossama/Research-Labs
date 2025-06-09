@@ -120,13 +120,40 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.Conference_publicationsScalarFieldEnum = {
+  conference_id: 'conference_id',
+  publication_id: 'publication_id'
+};
+
 exports.Prisma.ConferencesScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
   location: 'location',
   start_date: 'start_date',
+  updated_at: 'updated_at',
   end_date: 'end_date'
+};
+
+exports.Prisma.Conversation_participantsScalarFieldEnum = {
+  conversation_id: 'conversation_id',
+  user_id: 'user_id',
+  created_at: 'created_at',
+  role: 'role'
+};
+
+exports.Prisma.ConversationsScalarFieldEnum = {
+  id: 'id',
+  group_id: 'group_id',
+  conversation_type: 'conversation_type',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.Group_userScalarFieldEnum = {
+  user_id: 'user_id',
+  group_id: 'group_id',
+  created_at: 'created_at'
 };
 
 exports.Prisma.GroupsScalarFieldEnum = {
@@ -136,7 +163,7 @@ exports.Prisma.GroupsScalarFieldEnum = {
   status: 'status',
   created_at: 'created_at',
   leader_id: 'leader_id',
-  publication_id: 'publication_id'
+  updated_at: 'updated_at'
 };
 
 exports.Prisma.LinksScalarFieldEnum = {
@@ -151,8 +178,9 @@ exports.Prisma.MessagesScalarFieldEnum = {
   message: 'message',
   created_at: 'created_at',
   status: 'status',
+  updated_at: 'updated_at',
   sender_id: 'sender_id',
-  receiver_id: 'receiver_id'
+  conversation_id: 'conversation_id'
 };
 
 exports.Prisma.NotificationsScalarFieldEnum = {
@@ -170,24 +198,23 @@ exports.Prisma.Publication_filesScalarFieldEnum = {
   publication_id: 'publication_id'
 };
 
+exports.Prisma.Publication_groupScalarFieldEnum = {
+  publication_id: 'publication_id',
+  group_id: 'group_id',
+  added_at: 'added_at'
+};
+
 exports.Prisma.PublicationsScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  abstract: 'abstract',
   journal: 'journal',
+  doi: 'doi',
   status: 'status',
   visibility: 'visibility',
   submitter_id: 'submitter_id',
   conference_id: 'conference_id',
-  submitted_at: 'submitted_at'
-};
-
-exports.Prisma.SpeakerScalarFieldEnum = {
-  id: 'id',
-  user_id: 'user_id',
-  conference_id: 'conference_id',
-  affiliation: 'affiliation',
-  title: 'title',
-  created_at: 'created_at',
+  submitted_at: 'submitted_at',
   updated_at: 'updated_at'
 };
 
@@ -224,14 +251,18 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
+  conference_publications: 'conference_publications',
   conferences: 'conferences',
+  conversation_participants: 'conversation_participants',
+  conversations: 'conversations',
+  group_user: 'group_user',
   groups: 'groups',
   links: 'links',
   messages: 'messages',
   notifications: 'notifications',
   publication_files: 'publication_files',
+  publication_group: 'publication_group',
   publications: 'publications',
-  speaker: 'speaker',
   users: 'users'
 };
 

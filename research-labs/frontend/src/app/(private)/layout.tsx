@@ -1,13 +1,18 @@
+import SidebarLayout from "@/components/sidebar"
+import { SidebarProvider } from "@/components/sidebar-provider"
 import "@styles/globals.css"
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* <SidebarLayout> */}
+      <SidebarProvider>
+        <SidebarLayout>
 
-      {children}
-      {/* </SidebarLayout> */}
+          {children}
+
+        </SidebarLayout>
+      </SidebarProvider>
     </>
   )
 }

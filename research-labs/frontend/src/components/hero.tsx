@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 
 export default function Hero() {
@@ -19,19 +20,24 @@ export default function Hero() {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Button className="bg-[#7b3f00] hover:bg-[#5c4033] text-white">
-                More about us
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button asChild className="bg-[#7b3f00] hover:bg-[#5c4033] text-white">
+                <Link href="/publications">
+                  About our work
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
-              <Button variant="outline" className="border-[#7b3f00] text-[#7b3f00] hover:bg-[#f0e6d6]">
-                Become One Of Us
+
+              <Button asChild variant="outline" className="border-[#7b3f00] text-[#7b3f00] hover:bg-[#f0e6d6]">
+                <Link href="/register">
+                  Become One Of Us
+                </Link>
               </Button>
             </div>
           </div>
           <div className="flex items-center justify-center">
             <div className="relative h-[300px] w-full max-w-[600px] overflow-hidden rounded-lg border-4 border-[#d3c5a9] shadow-lg sm:h-[400px]">
               <Image
-                src="/file.svg"
+                src="/images/photo.jpg"
                 fill
                 alt="Research Labs"
                 className="object-cover"

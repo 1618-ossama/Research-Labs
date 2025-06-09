@@ -32,6 +32,11 @@ interface Notification {
 interface ConversationWithUsername extends Conversation {
   otherUserUsername?: string
   unread_count: number
+  group?: {
+    id: string;
+    title: string;
+    description: string;
+  };
 }
 
 const DEFAULT_API_CONFIG = {
@@ -50,6 +55,24 @@ const getAccessTokenCookie = (token_name = "AccessTokenCookie") => {
   }
   return null
 }
+
+const fetchGroupDetails = async (groupId: string) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:3005/api/groups/${groupId}`, {
+      headers: {
+        'Authorization': `Bearer ${getAccessTokenCookie()}`,
+      },
+      credentials: 'include'
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching group details:", error);
+    return null;
+  }
+};
 
 async function getUsernameByUserId(userid: string) {
   const token = getAccessTokenCookie();
@@ -117,7 +140,7 @@ class ChatAPIService {
   }
 
   async getConversations(limit = 50, offset = 0): Promise<{ data: Conversation[] }> {
-    return this.fetchWithAuth(`/api/chat/conversations?limit=${limit}&offset=${offset}`, {
+    return this.fetchWithAuth(`/api/chat/conversations?limit=${limit}&offset=${offset}&include=group`, {
       method: "GET",
     })
   }
@@ -418,11 +441,14 @@ export default function ChatInterface() {
   };
 
   const getConversationDisplayName = (conversation: ConversationWithUsername): string => {
-    if (conversation.conversation_type === "GROUP") {
-      return conversation?.group_id?.slice(0, 7) || "Group Chat"
+    console.log('here the display function : ', conversation);
+
+    if (conversation.conversation_type === "GROUP" && conversation.group) {
+      return conversation.group.data.title || "Group Chat";
     }
-    return conversation.otherUserUsername || "Loading..."
+    return conversation.otherUserUsername || "Loading...";
   }
+
   const getActiveConversationDisplayName = (activeConvId: string | null, convs: ConversationWithUsername[]): string => {
     if (!activeConvId) return ""
     const conversation = convs.find(c => c.id === activeConvId)
@@ -600,6 +626,23 @@ export default function ChatInterface() {
             : conv
         )
       )
+    },
+    "chat:group_updated": (payload: GroupDetailsResponse) => {
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.group_id === payload.id
+            ? {
+              ...conv,
+              group: {
+                ...(conv.group || {}),
+                title: payload.title,
+                description: payload.description,
+                status: payload.status
+              }
+            }
+            : conv
+        )
+      );
     },
   }
 
@@ -834,6 +877,7 @@ export default function ChatInterface() {
           return {
             ...conv,
             participants: filteredParticipants,
+            group: conv.group_id ? await fetchGroupDetails(conv.group_id) : undefined
           };
         })
       );
@@ -1030,9 +1074,6 @@ export default function ChatInterface() {
                   <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
                 )}
               </button>
-              <button title="New Chat" className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                <Plus size={20} />
-              </button>
             </div>
           </div>
           <div className="relative">
@@ -1040,7 +1081,6 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        {/* Conversation list */}
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 && (
             <p className="p-4 text-center text-gray-500">No conversations yet.</p>
@@ -1079,11 +1119,9 @@ export default function ChatInterface() {
         </div>
       </div>
 
-      {/* chat area */}
       <div className="flex-1 flex flex-col bg-gray-50">
         {activeConversation ? (
           <>
-            {/* Chat header */}
             <div className="bg-white border-b border-gray-200 p-3 md:p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -1104,7 +1142,6 @@ export default function ChatInterface() {
               </div>
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {isLoadingMessages && (
                 <p className="text-center text-gray-500">Loading messages...</p>
@@ -1116,38 +1153,41 @@ export default function ChatInterface() {
                 const user = currentUserRef.current
                 if (!user) return null
 
+                const isCurrentUser = message.sender_id === user.id
+                const currentConversation = conversations.find(c => c.id === activeConversation)
+                const isGroupChat = currentConversation?.conversation_type === "GROUP"
+
                 return (
                   <div
                     key={message.id}
-                    className={`flex ${message.sender_id === user.id ? "justify-end" : "justify-start"
-                      }`}
+                    className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-xs md:max-w-md lg:max-w-lg px-3 py-2 rounded-xl shadow-sm ${message.sender_id === user.id
+                      className={`max-w-xs md:max-w-md lg:max-w-lg px-3 py-2 rounded-xl shadow-sm ${isCurrentUser
                         ? "bg-blue-500 text-white rounded-br-none"
                         : "bg-white border border-gray-200 text-gray-800 rounded-bl-none"
                         } ${message.pending ? "opacity-60" : ""}`}
                     >
-                      {message.sender_id !== user.id && (
-                        <p className="text-xs font-medium mb-0.5 opacity-80">
+                      {isGroupChat && !isCurrentUser && (
+                        <p className="text-xs font-medium mb-0.5 opacity-80 text-blue-600">
                           {getDisplayName(message.sender_id)}
                         </p>
                       )}
                       <p className="break-words">{message.message ?? "Message unavailable"}</p>
                       <div
-                        className={`flex items-center mt-1 ${message.sender_id === user.id ? "justify-end" : "justify-start"
+                        className={`flex items-center mt-1 ${isCurrentUser ? "justify-end" : "justify-start"
                           }`}
                       >
                         <span
-                          className={`text-xs opacity-70 ${message.sender_id === user.id ? "text-blue-100" : "text-gray-500"
+                          className={`text-xs opacity-70 ${isCurrentUser ? "text-blue-100" : "text-gray-500"
                             }`}
                         >
                           {formatTime(message.created_at)}
                         </span>
-                        {message.sender_id === user.id && !message.pending && (
+                        {isCurrentUser && !message.pending && (
                           <span className="ml-1.5 text-xs opacity-90">✓</span>
                         )}
-                        {message.sender_id === user.id && message.status === 'READ' && !message.pending && (
+                        {isCurrentUser && message.status === 'read' && !message.pending && (
                           <span className="ml-1.5 text-xs opacity-90">✓✓</span>
                         )}
                       </div>
@@ -1158,14 +1198,12 @@ export default function ChatInterface() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Typing indicator */}
             {typingUsers.size > 0 && activeConversationRef.current && (
               <div className="px-4 pb-2 text-sm text-gray-500">
                 {Array.from(typingUsers).join(", ")} {typingUsers.size === 1 ? "is" : "are"} typing...
               </div>
             )}
 
-            {/* Message input */}
             <div className="bg-white border-t border-gray-200 p-3 md:p-4">
               <div className="flex items-center space-x-2 md:space-x-3">
                 <button

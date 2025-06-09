@@ -52,3 +52,50 @@ export type User = {
 };
 
 export type Role = 'ADMIN' | 'RESEARCHER' | 'LEADER' | 'GUEST';
+
+export type GroupStatus = 'ONGOINING' | 'SUSPENDED' | 'FINISHED' | 'DELETED';
+
+export type Group = {
+  id?: string;
+  title: string;
+  description: string;
+  status?: GroupStatus;
+  created_at?: Date;
+  updated_at?: Date;
+  leader_id?: string | null;
+  leader?: {
+    id: string;
+    username: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    email?: string;
+  } | null;
+  members?: GroupMember[];
+};
+
+export type GroupMember = {
+  id: string;
+  username: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string;
+  role?: Role;
+  photo_url?: string | null;
+  affiliation?: string | null;
+  joined_at?: Date;
+};
+
+export type CreateGroupInput = {
+  title: string;
+  description: string;
+};
+
+export type UpdateGroupInput = {
+  title?: string;
+  description?: string;
+  status?: GroupStatus;
+};
+
+export type AddMemberInput = {
+  userId: string;
+};

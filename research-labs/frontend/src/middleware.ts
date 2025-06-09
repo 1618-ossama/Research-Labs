@@ -4,15 +4,16 @@ import { jwtVerify } from 'jose'
 
 const PROTECTED_PATHS = [
   '/private',
-  // '/dashboard',
   '/profile',
-  // '/publications',
+  '/submission',
   '/settings'
 ]
 const ADMIN_ONLY_PATHS = [
   '/admin',
   '/admin/dashboard',
-  // add other admin-only paths here
+  '/admin/groups',
+  '/admin/users'
+
 ]
 
 const rateLimit = new Map<string, number[]>()

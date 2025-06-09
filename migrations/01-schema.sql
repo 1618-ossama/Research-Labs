@@ -60,7 +60,7 @@ CREATE TABLE groups(
     status VARCHAR(50) CHECK (status IN ('ONGOINING', 'SUSPENDED', 'FINISHED', 'DELETED')) NOT NULL DEFAULT 'ONGOINING',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     leader_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    publication_id UUID NOT NULL REFERENCES publications(id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE group_user(
@@ -70,14 +70,11 @@ CREATE TABLE group_user(
     PRIMARY KEY (user_id, group_id)
 );
 
-CREATE TABLE speaker (
-    id SERIAL PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    conference_id UUID NOT NULL REFERENCES conferences(id) ON DELETE CASCADE,
-    affiliation VARCHAR(255),
-    title VARCHAR(255), 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE publication_group (
+    publication_id UUID NOT NULL REFERENCES publications(id) ON DELETE CASCADE,
+    group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+    added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (publication_id, group_id)
 );
 
 CREATE TABLE conference_publications (
@@ -161,10 +158,6 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
 CREATE TRIGGER update_groups_modtime 
 BEFORE UPDATE ON groups 
-FOR EACH ROW EXECUTE FUNCTION update_modified_column();
-
-CREATE TRIGGER update_speaker_modtime 
-BEFORE UPDATE ON Speaker 
 FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
 CREATE TRIGGER update_messages_modtime 

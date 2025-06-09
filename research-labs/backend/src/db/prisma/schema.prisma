@@ -9,40 +9,73 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model conferences {
-  id           String         @id @db.Uuid
-  name         String         @db.VarChar(255)
-  description  String
-  location     String         @db.VarChar(255)
-  start_date   DateTime       @db.Timestamp(6)
-  end_date     DateTime       @db.Timestamp(6)
-  publications publications[]
-  speaker      speaker[]
+model conference_publications {
+  conference_id  String       @db.Uuid
+  publication_id String       @db.Uuid
+  conferences    conferences  @relation(fields: [conference_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  publications   publications @relation(fields: [publication_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([conference_id, publication_id])
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model conferences {
+  id                      String                    @id @db.Uuid
+  name                    String                    @db.VarChar(255)
+  description             String
+  location                String                    @db.VarChar(255)
+  start_date              DateTime                  @db.Timestamp(6)
+  updated_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  end_date                DateTime                  @db.Timestamp(6)
+  conference_publications conference_publications[]
+  publications            publications[]
+}
+
+model conversation_participants {
+  conversation_id String        @db.Uuid
+  user_id         String        @db.Uuid
+  created_at      DateTime?     @default(now()) @db.Timestamptz(6)
+  role            String?       @default("MEMBER") @db.VarChar(20)
+  conversations   conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([conversation_id, user_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model conversations {
+  id                        String                      @id @db.Uuid
+  group_id                  String?                     @db.Uuid
+  conversation_type         String                      @db.VarChar(20)
+  created_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  conversation_participants conversation_participants[]
+  groups                    groups?                     @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  messages                  messages[]
+}
+
 model group_user {
   user_id    String   @db.Uuid
   group_id   String   @db.Uuid
   created_at DateTime @default(now()) @db.Timestamptz(6)
-  groups     groups   @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  groups     groups   @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@ignore
+  @@id([user_id, group_id])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model groups {
-  id             String       @id @db.Uuid
-  title          String       @default("default title") @db.VarChar(50)
-  description    String       @default("default title") @db.VarChar(50)
-  status         String       @default("ONGOINING") @db.VarChar(50)
-  created_at     DateTime     @default(now()) @db.Timestamptz(6)
-  leader_id      String       @db.Uuid
-  publication_id String       @db.Uuid
-  group_user     group_user[] @ignore
-  users          users        @relation(fields: [leader_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  publications   publications @relation(fields: [publication_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                String              @id @db.Uuid
+  title             String              @default("default title") @db.VarChar(50)
+  description       String              @default("default title") @db.VarChar(50)
+  status            String              @default("ONGOINING") @db.VarChar(50)
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  leader_id         String?             @db.Uuid
+  updated_at        DateTime?           @default(now()) @db.Timestamp(6)
+  conversations     conversations[]
+  group_user        group_user[]
+  users             users?              @relation(fields: [leader_id], references: [id], onUpdate: NoAction)
+  publication_group publication_group[]
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -51,19 +84,20 @@ model links {
   type    String? @default("LINKEDIN") @db.VarChar(50)
   link    String? @db.VarChar(255)
   user_id String  @db.Uuid
-  users   users   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users   users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model messages {
-  id                                String    @id @db.Uuid
-  message                           String
-  created_at                        DateTime? @default(now()) @db.Timestamptz(6)
-  status                            String?   @default("SENT") @db.VarChar(50)
-  sender_id                         String    @db.Uuid
-  receiver_id                       String    @db.Uuid
-  users_messages_receiver_idTousers users     @relation("messages_receiver_idTousers", fields: [receiver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_messages_sender_idTousers   users     @relation("messages_sender_idTousers", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id              String        @id @db.Uuid
+  message         String
+  created_at      DateTime?     @default(now()) @db.Timestamptz(6)
+  status          String?       @default("SENT") @db.VarChar(50)
+  updated_at      DateTime?     @default(now()) @db.Timestamptz(6)
+  sender_id       String        @db.Uuid
+  conversation_id String        @db.Uuid
+  conversations   conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users         @relation(fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model notifications {
@@ -72,66 +106,67 @@ model notifications {
   created_at  DateTime? @default(now()) @db.Timestamptz(6)
   read_status Boolean?  @default(false)
   user_id     String    @db.Uuid
-  users       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model publication_files {
   id             String       @id @db.Uuid
   file_type      String       @db.VarChar(50)
-  file_path      String       @db.VarChar(50)
+  file_path      String       @db.VarChar(500)
   publication_id String       @db.Uuid
-  publications   publications @relation(fields: [publication_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  publications   publications @relation(fields: [publication_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model publication_group {
+  publication_id String       @db.Uuid
+  group_id       String       @db.Uuid
+  added_at       DateTime     @default(now()) @db.Timestamptz(6)
+  groups         groups       @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  publications   publications @relation(fields: [publication_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([publication_id, group_id])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model publications {
-  id                String              @id @db.Uuid
-  title             String              @db.VarChar(500)
-  journal           String
-  status            String              @default("DRAFT") @db.VarChar(50)
-  visibility        String              @default("PRIVATE") @db.VarChar(50)
-  submitter_id      String              @db.Uuid
-  conference_id     String?             @db.Uuid
-  submitted_at      DateTime            @default(now()) @db.Timestamptz(6)
-  groups            groups[]
-  publication_files publication_files[]
-  conferences       conferences?        @relation(fields: [conference_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users             users               @relation(fields: [submitter_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model speaker {
-  id            Int         @id @default(autoincrement())
-  user_id       String      @db.Uuid
-  conference_id String      @db.Uuid
-  affiliation   String?     @db.VarChar(255)
-  title         String?     @db.VarChar(255)
-  created_at    DateTime?   @default(now()) @db.Timestamp(6)
-  updated_at    DateTime?   @default(now()) @db.Timestamp(6)
-  conferences   conferences @relation(fields: [conference_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users         users       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                      String                    @id @db.Uuid
+  title                   String                    @db.VarChar(500)
+  abstract                String?
+  journal                 String
+  doi                     String?                   @default("0") @db.VarChar(60)
+  status                  String                    @default("DRAFT") @db.VarChar(50)
+  visibility              String                    @default("PRIVATE") @db.VarChar(50)
+  submitter_id            String?                   @db.Uuid
+  conference_id           String?                   @db.Uuid
+  submitted_at            DateTime?                 @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  conference_publications conference_publications[]
+  publication_files       publication_files[]
+  publication_group       publication_group[]
+  conferences             conferences?              @relation(fields: [conference_id], references: [id], onUpdate: NoAction)
+  users                   users?                    @relation(fields: [submitter_id], references: [id], onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model users {
-  id                                   String          @id @db.Uuid
-  username                             String          @unique @db.VarChar(255)
-  email                                String          @unique @db.VarChar(255)
-  password_hash                        String
-  first_name                           String?         @db.VarChar(50)
-  last_name                            String?         @db.VarChar(50)
-  bio                                  String?
-  photo_url                            String?         @db.VarChar(50)
-  role                                 String          @db.VarChar(50)
-  status                               String?         @default("INACTIVE") @db.VarChar(50)
-  affiliation                          String?         @db.VarChar(50)
-  created_at                           DateTime?       @default(now()) @db.Timestamp(6)
-  updated_at                           DateTime?       @default(now()) @db.Timestamp(6)
-  group_user                           group_user[]    @ignore
-  groups                               groups[]
-  links                                links[]
-  messages_messages_receiver_idTousers messages[]      @relation("messages_receiver_idTousers")
-  messages_messages_sender_idTousers   messages[]      @relation("messages_sender_idTousers")
-  notifications                        notifications[]
-  publications                         publications[]
-  speaker                              speaker[]
+  id                        String                      @id @db.Uuid
+  username                  String                      @unique @db.VarChar(255)
+  email                     String                      @unique @db.VarChar(255)
+  password_hash             String
+  first_name                String?                     @db.VarChar(50)
+  last_name                 String?                     @db.VarChar(50)
+  bio                       String?
+  photo_url                 String?                     @db.VarChar(50)
+  role                      String                      @db.VarChar(50)
+  status                    String?                     @default("INACTIVE") @db.VarChar(50)
+  affiliation               String?                     @db.VarChar(50)
+  created_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  conversation_participants conversation_participants[]
+  group_user                group_user[]
+  groups                    groups[]
+  links                     links[]
+  messages                  messages[]
+  notifications             notifications[]
+  publications              publications[]
 }

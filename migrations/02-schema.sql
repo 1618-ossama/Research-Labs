@@ -268,31 +268,33 @@ INSERT INTO publication_files (id, file_type, file_path, publication_id) VALUES 
 INSERT INTO publication_files (id, file_type, file_path, publication_id) VALUES (
     '1c07937c-2fa3-4660-b23e-f38cc82dffe7', 'PDF', '/files/1c07937c-2fa3-4660-b23e-f38cc82dffe7.pdf', '1875ac73-a37a-4158-88da-5c8d4753dc72'
 );
-INSERT INTO groups (id, title, description, status, created_at, leader_id, publication_id) VALUES (
+
+INSERT INTO groups (id, title, description, status, created_at, leader_id) VALUES (
     'ff68c339-c5bd-4a55-b576-9719babef6b3', 'Exploit Granular Functionalities', 'Hold still voice full other.',
     'FINISHED',
-    '2025-05-05T13:34:12.419195', 'b7b9b825-18f2-43fa-a6f4-992651d8a0a2', '9be8dd88-adee-49d3-a0aa-08a3d9bd71f4'
+    '2025-05-05T13:34:12.419195', 'b7b9b825-18f2-43fa-a6f4-992651d8a0a2'
 );
-INSERT INTO groups (id, title, description, status, created_at, leader_id, publication_id) VALUES (
+INSERT INTO groups (id, title, description, status, created_at, leader_id) VALUES (
     '9589c2f5-8dba-4fb9-a3fa-18b70b57da5c', 'Re-Intermediate One-To-One Web-Readiness', 'Young change enjoy life include.',
     'ONGOINING',
-    '2025-05-05T13:34:12.419398', '782771da-39dc-4ed1-b5f9-b35f185aea53', '920f4b3a-f00f-4490-bf74-1446bc3c3c15'
+    '2025-05-05T13:34:12.419398', '782771da-39dc-4ed1-b5f9-b35f185aea53'
 );
-INSERT INTO groups (id, title, description, status, created_at, leader_id, publication_id) VALUES (
+INSERT INTO groups (id, title, description, status, created_at, leader_id) VALUES (
     '2f15dfb8-4d5b-44cd-b911-9c7beab3570f', 'Scale Collaborative E-Tailers', 'Tell make stock son medical at.',
     'DELETED',
-    '2025-05-05T13:34:12.419963', '3e272e72-a52f-41af-8366-063c2a046906', '376fb2a8-eda5-4ba5-8b10-d3d284dc5eff'
+    '2025-05-05T13:34:12.419963', '3e272e72-a52f-41af-8366-063c2a046906'
 );
-INSERT INTO groups (id, title, description, status, created_at, leader_id, publication_id) VALUES (
+INSERT INTO groups (id, title, description, status, created_at, leader_id) VALUES (
     'c5150188-3c36-4e7e-a7be-252d68e2424a', 'Mesh Cutting-Edge Methodologies', 'War fill fill necessary happen her.',
     'DELETED',
-    '2025-05-05T13:34:12.420190', '87410b02-b6ed-4eca-af3c-eefdc7a2189e', 'b51a0743-c30c-4b74-b08e-033ffd218301'
+    '2025-05-05T13:34:12.420190', '87410b02-b6ed-4eca-af3c-eefdc7a2189e'
 );
-INSERT INTO groups (id, title, description, status, created_at, leader_id, publication_id) VALUES (
+INSERT INTO groups (id, title, description, status, created_at, leader_id) VALUES (
     'b49ae0fb-07ea-44aa-8f8e-dbe21122aa25', 'Extend Sticky Roi', 'Huge respond black.',
     'SUSPENDED',
-    '2025-05-05T13:34:12.420711', '20cc842c-cb28-4b36-9ddb-4f7fa26e44f8', 'b51a0743-c30c-4b74-b08e-033ffd218301'
+    '2025-05-05T13:34:12.420711', '20cc842c-cb28-4b36-9ddb-4f7fa26e44f8'
 );
+
 INSERT INTO group_user (user_id, group_id, created_at) VALUES (
     'eb55a489-c602-4d5e-a27a-9696eb48a3d7', 'ff68c339-c5bd-4a55-b576-9719babef6b3', '2025-01-14T13:05:57'
 );
@@ -358,21 +360,6 @@ INSERT INTO group_user (user_id, group_id, created_at) VALUES (
 );
 INSERT INTO group_user (user_id, group_id, created_at) VALUES (
     '782771da-39dc-4ed1-b5f9-b35f185aea53', 'b49ae0fb-07ea-44aa-8f8e-dbe21122aa25', '2025-01-05T14:31:32'
-);
-INSERT INTO speaker (id, user_id, conference_id, affiliation, title, created_at, updated_at) VALUES (
-    40, 'eb55a489-c602-4d5e-a27a-9696eb48a3d7', 'f2f0b63d-9155-4257-a6f9-a1e44f3b0e79', 'Green-Harris', 'Sports therapist', '2025-05-05 13:34:12', '2025-05-05 13:34:12'
-);
-INSERT INTO speaker (id, user_id, conference_id, affiliation, title, created_at, updated_at) VALUES (
-    974, '3e272e72-a52f-41af-8366-063c2a046906', '846db89b-ecd8-46a0-83ef-fdd6c163c813', 'Williams-Blankenship', 'Physiological scientist', '2025-05-05 13:34:12', '2025-05-05 13:34:12'
-);
-INSERT INTO speaker (id, user_id, conference_id, affiliation, title, created_at, updated_at) VALUES (
-    348, '20cc842c-cb28-4b36-9ddb-4f7fa26e44f8', 'd81046ce-b88e-4059-a47a-78b45729a93a', 'Holmes and Sons', 'Radio broadcast assistant', '2025-05-05 13:34:12', '2025-05-05 13:34:12'
-);
-INSERT INTO speaker (id, user_id, conference_id, affiliation, title, created_at, updated_at) VALUES (
-    338, 'c1b54672-f483-449b-b0e6-8502b6f1b54c', '28452427-5642-4415-9f3a-a015e6c27226', 'Ellis-Cunningham', 'Investment analyst', '2025-05-05 13:34:12', '2025-05-05 13:34:12'
-);
-INSERT INTO speaker (id, user_id, conference_id, affiliation, title, created_at, updated_at) VALUES (
-    693, 'c1b54672-f483-449b-b0e6-8502b6f1b54c', 'f70e64b3-e730-4bef-916b-62193d094902', 'Lopez-Trujillo', 'Clinical research associate', '2025-05-05 13:34:12', '2025-05-05 13:34:12'
 );
 -- Create conversations for the direct messages
 INSERT INTO conversations (id, group_id, conversation_type, created_at, updated_at) VALUES (

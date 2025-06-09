@@ -20,7 +20,7 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">Manage your account settings and preferences.</p>
         </div>
         <Button asChild variant="outline" className="mt-4 md:mt-0">
-          <Link href={`/profile/${userid}`}>Back to Profile </Link>
+          <Link href={`/profile/`}>Back to Profile </Link>
         </Button>
       </div>
 
