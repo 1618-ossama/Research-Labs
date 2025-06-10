@@ -1,7 +1,7 @@
 "use client";
 
 import { TooltipProvider } from "@/components/ui/tooltip"; // or the correct path
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,12 @@ import {
 
 export type Status = "DRAFT" | "APPROVED" | "WAITING" | "DELETED";
 
+const getAccessTokenCookie = (cookieName = "AccessTokenCookie") => {
+  if (typeof document === "undefined") return null; // safety check for SSR
+  const cookies = document.cookie.split("; ");
+  const cookie = cookies.find(row => row.startsWith(cookieName + "="));
+  return cookie ? cookie.split("=")[1] : null;
+};
 function parseDateArray(dateArray: number[]): string {
   const [year, dayOfYear, hour, minute, second] = dateArray;
   const date = new Date(Date.UTC(year, 0));
@@ -73,6 +79,7 @@ export const PublicationsList: React.FC<PublicationsListProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDeleted, setShowDeleted] = useState(false);
   const [expandedAbstracts, setExpandedAbstracts] = useState<Record<string, boolean>>({});
+  const [submitterNames, setSubmitterNames] = useState<Record<string, string>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({
     key: 'submittedAt',
     direction: 'descending'
@@ -134,7 +141,7 @@ export const PublicationsList: React.FC<PublicationsListProps> = ({
       pub.title.toLowerCase().includes(searchText) ||
       pub.journal.toLowerCase().includes(searchText) ||
       pub.submitter_id.toLowerCase().includes(searchText) ||
-      pub.submitterName?.toLowerCase().includes(searchText) ||
+      (submitterNames[pub.submitter_id]?.toLowerCase().includes(searchText)) ||
       pub.doi?.toLowerCase().includes(searchText) ||
       pub.abstract?.toLowerCase().includes(searchText);
 
@@ -147,6 +154,45 @@ export const PublicationsList: React.FC<PublicationsListProps> = ({
 
     return matchesSearch && matchesStatus;
   });
+
+  const token = getAccessTokenCookie();
+  useEffect(() => {
+    const fetchNames = async () => {
+      const idsToFetch = Array.from(new Set(
+        filtered.map(pub => pub.submitter_id).filter(id => !(id in submitterNames))
+      ));
+
+      const fetched: Record<string, string> = {};
+
+      await Promise.all(idsToFetch.map(async (id) => {
+        try {
+
+          const res = await fetch(`http://127.0.0.1:6188/nodejs/api/profiles/users/username/${id}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+          });
+
+          if (res.ok) {
+            const json = await res.json();
+            fetched[id] = json.data.username || `User ${id}`;
+          } else {
+            fetched[id] = `User ${id}`;
+          }
+        } catch {
+          fetched[id] = `User ${id}`;
+        }
+      }));
+
+      setSubmitterNames(prev => ({ ...prev, ...fetched }));
+    };
+
+    if (filtered.length > 0) {
+      fetchNames();
+    }
+  }, [filtered]);
 
   return (
     <div className="w-full mx-auto px-4 overflow-x-auto">
@@ -295,7 +341,12 @@ export const PublicationsList: React.FC<PublicationsListProps> = ({
                         {statusBadge(pub.status)}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
-                        {pub.submitterName || pub.submitter_id}
+                        <Link
+                          href={`/profile/${pub.submitter_id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {submitterNames[pub.submitter_id] || `User ${pub.submitter_id}`}
+                        </Link>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {new Date(pub.submittedAt).toLocaleDateString('en-US', {

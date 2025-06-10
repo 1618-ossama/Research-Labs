@@ -101,6 +101,17 @@ impl PostgresDatabase {
         return Ok(());
     }
 
+    pub async fn delete_conference(&self, _conference_id: Uuid) -> Result<()> {
+        unimplemented!()
+        // let _ = query!(
+        //     "UPDATE conference SET status = 'DELETED' WHERE id = $1",
+        //     conference_id
+        // )
+        // .execute(&self.pool)
+        // .await
+        // .unwrap();
+        // return Ok(());
+    }
     // async fn get_files_by_publication(&self, publication_id: Uuid) -> Result<Vec<PublicationFile>> {
     //     let files = sqlx::query_as!(
     //         PublicationFile,

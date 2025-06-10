@@ -1,11 +1,8 @@
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use crate::{
-    models::{
-        publication::{
-            LinkPayload, Publication, PublicationInput, UpdatePublication, UpdatePublicationInput,
-        },
-        *,
+    models::publication::{
+        LinkPayload, Publication, PublicationInput, UpdatePublication, UpdatePublicationInput,
     },
     repositories::postgres_db::PostgresDatabase,
 };
@@ -107,7 +104,7 @@ pub async fn get_publications(state: web::Data<AppState>) -> HttpResponse {
     let mut redis_conn = match state.redis_client.get_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            eprintln!("❌ Redis connection error: {:?}", e);
+            eprintln!(" Redis connection error: {:?}", e);
 
             return match state.db_pool.get_publications().await {
                 Ok(publications) => HttpResponse::Ok().json(publications),
@@ -141,10 +138,14 @@ pub async fn get_publications(state: web::Data<AppState>) -> HttpResponse {
 
 /// Get publications by user
 pub async fn get_publications_by_user(
-    db: web::Data<PostgresDatabase>,
+    state: web::Data<AppState>,
     user_id: web::Path<Uuid>,
 ) -> HttpResponse {
-    match db.get_publications_by_user(user_id.into_inner()).await {
+    match state
+        .db_pool
+        .get_publications_by_user(user_id.into_inner())
+        .await
+    {
         Ok(publications) => HttpResponse::Ok().json(publications),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }

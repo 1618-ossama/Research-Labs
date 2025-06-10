@@ -14,6 +14,7 @@ pub async fn get_all_conferences(state: web::Data<AppState>) -> HttpResponse {
     if let Ok(mut redis_conn) = state.redis_client.get_connection() {
         if let Ok(Some(cached)) = redis_conn.get::<_, Option<String>>(redis_key) {
             if let Ok(conferences) = serde_json::from_str::<Vec<Conference>>(&cached) {
+                println!("Return Cached data");
                 return HttpResponse::Ok().json(conferences);
             }
         }
@@ -84,10 +85,10 @@ pub async fn update_conference(
 
 pub async fn delete_conference(state: web::Data<AppState>, id: web::Path<Uuid>) -> HttpResponse {
     return HttpResponse::NoContent().finish();
-    // match state.db_pool.delete_conference(id.into_inner()).await {
-    //     Ok(_) => HttpResponse::Ok().finish(),
-    //     Err(_) => HttpResponse::NotFound().finish(),
-    // }
+    match state.db_pool.delete_conference(id.into_inner()).await {
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(_) => HttpResponse::NotFound().finish(),
+    }
 }
 
 pub async fn get_conferences_by_user(

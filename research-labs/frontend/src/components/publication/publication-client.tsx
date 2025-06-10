@@ -134,7 +134,7 @@ export default function PublicationClient({
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_RUST_BACKEND_URL}/api/publications/${publication.id}`,
+        `http://127.0.0.1:6188/rust/api/publications/${publication.id}`,
         { method: "DELETE" }
       );
 

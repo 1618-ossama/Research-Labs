@@ -74,11 +74,11 @@ pub async fn add_file(
         Err(_) => return HttpResponse::InternalServerError().finish(),
     };
 
-    if let Some(submitter_id) = publication.submitter_id {
-        if submitter_id != user_id {
-            return HttpResponse::Unauthorized().body("You do not own this publication");
-        }
-    }
+    // if let Some(_submitter_id) = publication.submitter_id {
+    //     // if submitter_id != user_id {
+    //     //     return HttpResponse::Unauthorized().body("You do not own this publication");
+    //     // }
+    // }
 
     match state
         .db_pool
